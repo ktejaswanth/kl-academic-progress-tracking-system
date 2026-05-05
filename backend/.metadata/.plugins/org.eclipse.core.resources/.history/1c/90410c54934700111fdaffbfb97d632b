@@ -1,0 +1,12 @@
+package com.klef.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.klef.model.Facullty;
+
+
+@Repository
+public interface FacultyRepository extends JpaRepository<Facullty, Integer>{
+	public Facullty findByEmailAndPassword(String email, String password);
+}

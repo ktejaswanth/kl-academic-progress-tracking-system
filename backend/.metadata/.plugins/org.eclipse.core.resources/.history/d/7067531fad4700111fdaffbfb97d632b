@@ -1,0 +1,16 @@
+package com.example.demo.service;
+
+import org.springframework.stereotype.Service;
+
+import com.example.demo.model.Faculty;
+
+@Service
+public class FacultyServiceimpl implements FacultyService{
+
+	@Override
+	public Faculty checkFacultyLogin(Faculty f) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

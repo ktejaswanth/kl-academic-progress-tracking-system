@@ -1,0 +1,9 @@
+package com.klef.service;
+
+import com.klef.model.Facullty;
+
+public interface FacultyService {
+	
+	public Facullty checkFacultyLogin(Facullty f);
+
+}

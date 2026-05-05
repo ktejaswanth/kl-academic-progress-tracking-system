@@ -1,0 +1,15 @@
+package com.klef.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.klef.model.Student;//pojo class
+
+@Repository
+// 1.CRUD repo 2.JPA repo(save , find all , update , delete -> inbuilt functions) 3.Paging and sorting repo 
+public interface StudentRepository extends JpaRepository<Student, Long> //Integer(datatype(wrapper class) of primary key) -> java.lang 
+{
+	public Student findByEmailAndPassword(String email, String password);
+	
+
+}

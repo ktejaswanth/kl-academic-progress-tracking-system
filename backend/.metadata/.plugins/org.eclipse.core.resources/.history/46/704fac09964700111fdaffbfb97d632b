@@ -1,0 +1,2 @@
+spring.application.name=Creditcore_backend
+server.port=3843

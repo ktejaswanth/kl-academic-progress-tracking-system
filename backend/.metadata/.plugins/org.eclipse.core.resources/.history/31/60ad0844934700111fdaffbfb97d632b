@@ -1,0 +1,50 @@
+package com.klef.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.klef.model.Facullty;
+import com.klef.model.Student;
+import com.klef.service.FacultyService;
+
+
+
+@RestController
+@RequestMapping("facultyapp")
+public class FacultyController {
+	
+	@Autowired
+	private FacultyService facultyService;
+
+	@PostMapping("/login")
+	public ResponseEntity<?> checkfacultylogin(@RequestBody Facullty f) 
+	{
+		try
+		{
+			Facullty faculty = facultyService.checkFacultyLogin(f);
+			if (faculty != null) 
+			{
+				return ResponseEntity.status(200).body(faculty);
+			}
+			else 
+			{
+				return ResponseEntity.status(401).body("Faculty Login Failed");
+			}
+		}
+		catch(Exception e)
+		{
+			return ResponseEntity.status(500).body(e.getMessage());
+		}
+
+	}
+	
+
+}
