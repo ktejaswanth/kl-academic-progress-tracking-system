@@ -6,17 +6,26 @@ export default function FacultyDashboard() {
     const [stats, setStats] = useState({
         totalStudents: 0,
         recentUploads: 0,
-        pendingAudits: 0
+        pendingAudits: 12
     });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // In a real app, we would fetch these from a faculty stats endpoint
-        // For now, we simulate with some data
-        setStats({
-            totalStudents: 124,
-            recentUploads: 45,
-            pendingAudits: 12
-        });
+        const fetchStats = async () => {
+            try {
+                const response = await api.get('/faculty/analytics');
+                setStats({
+                    ...stats,
+                    totalStudents: response.data.totalStudents,
+                    recentUploads: response.data.recentUploads
+                });
+            } catch (err) {
+                console.error("Failed to fetch faculty stats", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStats();
     }, []);
 
     return (
@@ -33,7 +42,7 @@ export default function FacultyDashboard() {
                     <div className="stat-icon">👥</div>
                     <div className="stat-info">
                         <h3>Total Students</h3>
-                        <div className="value">{stats.totalStudents}</div>
+                        <div className="value">{loading ? '...' : stats.totalStudents}</div>
                         <p>Under your supervision</p>
                     </div>
                 </div>
@@ -41,7 +50,7 @@ export default function FacultyDashboard() {
                     <div className="stat-icon text-crimson">📂</div>
                     <div className="stat-info">
                         <h3 className="text-crimson">Recent Uploads</h3>
-                        <div className="value text-dark">{stats.recentUploads}</div>
+                        <div className="value text-dark">{loading ? '...' : stats.recentUploads}</div>
                         <p className="text-muted">In the last 30 days</p>
                     </div>
                 </div>

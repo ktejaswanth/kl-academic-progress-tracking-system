@@ -49,4 +49,11 @@ public class FacultyController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @GetMapping("/analytics")
+    public ResponseEntity<?> getAnalytics() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username).orElseThrow();
+        return ResponseEntity.ok(bulkUploadService.getFacultyAnalytics(user));
+    }
 }

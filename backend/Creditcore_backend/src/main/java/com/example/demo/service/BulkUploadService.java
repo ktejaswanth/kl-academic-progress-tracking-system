@@ -160,6 +160,17 @@ public class BulkUploadService {
         return out.toByteArray();
     }
 
+    public java.util.Map<String, Long> getFacultyAnalytics(User faculty) {
+        List<UploadHistory> history = uploadHistoryRepository.findByUploadedBy(faculty);
+        long totalStudents = history.stream().mapToLong(UploadHistory::getSuccessCount).sum();
+        long recentUploads = history.size();
+        
+        java.util.Map<String, Long> stats = new java.util.HashMap<>();
+        stats.put("totalStudents", totalStudents);
+        stats.put("recentUploads", recentUploads);
+        return stats;
+    }
+
     public static class CredentialInfo {
         public String id;
         public String password;

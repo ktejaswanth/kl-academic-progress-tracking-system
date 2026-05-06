@@ -1,11 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../api';
 
 export default function AdminDashboard() {
+    const [realStats, setRealStats] = useState({
+        totalStudents: 0,
+        totalFaculty: 0,
+        pendingAudits: 156, // Mock for now, could be added to backend later
+        systemHealth: '99.9%'
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            try {
+                const response = await api.get('/admin/analytics');
+                setRealStats({
+                    ...realStats,
+                    totalStudents: response.data.totalStudents,
+                    totalFaculty: response.data.totalFaculty,
+                });
+            } catch (err) {
+                console.error("Failed to fetch analytics", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAnalytics();
+    }, []);
+
     const stats = [
-        { label: 'Total Students', value: '1,248', icon: '🎓', color: '#8B0000' },
-        { label: 'Active Faculty', value: '42', icon: '🏫', color: '#8B0000' },
-        { label: 'Pending Audits', value: '156', icon: '📄', color: '#8B0000' },
-        { label: 'System Health', value: '99.9%', icon: '⚡', color: '#8B0000' },
+        { label: 'Total Students', value: loading ? '...' : realStats.totalStudents.toLocaleString(), icon: '🎓', color: '#8B0000' },
+        { label: 'Active Faculty', value: loading ? '...' : realStats.totalFaculty.toLocaleString(), icon: '🏫', color: '#8B0000' },
+        { label: 'Pending Audits', value: realStats.pendingAudits, icon: '📄', color: '#8B0000' },
+        { label: 'System Health', value: realStats.systemHealth, icon: '⚡', color: '#8B0000' },
     ];
 
     return (
