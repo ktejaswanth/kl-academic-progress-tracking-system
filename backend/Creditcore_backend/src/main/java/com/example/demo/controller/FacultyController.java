@@ -5,6 +5,8 @@ import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.BulkUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +30,8 @@ public class FacultyController {
         User uploadedBy = userRepository.findByUsername(username).orElseThrow();
 
         try {
-            UploadHistory history = bulkUploadService.processBulkUpload(file, uploadedBy);
-            return ResponseEntity.ok(history);
+            List<BulkUploadService.CredentialInfo> credentials = bulkUploadService.processBulkUpload(file, uploadedBy);
+            return ResponseEntity.ok(credentials);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Upload failed: " + e.getMessage());
         }

@@ -34,7 +34,7 @@ public class BulkUploadService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public UploadHistory processBulkUpload(MultipartFile file, User uploadedBy) throws IOException {
+    public List<CredentialInfo> processBulkUpload(MultipartFile file, User uploadedBy) throws IOException {
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rows = sheet.iterator();
@@ -57,23 +57,29 @@ public class BulkUploadService {
             total++;
             Row row = rows.next();
             try {
-                // Expected columns: FirstName | LastName | ID Number | Email | Department | Degree Type
-                String firstName = getCellValue(row, 0);
-                String lastName = getCellValue(row, 1);
-                String studentId = getCellValue(row, 2);
-                String email = getCellValue(row, 3);
-                String department = getCellValue(row, 4);
-                String degreeType = getCellValue(row, 5);
+                // User's columns: NAME | ID NUMBER | MAIL ID
+                String fullName = getCellValue(row, 0);
+                String studentId = getCellValue(row, 1);
+                String email = getCellValue(row, 2);
 
-                if (studentId.isEmpty() || email.isEmpty()) {
-                    throw new Exception("Missing Student ID or Email");
+                if (studentId.isEmpty() || email.isEmpty() || fullName.isEmpty()) {
+                    throw new Exception("Missing required fields (Name, ID, or Email)");
                 }
 
                 if (userRepository.findByUsername(studentId).isPresent()) {
-                    throw new Exception("Student ID already exists");
+                    throw new Exception("Student ID " + studentId + " already exists");
                 }
 
-                String rawPassword = PasswordGenerator.generateRandomPassword(8);
+                // Split Name into First and Last
+                String firstName = fullName;
+                String lastName = "";
+                if (fullName.contains(" ")) {
+                    int lastSpace = fullName.lastIndexOf(" ");
+                    firstName = fullName.substring(0, lastSpace);
+                    lastName = fullName.substring(lastSpace + 1);
+                }
+
+                String rawPassword = PasswordGenerator.generateRandomPassword(10);
                 
                 User user = new User();
                 user.setUsername(studentId);
@@ -82,18 +88,18 @@ public class BulkUploadService {
                 user.setLastName(lastName);
                 user.setPasswordHash(passwordEncoder.encode(rawPassword));
                 user.setRole(UserRole.STUDENT);
-                user.setDepartment(department);
+                user.setDepartment("REGULAR"); // Default
                 user.setForcePasswordChange(true);
                 
                 user = userRepository.save(user);
 
                 StudentProfile profile = new StudentProfile();
                 profile.setUser(user);
-                profile.setDegreeType(degreeType);
-                profile.setSpecialization(department);
+                profile.setDegreeType("REGULAR");
+                profile.setSpecialization("GENERAL");
                 studentProfileRepository.save(profile);
 
-                credentials.add(new CredentialInfo(studentId, rawPassword, email));
+                credentials.add(new CredentialInfo(studentId, rawPassword, email, fullName));
                 success++;
 
             } catch (Exception e) {
@@ -102,8 +108,8 @@ public class BulkUploadService {
                 failedRecord.setUpload(history);
                 failedRecord.setRowNumber(row.getRowNum() + 1);
                 failedRecord.setErrorReason(e.getMessage());
-                failedRecord.setStudentIdNum(getCellValue(row, 2));
-                failedRecord.setEmail(getCellValue(row, 3));
+                failedRecord.setStudentIdNum(getCellValue(row, 1));
+                failedRecord.setEmail(getCellValue(row, 2));
                 failedRecordRepository.save(failedRecord);
             }
         }
@@ -112,9 +118,10 @@ public class BulkUploadService {
         history.setSuccessCount(success);
         history.setFailedCount(failed);
         history.setStatus("COMPLETED");
+        uploadHistoryRepository.save(history);
         
         workbook.close();
-        return uploadHistoryRepository.save(history);
+        return credentials;
     }
 
     private String getCellValue(Row row, int cellIndex) {
@@ -153,12 +160,13 @@ public class BulkUploadService {
         return out.toByteArray();
     }
 
-    private static class CredentialInfo {
-        String id;
-        String password;
-        String email;
-        public CredentialInfo(String id, String password, String email) {
-            this.id = id; this.password = password; this.email = email;
+    public static class CredentialInfo {
+        public String id;
+        public String password;
+        public String email;
+        public String fullName;
+        public CredentialInfo(String id, String password, String email, String fullName) {
+            this.id = id; this.password = password; this.email = email; this.fullName = fullName;
         }
     }
 }

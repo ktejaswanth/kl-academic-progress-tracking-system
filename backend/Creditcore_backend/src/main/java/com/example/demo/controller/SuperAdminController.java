@@ -24,6 +24,15 @@ public class SuperAdminController {
         }
     }
 
+    @PostMapping("/students")
+    public ResponseEntity<?> createStudent(@RequestBody User student) {
+        try {
+            return ResponseEntity.status(201).body(userService.createStudent(student));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error creating student: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/analytics")
     public ResponseEntity<?> getAnalytics() {
         return ResponseEntity.ok(userService.getDashboardAnalytics());

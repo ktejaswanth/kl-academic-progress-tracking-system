@@ -1,15 +1,10 @@
 import React from 'react';
 import { Link, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import AdminDashboard from './AdminDashboard';
-import AddStudent from './AddStudent';
-import BulkUpload from '../pages/faculty/BulkUpload';
-import ViewAllStudents from './ViewAllStudents';
-import AddFaculty from './AddFaculty';
-import ViewAllFaculty from './ViewAllFaculty';
-import './admin.css';
+import { useAuth } from '../../context/AuthContext';
+import StudentDashboard from './StudentDashboard';
+import '../../admin/admin.css'; // Reusing layout styles
 
-export default function AdminNavBar() {
+export default function StudentNavBar() {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -20,12 +15,9 @@ export default function AdminNavBar() {
     };
 
     const navItems = [
-        { path: '/super_admin/home', label: 'Dashboard', icon: '📊' },
-        { path: '/super_admin/addstudent', label: 'Add Student', icon: '👤' },
-        { path: '/super_admin/bulk-upload', label: 'Bulk Upload (Excel)', icon: '📁' },
-        { path: '/super_admin/viewallstudents', label: 'View Students', icon: '👥' },
-        { path: '/super_admin/addfaculty', label: 'Add Faculty', icon: '👨‍🏫' },
-        { path: '/super_admin/viewallfaculty', label: 'View Faculty', icon: '🏢' },
+        { path: '/student/home', label: 'Progress Dashboard', icon: '📈' },
+        { path: '/student/courses', label: 'My Courses', icon: '📚' },
+        { path: '/student/profile', label: 'My Profile', icon: '👤' },
     ];
 
     return (
@@ -33,7 +25,7 @@ export default function AdminNavBar() {
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <div className="admin-badge">KL</div>
-                    <h3>Super Admin</h3>
+                    <h3>Student Portal</h3>
                 </div>
                 
                 <nav className="sidebar-nav">
@@ -60,23 +52,20 @@ export default function AdminNavBar() {
             <main className="admin-main">
                 <div className="top-bar">
                     <div className="breadcrumb">
-                        Admin / <span>{navItems.find(i => location.pathname.includes(i.path))?.label || 'Dashboard'}</span>
+                        Student / <span>{navItems.find(i => location.pathname.includes(i.path))?.label || 'Dashboard'}</span>
                     </div>
                     <div className="user-info">
-                        <span className="user-role">System Administrator</span>
-                        <div className="user-avatar">SA</div>
+                        <span className="user-role">Regular Track</span>
+                        <div className="user-avatar">ST</div>
                     </div>
                 </div>
 
                 <div className="content-area animate-fade">
                     <Routes>
-                        <Route path="home" element={<AdminDashboard />} />
-                        <Route path="addstudent" element={<AddStudent />} />
-                        <Route path="bulk-upload" element={<BulkUpload />} />
-                        <Route path="viewallstudents" element={<ViewAllStudents />} />
-                        <Route path="addfaculty" element={<AddFaculty />} />
-                        <Route path="viewallfaculty" element={<ViewAllFaculty />} />
-                        <Route index element={<AdminDashboard />} />
+                        <Route path="home" element={<StudentDashboard />} />
+                        <Route path="courses" element={<div>Coming Soon: Detailed Course View</div>} />
+                        <Route path="profile" element={<div>Coming Soon: Student Profile Management</div>} />
+                        <Route index element={<StudentDashboard />} />
                     </Routes>
                 </div>
             </main>

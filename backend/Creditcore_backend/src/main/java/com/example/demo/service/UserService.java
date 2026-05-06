@@ -22,9 +22,20 @@ public class UserService {
 
     public User createFaculty(User faculty) {
         faculty.setRole(UserRole.FACULTY);
-        faculty.setPasswordHash(passwordEncoder.encode(faculty.getPasswordHash()));
+        if (faculty.getPassword() != null) {
+            faculty.setPasswordHash(passwordEncoder.encode(faculty.getPassword()));
+        }
         faculty.setForcePasswordChange(true);
         return userRepository.save(faculty);
+    }
+
+    public User createStudent(User student) {
+        student.setRole(UserRole.STUDENT);
+        if (student.getPassword() != null) {
+            student.setPasswordHash(passwordEncoder.encode(student.getPassword()));
+        }
+        student.setForcePasswordChange(true);
+        return userRepository.save(student);
     }
 
     public List<User> getAllUsers() {

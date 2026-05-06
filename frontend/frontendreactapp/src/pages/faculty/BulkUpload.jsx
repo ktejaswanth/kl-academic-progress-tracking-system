@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import api from '../../api';
-import './faculty.css'; // I'll create this later
+import './faculty.css';
 
 export default function BulkUpload() {
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
-    const [result, setResult] = useState(null);
+    const [credentials, setCredentials] = useState([]);
     const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
         setError('');
-        setResult(null);
+        setCredentials([]);
+        setMessage('');
     };
 
     const handleUpload = async (e) => {
@@ -23,50 +25,46 @@ export default function BulkUpload() {
 
         setUploading(true);
         setError('');
+        setCredentials([]);
         
         const formData = new FormData();
         formData.append('file', file);
 
         try {
-            const response = await api.post('/api/faculty/upload-students', formData, {
+            const response = await api.post('/faculty/upload-students', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            setResult(response.data);
+            setCredentials(response.data);
+            setMessage(`Successfully registered ${response.data.length} students!`);
             setFile(null);
-            // Reset file input
             document.getElementById('excel-upload').value = '';
         } catch (err) {
-            setError(err.response?.data || 'Upload failed');
+            setError(err.response?.data || 'Upload failed. Please check the Excel format.');
         } finally {
             setUploading(false);
         }
     };
 
-    const downloadCredentials = async (uploadId) => {
-        try {
-            const response = await api.get(`/api/faculty/download-credentials/${uploadId}`, {
-                responseType: 'blob'
-            });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `credentials_${uploadId}.xlsx`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        } catch (err) {
-            alert('Error downloading credentials');
-        }
-    };
-
     return (
         <div className="bulk-upload-container">
-            <h1>Bulk Student Upload</h1>
-            <p>Upload an Excel sheet to automatically create student accounts and generate credentials.</p>
+            <header className="page-header">
+                <h1>Bulk Student Identity Management</h1>
+                <p>Register multiple students at once and generate secure auto-passwords.</p>
+            </header>
 
-            <div className="upload-section">
-                <form onSubmit={handleUpload}>
-                    <div className="file-input-wrapper">
+            <div className="upload-card">
+                <div className="format-guide">
+                    <h3>Excel Template Guide</h3>
+                    <p>Your file must contain exactly 3 columns:</p>
+                    <div className="column-pills">
+                        <span className="pill">NAME</span>
+                        <span className="pill">ID NUMBER</span>
+                        <span className="pill">MAIL ID</span>
+                    </div>
+                </div>
+
+                <form onSubmit={handleUpload} className="upload-form">
+                    <div className="file-drop-area">
                         <input 
                             type="file" 
                             id="excel-upload"
@@ -74,54 +72,59 @@ export default function BulkUpload() {
                             onChange={handleFileChange} 
                         />
                         <label htmlFor="excel-upload">
-                            {file ? file.name : "Click to select Excel file"}
+                            <span className="icon">📁</span>
+                            <span className="text">{file ? file.name : "Drag & drop or click to select Excel file"}</span>
                         </label>
                     </div>
-                    <button type="submit" disabled={uploading || !file}>
-                        {uploading ? "Processing..." : "Start Bulk Upload"}
+                    <button type="submit" className="primary-btn" disabled={uploading || !file}>
+                        {uploading ? "⚡ Processing Identity Data..." : "🚀 Upload & Generate Credentials"}
                     </button>
                 </form>
-                {error && <p className="error-text">{error}</p>}
+                {error && <div className="alert error">{error}</div>}
+                {message && <div className="alert success">{message}</div>}
             </div>
 
-            {result && (
-                <div className="upload-result">
-                    <div className="stats-grid">
-                        <div className="stat-card">
-                            <span className="stat-label">Total Records</span>
-                            <span className="stat-value">{result.totalRecords}</span>
-                        </div>
-                        <div className="stat-card success">
-                            <span className="stat-label">Successful</span>
-                            <span className="stat-value">{result.successCount}</span>
-                        </div>
-                        <div className="stat-card failed">
-                            <span className="stat-label">Failed</span>
-                            <span className="stat-value">{result.failedCount}</span>
-                        </div>
+            {credentials.length > 0 && (
+                <div className="results-card animate-fade-in">
+                    <div className="results-header">
+                        <h3>Generated Student Credentials</h3>
+                        <p>Share these credentials with the respective students.</p>
                     </div>
-
-                    <div className="actions">
-                        {result.successCount > 0 && (
-                            <button onClick={() => downloadCredentials(result.id)} className="download-btn">
-                                📥 Download Generated Credentials
-                            </button>
-                        )}
-                        {result.failedCount > 0 && (
-                            <button className="download-btn failed">
-                                ⚠️ Download Failed Records
-                            </button>
-                        )}
+                    <div className="table-wrapper">
+                        <table className="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>ID Number</th>
+                                    <th>Email ID</th>
+                                    <th>Generated Password</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {credentials.map((student, index) => (
+                                    <tr key={index}>
+                                        <td><strong>{student.fullName}</strong></td>
+                                        <td><code>{student.id}</code></td>
+                                        <td>{student.email}</td>
+                                        <td>
+                                            <div className="password-cell">
+                                                <span className="pass-text">{student.password}</span>
+                                                <button 
+                                                    className="copy-btn" 
+                                                    onClick={() => navigator.clipboard.writeText(student.password)}
+                                                    title="Copy Password"
+                                                >
+                                                    📋
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             )}
-
-            <div className="format-guide">
-                <h3>Excel Format Guide:</h3>
-                <p>Your Excel sheet must have the following columns in order:</p>
-                <code>First Name | Last Name | ID Number | Email | Department | Degree Type</code>
-                <p className="note">Note: Department/Degree Type must be one of: HTE, HTR, HTI, HONOR, REGULAR</p>
-            </div>
         </div>
     );
 }
