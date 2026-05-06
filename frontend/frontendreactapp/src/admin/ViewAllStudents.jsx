@@ -49,6 +49,18 @@ export default function ViewAllStudents() {
         XLSX.writeFile(workbook, `All_Student_Credentials_${new Date().toLocaleDateString()}.xlsx`);
     };
 
+    const deleteStudent = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this student account? This action cannot be undone.")) return;
+        
+        try {
+            await api.delete(`/admin/users/${id}`);
+            setData(data.filter(s => s.id !== id));
+            alert("Student deleted successfully.");
+        } catch (err) {
+            alert("Error deleting student: " + (err.response?.data || "Unknown error"));
+        }
+    };
+
     const filteredData = data.filter(s =>
         s.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -106,7 +118,7 @@ export default function ViewAllStudents() {
                                     <th>Dept / Sub-Dept</th>
                                     <th>Specialization</th>
                                     <th>Password</th>
-                                    <th>Status</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -140,9 +152,15 @@ export default function ViewAllStudents() {
                                             </div>
                                         </td>
                                         <td>
-                                            <span className={`status-pill ${student.isActive ? 'active' : 'inactive'}`}>
-                                                {student.isActive ? 'Active' : 'Disabled'}
-                                            </span>
+                                            <div className="row-actions">
+                                                <button 
+                                                    className="action-btn delete" 
+                                                    onClick={() => deleteStudent(student.id)}
+                                                    title="Delete Student"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -318,6 +336,32 @@ export default function ViewAllStudents() {
                     margin: 0 auto 1.5rem;
                 }
                 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+                .row-actions {
+                    display: flex;
+                    gap: 8px;
+                    align-items: center;
+                }
+                .action-btn {
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 10px;
+                    border: 1px solid #E2E8F0;
+                    background: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    font-size: 1.1rem;
+                }
+                .action-btn.delete:hover {
+                    background: #FFF1F2;
+                    border-color: #FECACA;
+                    color: #E11D48;
+                    transform: scale(1.1);
+                    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.15);
+                }
             `}</style>
         </div>
     );

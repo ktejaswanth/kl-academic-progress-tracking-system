@@ -96,12 +96,12 @@ export default function BulkUpload() {
                 <div className="format-guide">
                     <div className="guide-actions" style={{ marginBottom: '1.5rem', display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'space-between' }}>
                         <h3 style={{ margin: 0 }}>
-                            <span style={{ fontSize: '1.5rem' }}>📋</span> 
+                            <span style={{ fontSize: '1.5rem' }}>📋</span>
                             Excel Template Guide
                         </h3>
-                        <button 
-                            type="button" 
-                            onClick={downloadDemoSheet} 
+                        <button
+                            type="button"
+                            onClick={downloadDemoSheet}
                             className="demo-download-btn"
                         >
                             📥 Download Demo Excel Template
@@ -135,7 +135,7 @@ export default function BulkUpload() {
                             {!file && <span className="sub-text">Supported formats: .xlsx, .xls</span>}
                         </div>
                     </div>
-                    
+
                     <button type="submit" className="primary-btn" disabled={uploading || !file}>
                         {uploading ? (
                             <><span className="spinner"></span> Processing...</>

@@ -24,6 +24,7 @@ public class UserService {
         faculty.setRole(UserRole.FACULTY);
         if (faculty.getPassword() != null) {
             faculty.setPasswordHash(passwordEncoder.encode(faculty.getPassword()));
+            faculty.setRawPassword(faculty.getPassword());
         }
         faculty.setForcePasswordChange(true);
         return userRepository.save(faculty);
