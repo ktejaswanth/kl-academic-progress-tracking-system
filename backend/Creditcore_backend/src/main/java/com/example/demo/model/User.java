@@ -44,6 +44,18 @@ public class User {
 
     private String department;
 
+    @Column(name = "sub_department")
+    private String subDepartment;
+
+    @Column(name = "specialization_type")
+    private String specializationType = "NONE";
+
+    @Column(name = "specialization_name")
+    private String specializationName;
+
+    @Column(name = "raw_password")
+    private String rawPassword;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 

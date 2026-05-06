@@ -33,6 +33,7 @@ public class UserService {
         student.setRole(UserRole.STUDENT);
         if (student.getPassword() != null) {
             student.setPasswordHash(passwordEncoder.encode(student.getPassword()));
+            student.setRawPassword(student.getPassword());
         }
         student.setForcePasswordChange(true);
         return userRepository.save(student);

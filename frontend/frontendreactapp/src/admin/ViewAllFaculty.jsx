@@ -93,14 +93,85 @@ export default function ViewAllFaculty() {
             </div>
 
             <style>{`
-                .role-tag {
-                    background: var(--soft-red);
-                    color: var(--primary-red);
-                    padding: 4px 10px;
+                .admin-page-container {
+                    animation: fadeIn 0.5s ease-out;
+                }
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+                .table-actions {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 2rem;
+                    gap: 20px;
+                    background: white;
+                    padding: 1.5rem;
+                    border-radius: 16px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+                }
+                .search-box { position: relative; flex: 1; max-width: 500px; }
+                .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 1.1rem; }
+                .search-box .input-field { 
+                    padding: 12px 12px 12px 48px; 
+                    border-radius: 12px; 
+                    border: 1px solid #E2E8F0;
+                    width: 100%;
+                    transition: all 0.3s;
+                }
+                
+                .count-badge {
+                    background: #F1F5F9;
+                    color: #475569;
+                    padding: 10px 20px;
+                    border-radius: 30px;
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                    border: 1px solid #E2E8F0;
+                    white-space: nowrap;
+                }
+
+                .modern-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    text-align: left;
+                }
+                .modern-table th {
+                    background: #F8FAFC;
+                    padding: 1.25rem 1.5rem;
+                    color: #64748B;
+                    font-weight: 700;
+                    font-size: 0.85rem;
+                    text-transform: uppercase;
+                    border-bottom: 1px solid #E2E8F0;
+                }
+                .modern-table td {
+                    padding: 1.25rem 1.5rem;
+                    border-bottom: 1px solid #F1F5F9;
+                    vertical-align: middle;
+                }
+                .modern-table tr:hover { background: #FBFBFF; }
+
+                .dept-tag {
+                    background: #E0F2FE;
+                    color: #0369A1;
+                    padding: 4px 12px;
                     border-radius: 6px;
+                    font-size: 0.75rem;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                }
+
+                .role-tag {
+                    background: #F1F5F9;
+                    color: #1E293B;
+                    padding: 6px 12px;
+                    border-radius: 30px;
                     font-size: 0.85rem;
                     font-weight: 700;
+                    border: 1px solid #E2E8F0;
                 }
+
+                .empty-state { text-align: center; padding: 5rem !important; color: #94A3B8; font-style: italic; }
             `}</style>
         </div>
     );

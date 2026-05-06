@@ -15,7 +15,7 @@ export default function ForgotPassword() {
         setError('');
         try {
             const response = await api.post(`/auth/forgot-password?email=${email}`);
-            setMessage("A reset link has been simulated in the backend logs. In production, this would be an email.");
+            setMessage(response.data);
         } catch (err) {
             setError(err.response?.data || "Failed to initiate password reset.");
         } finally {

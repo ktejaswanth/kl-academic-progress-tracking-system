@@ -57,10 +57,14 @@ public class BulkUploadService {
             total++;
             Row row = rows.next();
             try {
-                // User's columns: NAME | ID NUMBER | MAIL ID
+                // User's columns: NAME | ID NUMBER | MAIL ID | DEPARTMENT | SUB DEPARTMENT | SPECIALIZATION TYPE | SPECIALIZATION NAME
                 String fullName = getCellValue(row, 0);
                 String studentId = getCellValue(row, 1);
                 String email = getCellValue(row, 2);
+                String department = getCellValue(row, 3);
+                String subDept = getCellValue(row, 4);
+                String specType = getCellValue(row, 5);
+                String specName = getCellValue(row, 6);
 
                 if (studentId.isEmpty() || email.isEmpty() || fullName.isEmpty()) {
                     throw new Exception("Missing required fields (Name, ID, or Email)");
@@ -79,7 +83,7 @@ public class BulkUploadService {
                     lastName = fullName.substring(lastSpace + 1);
                 }
 
-                String rawPassword = PasswordGenerator.generateRandomPassword(10);
+                String rawPassword = PasswordGenerator.generateRandomPassword(8);
                 
                 User user = new User();
                 user.setUsername(studentId);
@@ -87,8 +91,12 @@ public class BulkUploadService {
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
                 user.setPasswordHash(passwordEncoder.encode(rawPassword));
+                user.setRawPassword(rawPassword);
                 user.setRole(UserRole.STUDENT);
-                user.setDepartment("REGULAR"); // Default
+                user.setDepartment(department.isEmpty() ? "REGULAR" : department);
+                user.setSubDepartment(subDept.isEmpty() ? "N/A" : subDept);
+                user.setSpecializationType(specType.isEmpty() ? "NONE" : specType.toUpperCase());
+                user.setSpecializationName(specName.isEmpty() ? "N/A" : specName);
                 user.setForcePasswordChange(true);
                 
                 user = userRepository.save(user);
@@ -96,10 +104,10 @@ public class BulkUploadService {
                 StudentProfile profile = new StudentProfile();
                 profile.setUser(user);
                 profile.setDegreeType("REGULAR");
-                profile.setSpecialization("GENERAL");
+                profile.setSpecialization(user.getSpecializationType());
                 studentProfileRepository.save(profile);
 
-                credentials.add(new CredentialInfo(studentId, rawPassword, email, fullName));
+                credentials.add(new CredentialInfo(studentId, rawPassword, email, fullName, user.getDepartment(), user.getSubDepartment(), user.getSpecializationType(), user.getSpecializationName()));
                 success++;
 
             } catch (Exception e) {
@@ -176,8 +184,14 @@ public class BulkUploadService {
         public String password;
         public String email;
         public String fullName;
-        public CredentialInfo(String id, String password, String email, String fullName) {
+        public String department;
+        public String subDepartment;
+        public String specializationType;
+        public String specializationName;
+        public CredentialInfo(String id, String password, String email, String fullName, String department, String subDepartment, String specializationType, String specializationName) {
             this.id = id; this.password = password; this.email = email; this.fullName = fullName;
+            this.department = department; this.subDepartment = subDepartment;
+            this.specializationType = specializationType; this.specializationName = specializationName;
         }
     }
 }

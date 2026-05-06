@@ -13,6 +13,7 @@ export default function AdminNavBar() {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
     const handleLogout = () => {
         logout();
@@ -30,37 +31,78 @@ export default function AdminNavBar() {
 
     return (
         <div className="admin-layout">
-            <aside className="sidebar">
+            {/* Mobile Overlay */}
+            {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)}></div>}
+            
+            <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-header">
-                    <div className="admin-badge">KL</div>
-                    <h3>Super Admin</h3>
+                    <div className="brand-container">
+                        <div className="admin-badge">KL</div>
+                        <div className="brand-text">
+                            <h3>CreditCore</h3>
+                            <span>Super Admin</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <nav className="sidebar-nav">
-                    {navItems.map((item) => (
-                        <Link 
-                            key={item.path} 
-                            to={item.path} 
-                            className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
-                        >
-                            <span className="nav-icon">{item.icon}</span>
-                            <span className="nav-label">{item.label}</span>
-                        </Link>
-                    ))}
+                    <div className="nav-group">
+                        <span className="group-label">Main Menu</span>
+                        {navItems.slice(0, 4).map((item) => (
+                            <Link 
+                                key={item.path} 
+                                to={item.path} 
+                                className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
+                                onClick={() => setSidebarOpen(false)}
+                            >
+                                <span className="nav-icon">{item.icon}</span>
+                                <span className="nav-label">{item.label}</span>
+                                {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
+                            </Link>
+                        ))}
+                    </div>
+
+                    <div className="nav-group">
+                        <span className="group-label">Staff Management</span>
+                        {navItems.slice(4).map((item) => (
+                            <Link 
+                                key={item.path} 
+                                to={item.path} 
+                                className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
+                                onClick={() => setSidebarOpen(false)}
+                            >
+                                <span className="nav-icon">{item.icon}</span>
+                                <span className="nav-label">{item.label}</span>
+                                {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
+                            </Link>
+                        ))}
+                    </div>
                 </nav>
 
                 <div className="sidebar-footer">
+                    <div className="admin-profile-mini">
+                        <div className="user-avatar">SA</div>
+                        <div className="user-info-mini">
+                            <strong>Administrator</strong>
+                            <span>System Control</span>
+                        </div>
+                    </div>
                     <button onClick={handleLogout} className="logout-button">
                         <span className="nav-icon">🚪</span>
-                        <span className="nav-label">Logout</span>
+                        <span className="nav-label">Sign Out</span>
                     </button>
                 </div>
             </aside>
 
             <main className="admin-main">
                 <div className="top-bar">
-                    <div className="breadcrumb">
-                        Admin / <span>{navItems.find(i => location.pathname.includes(i.path))?.label || 'Dashboard'}</span>
+                    <div className="top-bar-left">
+                        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+                            ☰
+                        </button>
+                        <div className="breadcrumb">
+                            Admin / <span>{navItems.find(i => location.pathname.includes(i.path))?.label || 'Dashboard'}</span>
+                        </div>
                     </div>
                     <div className="user-info">
                         <span className="user-role">System Administrator</span>

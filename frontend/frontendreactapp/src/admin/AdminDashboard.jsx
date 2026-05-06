@@ -93,149 +93,166 @@ export default function AdminDashboard() {
 
             <style>{`
                 .dashboard-container {
-                    padding: 1rem;
+                    animation: fadeIn 0.8s ease-out;
                 }
-                .dashboard-header { margin-bottom: 2.5rem; }
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+                .dashboard-header { margin-bottom: 3rem; }
                 .dashboard-header h2 { 
-                    font-size: 2.4rem; 
-                    color: #8B0000; 
+                    font-size: 2.8rem; 
+                    color: #0F172A; 
                     font-weight: 800; 
-                    margin-bottom: 4px;
-                    letter-spacing: -0.5px;
+                    letter-spacing: -1.5px;
+                    margin-bottom: 8px;
                 }
                 .dashboard-header p {
-                    color: #636E72;
+                    color: #64748B;
                     font-weight: 500;
+                    font-size: 1.1rem;
                 }
                 
                 .stats-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-                    gap: 1.5rem;
-                    margin-bottom: 3.5rem;
+                    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                    gap: 2rem;
+                    margin-bottom: 4rem;
                 }
 
                 .stat-card-premium {
                     background: white;
-                    padding: 2rem 1.5rem;
-                    border-radius: 24px;
-                    border: 1px solid #E9ECEF;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    padding: 2.5rem 2rem;
+                    border-radius: 30px;
+                    border: 1px solid #F1F5F9;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+                    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    position: relative;
+                    overflow: hidden;
                 }
 
                 .stat-card-premium:hover { 
-                    transform: translateY(-8px);
-                    box-shadow: 0 12px 30px rgba(139,0,0,0.08);
-                    border-color: #F8D7DA;
+                    transform: translateY(-12px);
+                    box-shadow: 0 20px 50px rgba(225, 29, 72, 0.1);
+                    border-color: #FECACA;
                 }
 
                 .stat-icon-wrapper {
-                    width: 54px;
-                    height: 54px;
-                    background: #FFF5F5;
-                    border-radius: 14px;
+                    width: 60px;
+                    height: 60px;
+                    background: #FFF1F2;
+                    border-radius: 18px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-bottom: 1.5rem;
+                    margin-bottom: 2rem;
+                    transition: all 0.3s;
+                }
+                .stat-card-premium:hover .stat-icon-wrapper {
+                    background: #E11D48;
+                    transform: rotate(10deg);
+                }
+                .stat-card-premium:hover .stat-icon-large {
+                    filter: brightness(0) invert(1);
                 }
 
-                .stat-icon-large { font-size: 1.5rem; }
+                .stat-icon-large { font-size: 1.8rem; transition: all 0.3s; }
                 
-                .stat-details { display: flex; flex-direction: column; gap: 4px; }
-                .stat-value-large { font-size: 2.2rem; font-weight: 800; color: #2D3436; }
-                .stat-label-muted { color: #636E72; font-size: 0.95rem; font-weight: 600; }
+                .stat-details { display: flex; flex-direction: column; gap: 6px; }
+                .stat-value-large { font-size: 2.5rem; font-weight: 900; color: #1E293B; letter-spacing: -1px; }
+                .stat-label-muted { color: #64748B; font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 
                 .stat-progress-bar {
-                    height: 5px;
-                    background: #F1F3F5;
+                    height: 6px;
+                    background: #F1F5F9;
                     border-radius: 10px;
-                    margin-top: 1.5rem;
+                    margin-top: 2rem;
                     overflow: hidden;
                 }
 
                 .progress-fill {
                     height: 100%;
-                    background: #8B0000;
+                    background: linear-gradient(90deg, #E11D48, #F43F5E);
                     border-radius: 10px;
+                    transition: width 1s ease-in-out;
                 }
 
                 .dashboard-main-grid {
                     display: grid;
                     grid-template-columns: 1.6fr 1fr;
-                    gap: 2rem;
+                    gap: 2.5rem;
                 }
 
                 .dashboard-card {
                     background: white;
-                    padding: 2.5rem;
-                    border-radius: 28px;
-                    border: 1px solid #E9ECEF;
+                    padding: 3rem;
+                    border-radius: 32px;
+                    border: 1px solid #F1F5F9;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.02);
                 }
 
                 .dashboard-card h3 {
-                    font-size: 1.3rem;
+                    font-size: 1.5rem;
                     font-weight: 800;
-                    color: #2D3436;
-                    margin-bottom: 2rem;
+                    color: #0F172A;
+                    margin-bottom: 2.5rem;
+                    letter-spacing: -0.5px;
                 }
 
-                .activity-list { display: flex; flex-direction: column; gap: 2rem; }
-                .activity-item { display: flex; gap: 1.2rem; align-items: flex-start; }
-                .activity-dot { width: 14px; height: 14px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
-                .activity-dot.success { background: #00B894; box-shadow: 0 0 0 4px #E6F8F4; }
-                .activity-dot.warning { background: #8B0000; box-shadow: 0 0 0 4px #FCE8E8; }
+                .activity-list { display: flex; flex-direction: column; gap: 2.5rem; }
+                .activity-item { display: flex; gap: 1.5rem; align-items: flex-start; }
+                .activity-dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 8px; flex-shrink: 0; }
+                .activity-dot.success { background: #10B981; box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.15); }
+                .activity-dot.warning { background: #E11D48; box-shadow: 0 0 0 5px rgba(225, 29, 72, 0.15); }
                 
-                .activity-info strong { display: block; font-size: 1.05rem; color: #2D3436; margin-bottom: 2px; }
-                .activity-info p { font-size: 0.95rem; color: #636E72; margin-bottom: 6px; }
-                .activity-time { font-size: 0.85rem; color: #8B0000; font-weight: 700; }
+                .activity-info strong { display: block; font-size: 1.1rem; color: #1E293B; margin-bottom: 4px; }
+                .activity-info p { font-size: 1rem; color: #64748B; margin-bottom: 8px; line-height: 1.5; }
+                .activity-time { font-size: 0.85rem; color: #E11D48; font-weight: 800; text-transform: uppercase; }
 
                 .promo-card {
-                    background: #8B0000;
+                    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
                     color: white;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
                     position: relative;
                     overflow: hidden;
+                    border: none;
                 }
                 
-                .promo-card::before {
+                .promo-card::after {
                     content: '';
                     position: absolute;
-                    top: -50px;
-                    right: -50px;
-                    width: 150px;
-                    height: 150px;
-                    background: rgba(255,255,255,0.05);
+                    bottom: -50px;
+                    left: -50px;
+                    width: 200px;
+                    height: 200px;
+                    background: rgba(225, 29, 72, 0.1);
                     border-radius: 50%;
+                    filter: blur(40px);
                 }
 
-                .promo-content h3 { color: white !important; font-size: 1.8rem; margin-bottom: 1rem; }
-                .promo-content p { font-size: 1rem; opacity: 0.9; margin-bottom: 2rem; line-height: 1.6; }
+                .promo-content h3 { color: white !important; font-size: 2rem; margin-bottom: 1.5rem; }
+                .promo-content p { font-size: 1.1rem; opacity: 0.8; margin-bottom: 2.5rem; line-height: 1.7; }
                 
                 .btn-reports { 
-                    background: white; 
-                    color: #8B0000; 
+                    background: #E11D48; 
+                    color: white; 
                     border: none;
-                    padding: 12px 28px;
-                    border-radius: 12px;
+                    padding: 14px 32px;
+                    border-radius: 16px;
                     font-weight: 700;
-                    font-size: 0.95rem;
+                    font-size: 1rem;
                     cursor: pointer;
                     transition: all 0.3s;
+                    box-shadow: 0 10px 20px rgba(225, 29, 72, 0.3);
                 }
                 
                 .btn-reports:hover {
                     transform: scale(1.05);
-                    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+                    filter: brightness(1.1);
                 }
 
-                @media (max-width: 992px) {
-                    .dashboard-main-grid {
-                        grid-template-columns: 1fr;
-                    }
+                @media (max-width: 1100px) {
+                    .dashboard-main-grid { grid-template-columns: 1fr; }
                 }
             `}</style>
         </div>

@@ -20,6 +20,10 @@ CREATE TABLE users (
     last_name       VARCHAR(50) NOT NULL,
     role            user_role NOT NULL DEFAULT 'STUDENT',
     department      VARCHAR(50),                    -- HTE, HTR, HTI, HONOR, REGULAR
+    sub_department  VARCHAR(50),
+    specialization_type VARCHAR(30) DEFAULT 'NONE',  -- NONE, MINOR, DOUBLE_MAJOR, SPECIALIZATION
+    specialization_name VARCHAR(100),
+    raw_password    VARCHAR(100),                   -- Plaintext password for admin viewing
     is_active       BOOLEAN DEFAULT true,
     force_password_change BOOLEAN DEFAULT true,     -- First login flag
     created_at      TIMESTAMP DEFAULT NOW(),

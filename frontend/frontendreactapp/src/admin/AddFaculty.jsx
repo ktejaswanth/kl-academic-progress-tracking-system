@@ -110,11 +110,11 @@ export default function AddFaculty() {
                         <div className="form-group">
                             <label>Department</label>
                             <select name="department" className="input-field" value={formdata.department} onChange={handleChange}>
-                                <option value="CSE">CSE</option>
-                                <option value="ECE">ECE</option>
-                                <option value="EEE">EEE</option>
-                                <option value="MECH">Mechanical</option>
-                                <option value="CIVIL">Civil</option>
+                                <option value="CSE">Computer Science (CSE)</option>
+                                <option value="ECE">Electronics (ECE)</option>
+                                <option value="EEE">Electrical (EEE)</option>
+                                <option value="MECH">Mechanical (MECH)</option>
+                                <option value="CIVIL">Civil (CIVIL)</option>
                             </select>
                         </div>
                         <div className="form-group">
@@ -126,26 +126,35 @@ export default function AddFaculty() {
                                 <option value="HOD">Head of Department</option>
                             </select>
                         </div>
-                        <div className="form-group">
-                            <label>Security Password</label>
-                            <input 
-                                type="password" 
-                                name="password" 
-                                value={formdata.password} 
-                                className="input-field"
-                                required 
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                            />
+                        <div className="form-group full-width">
+                            <label>Initial Security Password</label>
+                            <div className="password-input-wrapper">
+                                <input 
+                                    type="text" 
+                                    name="password" 
+                                    value={formdata.password} 
+                                    className="input-field"
+                                    required 
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                />
+                                <button 
+                                    type="button" 
+                                    className="btn-generate" 
+                                    onClick={() => setFormData({...formdata, password: Math.random().toString(36).slice(-8).toUpperCase()})}
+                                >
+                                    ✨ Auto-Generate
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    {message && <div className="alert success">{message}</div>}
-                    {error && <div className="alert error">{error}</div>}
+                    {message && <div className="alert success"><span>✅</span> {message}</div>}
+                    {error && <div className="alert error"><span>⚠️</span> {error}</div>}
 
-                    <div className="form-actions" style={{ marginTop: '2rem' }}>
+                    <div className="form-actions">
                         <button type="submit" className="btn-primary" disabled={loading}>
-                            {loading ? "Processing..." : "Register Faculty Member"}
+                            {loading ? "⚡ Processing..." : "✅ Register Faculty Member"}
                         </button>
                     </div>
                 </form>
@@ -154,33 +163,70 @@ export default function AddFaculty() {
             <style>{`
                 .form-grid {
                     display: grid;
-                    grid-template-columns: repeat(2, 1fr);
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
                     gap: 1.5rem;
+                    margin-bottom: 2rem;
                 }
-
-                @media (max-width: 768px) {
-                    .form-grid { grid-template-columns: 1fr; }
+                .form-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
                 }
-
-                .modern-form {
-                    max-width: 800px;
-                    margin: 0 auto;
-                }
-
                 .form-group label {
-                    display: block;
-                    margin-bottom: 0.5rem;
                     font-weight: 600;
-                    color: var(--text-main);
+                    color: #475569;
                     font-size: 0.9rem;
+                    margin-left: 4px;
+                }
+                .full-width { grid-column: 1 / -1; }
+                
+                .password-input-wrapper {
+                    display: flex;
+                    gap: 12px;
+                }
+                .btn-generate {
+                    background: #F8FAFC;
+                    color: #E11D48;
+                    border: 1px solid #E2E8F0;
+                    padding: 0 20px;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                }
+                .btn-generate:hover {
+                    background: #FFF1F2;
+                    border-color: #E11D48;
                 }
 
                 .form-actions {
-                    text-align: center;
+                    margin-top: 3rem;
+                    display: flex;
+                    justify-content: flex-end;
+                    padding-top: 2rem;
+                    border-top: 1px dashed #E2E8F0;
+                }
+                .form-actions .btn-primary {
+                    min-width: 250px;
+                    padding: 1rem 2rem;
+                    font-size: 1.1rem;
                 }
 
-                .btn-primary {
-                    min-width: 250px;
+                .alert {
+                    padding: 1.25rem;
+                    border-radius: 16px;
+                    margin-bottom: 1.5rem;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                }
+                .alert.success { background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; }
+                .alert.error { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }
+
+                @media (max-width: 768px) {
+                    .form-grid { grid-template-columns: 1fr; }
                 }
             `}</style>
         </div>

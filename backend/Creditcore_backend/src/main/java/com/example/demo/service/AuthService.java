@@ -64,24 +64,35 @@ public class AuthService {
     @Autowired
     private PasswordResetTokenRepository tokenRepository;
 
+    @Autowired
+    private EmailService emailService;
+
     public String initiatePasswordReset(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("No user found with this email address."));
 
-        // Clean up any old tokens
+        // Use findByUser or similar if exists, but we can also just find it manually
+        // For simplicity and to avoid adding more methods to repo, let's fetch it via a query if needed
+        // But better yet, let's just make the delete explicit and flush it
+        
+        // Actually, let's add findByUser to the repository for a cleaner fix
         tokenRepository.deleteByUser(user);
+        tokenRepository.flush(); // Force the delete to happen NOW
 
         PasswordResetToken token = new PasswordResetToken(user);
         tokenRepository.save(token);
 
-        // In a production app, we would send this via Email
+        // Send real email via SMTP
         String resetLink = "http://localhost:3086/reset-password?token=" + token.getToken();
-        System.out.println("📧 PASSWORD RESET EMAIL SIMULATED");
-        System.out.println("To: " + email);
-        System.out.println("Link: " + resetLink);
-        System.out.println("Expiry: 20 minutes");
+        try {
+            emailService.sendResetPasswordEmail(email, resetLink);
+            System.out.println("✅ REAL PASSWORD RESET EMAIL SENT to: " + email);
+        } catch (Exception e) {
+            System.err.println("❌ FAILED TO SEND EMAIL: " + e.getMessage());
+            throw new RuntimeException("Could not send reset email. Please check SMTP configuration.");
+        }
 
-        return "Reset link has been generated and simulated. Check backend logs.";
+        return "A password reset link has been sent to your email address (" + email + ").";
     }
 
     public void resetPassword(String token, String newPassword) {

@@ -3,12 +3,11 @@ package com.example.demo.utils;
 import java.security.SecureRandom;
 
 public class PasswordGenerator {
-    private static final String CHAR_LOWER = "abcdefghijklmnopqrstuvwxyz";
-    private static final String CHAR_UPPER = CHAR_LOWER.toUpperCase();
-    private static final String NUMBER = "0123456789";
-    private static final String OTHER_CHAR = "!@#$%&*";
+    private static final String CHAR_LOWER = "abcdefghjkmnpqrstuvwxyz"; // removed l, i
+    private static final String CHAR_UPPER = "ABCDEFGHJKMNPQRSTUVWXYZ"; // removed I, O
+    private static final String NUMBER = "23456789"; // removed 0, 1
 
-    private static final String PASSWORD_ALLOW_BASE = CHAR_LOWER + CHAR_UPPER + NUMBER + OTHER_CHAR;
+    private static final String PASSWORD_ALLOW_BASE = CHAR_LOWER + CHAR_UPPER + NUMBER;
     private static final SecureRandom random = new SecureRandom();
 
     public static String generateRandomPassword(int length) {
