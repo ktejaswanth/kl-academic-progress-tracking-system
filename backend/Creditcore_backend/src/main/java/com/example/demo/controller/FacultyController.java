@@ -1,43 +1,50 @@
 package com.example.demo.controller;
 
+import com.example.demo.model.UploadHistory;
+import com.example.demo.model.User;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.service.BulkUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.demo.model.Faculty;
-import com.example.demo.service.FacultyService;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("facultyapi")
-@CrossOrigin("*")
+@RequestMapping("/api/faculty")
 public class FacultyController {
 
-	@Autowired
-	private FacultyService facultyService;
-	
-	@PostMapping("/login")
-	public ResponseEntity<?> checkfacultylogin(@RequestBody Faculty f) 
-	{
-		try
-		{
-			Faculty faculty = facultyService.checkFacultyLogin(f);
-			if (faculty != null) 
-			{
-				return ResponseEntity.status(200).body(faculty);
-			}
-			else 
-			{
-				return ResponseEntity.status(401).body("Faculty Login Failed");
-			}
-		}
-		catch(Exception e)
-		{
-			return ResponseEntity.status(500).body(e.getMessage());
-		}
+    @Autowired
+    private BulkUploadService bulkUploadService;
 
-	}
+    @Autowired
+    private UserRepository userRepository;
+
+    @PostMapping("/upload-students")
+    public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User uploadedBy = userRepository.findByUsername(username).orElseThrow();
+
+        try {
+            UploadHistory history = bulkUploadService.processBulkUpload(file, uploadedBy);
+            return ResponseEntity.ok(history);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Upload failed: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/download-credentials/{uploadId}")
+    public ResponseEntity<byte[]> downloadCredentials(@PathVariable Long uploadId) {
+        try {
+            byte[] excelContent = bulkUploadService.generateCredentialsExcel(uploadId);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=credentials_" + uploadId + ".xlsx")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(excelContent);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

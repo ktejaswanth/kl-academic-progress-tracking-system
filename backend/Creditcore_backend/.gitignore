@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Docker ###
+.dockerignore
+Dockerfile
+
+### Secrets ###
+.env

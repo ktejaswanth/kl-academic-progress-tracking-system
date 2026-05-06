@@ -1,0 +1,19 @@
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+.env
+
+# Node
+node_modules/
+
+# Java
+target/
+build/
+.mvn/

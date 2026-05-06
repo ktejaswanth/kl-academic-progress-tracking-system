@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: ./backend/Creditcore_backend
+    ports:
+      - "8086:8086"
+    environment:
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend/frontendreactapp
+    ports:
+      - "3086:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8086
+    restart: always
+    depends_on:
+      - backend

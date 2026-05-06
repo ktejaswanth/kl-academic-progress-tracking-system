@@ -1,4 +1,4 @@
-import axios from 'axios'
+import api from '../api'
 import React, { useState } from 'react'
 
 export default function AddFaculty() {
@@ -25,7 +25,7 @@ export default function AddFaculty() {
       try
       {
        e.preventDefault()
-       const response = await axios.post("http://localhost:1236/adminapi/addfaculty",formdata)
+       const response = await api.post("/adminapi/addfaculty",formdata)
        if(response.status === 201)
        {
         setError("")

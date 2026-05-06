@@ -1,40 +1,35 @@
-import { BrowserRouter as Router } from "react-router-dom"
-import { useEffect, useState } from "react"
-
-import NavBar from "./pages/NavBar"
-import AdminNavBar from "./admin/AdminNavBar"
-import FacultyNavBar from "./Faculty/FacultyNavBar"
-import StudentNavBar from "./student/StudentNavBar"
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import Login from './pages/Login';
+import BulkUpload from './pages/faculty/BulkUpload';
+import AdminNavBar from './admin/AdminNavBar';
+// import StudentNavBar from './student/StudentNavBar';
 
 function App() {
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [isFaculty, setIsFaculty] = useState(false)
-  const [isStudent, setIsStudent] = useState(false)
-
-  useEffect(() => {
-    setIsAdmin(sessionStorage.getItem("isAdmin") === "true")
-    setIsFaculty(sessionStorage.getItem("isFaculty") === "true")
-    setIsStudent(sessionStorage.getItem("isStudent") === "true")
-  }, [])
-
   return (
     <Router>
-      <div>
-        <h1 style={{ textAlign: "center" }}>Welcome to Credit Core</h1>
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Navigate to="/login" />} />
 
-        {/* Role-based rendering */}
-        {isAdmin ? (
-          <AdminNavBar />
-        ) : isFaculty ? (
-          <FacultyNavBar />
-        ) : isStudent ? (
-          <StudentNavBar />
-        ) : (
-          <NavBar />
-        )}
-      </div>
+          {/* Super Admin Routes */}
+          <Route path="/super_admin/*" element={<AdminNavBar />} />
+
+          {/* Faculty Routes */}
+          <Route path="/faculty/upload" element={<BulkUpload />} />
+
+          {/* Student Routes */}
+          {/* <Route path="/student/*" element={<StudentNavBar />} /> */}
+
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </AuthProvider>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;
