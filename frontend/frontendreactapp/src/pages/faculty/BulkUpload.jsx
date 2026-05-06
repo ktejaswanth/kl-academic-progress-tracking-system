@@ -10,6 +10,7 @@ export default function BulkUpload() {
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
 
+
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         setFile(selectedFile);
@@ -66,6 +67,24 @@ export default function BulkUpload() {
         XLSX.writeFile(workbook, `Student_Credentials_${new Date().getTime()}.xlsx`);
     };
 
+    const downloadDemoSheet = () => {
+        const demoData = [
+            {
+                "NAME": "John Doe",
+                "ID NUMBER": "2100030001",
+                "MAIL ID": "johndoe@kluniversity.in",
+                "DEPARTMENT": "CSE",
+                "SUB DEPT": "Software Engineering",
+                "SPEC. TYPE": "Specialization",
+                "SPEC. NAME": "Cloud Computing"
+            }
+        ];
+        const worksheet = XLSX.utils.json_to_sheet(demoData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
+        XLSX.writeFile(workbook, "Bulk_Student_Registration_Template.xlsx");
+    };
+
     return (
         <div className="bulk-upload-container">
             <header className="page-header">
@@ -75,10 +94,19 @@ export default function BulkUpload() {
 
             <div className="upload-card">
                 <div className="format-guide">
-                    <h3>
-                        <span style={{fontSize: '1.5rem'}}>📋</span> 
-                        Excel Template Guide
-                    </h3>
+                    <div className="guide-actions" style={{ marginBottom: '1.5rem', display: 'flex', gap: '15px', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <h3 style={{ margin: 0 }}>
+                            <span style={{ fontSize: '1.5rem' }}>📋</span> 
+                            Excel Template Guide
+                        </h3>
+                        <button 
+                            type="button" 
+                            onClick={downloadDemoSheet} 
+                            className="demo-download-btn"
+                        >
+                            📥 Download Demo Excel Template
+                        </button>
+                    </div>
                     <p>Ensure your Excel file has these exact columns in order:</p>
                     <div className="column-pills">
                         <span className="pill">NAME</span>
@@ -233,6 +261,27 @@ export default function BulkUpload() {
                     border: 1px solid #E2E8F0;
                     text-transform: uppercase;
                     letter-spacing: 0.05em;
+                }
+
+                .demo-download-btn {
+                    background: #FFF1F2;
+                    color: #E11D48;
+                    border: 1px solid #FECACA;
+                    padding: 10px 18px;
+                    border-radius: 10px;
+                    font-weight: 700;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .demo-download-btn:hover {
+                    background: #E11D48;
+                    color: white;
+                    border-color: #E11D48;
+                    transform: translateY(-2px);
                 }
 
                 .file-drop-area {
