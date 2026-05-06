@@ -2,14 +2,14 @@ import React from 'react';
 
 export default function AdminDashboard() {
     const stats = [
-        { label: 'Total Students', value: '1,248', icon: '🎓', color: '#e11d48' },
-        { label: 'Active Faculty', value: '42', icon: '👨‍🏫', color: '#9f1239' },
-        { label: 'Pending Audits', value: '156', icon: '📄', color: '#f43f5e' },
-        { label: 'System Health', value: '99.9%', icon: '⚡', color: '#ef4444' },
+        { label: 'Total Students', value: '1,248', icon: '🎓', color: '#8B0000' },
+        { label: 'Active Faculty', value: '42', icon: '🏫', color: '#8B0000' },
+        { label: 'Pending Audits', value: '156', icon: '📄', color: '#8B0000' },
+        { label: 'System Health', value: '99.9%', icon: '⚡', color: '#8B0000' },
     ];
 
     return (
-        <div className="dashboard-container">
+        <div className="dashboard-container animate-fade">
             <header className="dashboard-header">
                 <h2>Overview Dashboard</h2>
                 <p>Real-time analytics and management summary.</p>
@@ -17,7 +17,7 @@ export default function AdminDashboard() {
 
             <div className="stats-grid">
                 {stats.map((stat, index) => (
-                    <div key={index} className="stat-card-premium" style={{ '--accent': stat.color }}>
+                    <div key={index} className="stat-card-premium">
                         <div className="stat-icon-wrapper">
                             <span className="stat-icon-large">{stat.icon}</span>
                         </div>
@@ -26,7 +26,7 @@ export default function AdminDashboard() {
                             <span className="stat-label-muted">{stat.label}</span>
                         </div>
                         <div className="stat-progress-bar">
-                            <div className="progress-fill" style={{ width: '70%' }}></div>
+                            <div className="progress-fill" style={{ width: index % 2 === 0 ? '60%' : '85%' }}></div>
                         </div>
                     </div>
                 ))}
@@ -59,99 +59,157 @@ export default function AdminDashboard() {
                     <div className="promo-content">
                         <h3>Identity Management</h3>
                         <p>Generate secure credentials and manage academic audits with one click.</p>
-                        <button className="btn-primary">View Reports</button>
+                        <button className="btn-reports">View Reports</button>
                     </div>
-                    <div className="promo-visual">🚀</div>
                 </div>
             </div>
 
             <style>{`
+                .dashboard-container {
+                    padding: 1rem;
+                }
                 .dashboard-header { margin-bottom: 2.5rem; }
-                .dashboard-header h2 { font-size: 2rem; color: var(--deep-red); font-weight: 800; }
+                .dashboard-header h2 { 
+                    font-size: 2.4rem; 
+                    color: #8B0000; 
+                    font-weight: 800; 
+                    margin-bottom: 4px;
+                    letter-spacing: -0.5px;
+                }
+                .dashboard-header p {
+                    color: #636E72;
+                    font-weight: 500;
+                }
                 
                 .stats-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
                     gap: 1.5rem;
-                    margin-bottom: 3rem;
+                    margin-bottom: 3.5rem;
                 }
 
                 .stat-card-premium {
                     background: white;
-                    padding: 1.5rem;
-                    border-radius: 20px;
-                    border: 1px solid var(--border);
-                    position: relative;
-                    overflow: hidden;
-                    transition: transform 0.3s;
+                    padding: 2rem 1.5rem;
+                    border-radius: 24px;
+                    border: 1px solid #E9ECEF;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
 
-                .stat-card-premium:hover { transform: translateY(-5px); }
+                .stat-card-premium:hover { 
+                    transform: translateY(-8px);
+                    box-shadow: 0 12px 30px rgba(139,0,0,0.08);
+                    border-color: #F8D7DA;
+                }
 
                 .stat-icon-wrapper {
-                    width: 50px;
-                    height: 50px;
-                    background: var(--soft-red);
-                    border-radius: 12px;
+                    width: 54px;
+                    height: 54px;
+                    background: #FFF5F5;
+                    border-radius: 14px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin-bottom: 1rem;
+                    margin-bottom: 1.5rem;
                 }
 
                 .stat-icon-large { font-size: 1.5rem; }
                 
-                .stat-details { display: flex; flex-direction: column; }
-                .stat-value-large { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
-                .stat-label-muted { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
+                .stat-details { display: flex; flex-direction: column; gap: 4px; }
+                .stat-value-large { font-size: 2.2rem; font-weight: 800; color: #2D3436; }
+                .stat-label-muted { color: #636E72; font-size: 0.95rem; font-weight: 600; }
 
                 .stat-progress-bar {
-                    height: 4px;
-                    background: var(--border);
-                    border-radius: 2px;
-                    margin-top: 1rem;
+                    height: 5px;
+                    background: #F1F3F5;
+                    border-radius: 10px;
+                    margin-top: 1.5rem;
+                    overflow: hidden;
                 }
 
                 .progress-fill {
                     height: 100%;
-                    background: var(--accent);
-                    border-radius: 2px;
+                    background: #8B0000;
+                    border-radius: 10px;
                 }
 
                 .dashboard-main-grid {
                     display: grid;
-                    grid-template-columns: 1.5fr 1fr;
+                    grid-template-columns: 1.6fr 1fr;
                     gap: 2rem;
                 }
 
                 .dashboard-card {
                     background: white;
-                    padding: 2rem;
-                    border-radius: 24px;
-                    border: 1px solid var(--border);
+                    padding: 2.5rem;
+                    border-radius: 28px;
+                    border: 1px solid #E9ECEF;
                 }
 
-                .activity-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
-                .activity-item { display: flex; gap: 1rem; }
-                .activity-dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 5px; }
-                .activity-dot.success { background: #10b981; }
-                .activity-dot.warning { background: var(--primary-red); }
+                .dashboard-card h3 {
+                    font-size: 1.3rem;
+                    font-weight: 800;
+                    color: #2D3436;
+                    margin-bottom: 2rem;
+                }
+
+                .activity-list { display: flex; flex-direction: column; gap: 2rem; }
+                .activity-item { display: flex; gap: 1.2rem; align-items: flex-start; }
+                .activity-dot { width: 14px; height: 14px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+                .activity-dot.success { background: #00B894; box-shadow: 0 0 0 4px #E6F8F4; }
+                .activity-dot.warning { background: #8B0000; box-shadow: 0 0 0 4px #FCE8E8; }
                 
-                .activity-info strong { display: block; font-size: 1rem; color: var(--text-main); }
-                .activity-info p { font-size: 0.9rem; color: var(--text-muted); }
-                .activity-time { font-size: 0.8rem; color: var(--primary-red); font-weight: 600; }
+                .activity-info strong { display: block; font-size: 1.05rem; color: #2D3436; margin-bottom: 2px; }
+                .activity-info p { font-size: 0.95rem; color: #636E72; margin-bottom: 6px; }
+                .activity-time { font-size: 0.85rem; color: #8B0000; font-weight: 700; }
 
                 .promo-card {
-                    background: linear-gradient(135deg, var(--primary-red) 0%, var(--deep-red) 100%);
+                    background: #8B0000;
                     color: white;
                     display: flex;
-                    align-items: center;
-                    justify-content: space-between;
+                    flex-direction: column;
+                    justify-content: center;
+                    position: relative;
+                    overflow: hidden;
                 }
-                .promo-content h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-                .promo-content p { font-size: 0.95rem; opacity: 0.9; margin-bottom: 1.5rem; }
-                .promo-content .btn-primary { background: white; color: var(--primary-red); }
-                .promo-visual { font-size: 4rem; opacity: 0.2; }
+                
+                .promo-card::before {
+                    content: '';
+                    position: absolute;
+                    top: -50px;
+                    right: -50px;
+                    width: 150px;
+                    height: 150px;
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 50%;
+                }
+
+                .promo-content h3 { color: white !important; font-size: 1.8rem; margin-bottom: 1rem; }
+                .promo-content p { font-size: 1rem; opacity: 0.9; margin-bottom: 2rem; line-height: 1.6; }
+                
+                .btn-reports { 
+                    background: white; 
+                    color: #8B0000; 
+                    border: none;
+                    padding: 12px 28px;
+                    border-radius: 12px;
+                    font-weight: 700;
+                    font-size: 0.95rem;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                }
+                
+                .btn-reports:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+                }
+
+                @media (max-width: 992px) {
+                    .dashboard-main-grid {
+                        grid-template-columns: 1fr;
+                    }
+                }
             `}</style>
         </div>
     );
