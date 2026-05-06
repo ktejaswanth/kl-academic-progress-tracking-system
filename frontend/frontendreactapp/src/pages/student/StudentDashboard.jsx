@@ -22,69 +22,100 @@ export default function StudentDashboard() {
     }, []);
 
     if (loading) return (
-        <div className="loader-container">
-            <div className="loader"></div>
-            <p>Analyzing Academic Progress...</p>
+        <div className="student-loader-container">
+            <div className="premium-loader"></div>
+            <p>Analyzing Academic Records...</p>
         </div>
     );
 
     if (error) return <div className="student-dashboard"><div className="alert error">{error}</div></div>;
 
-    const radius = 90;
+    const radius = 85;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (progress?.completionPercentage / 100) * circumference;
 
     return (
-        <div className="student-dashboard">
-            <header className="page-header">
-                <h1>Academic Progress Tracker</h1>
-                <p>Welcome, <strong>{progress.studentName}</strong>. You are enrolled in <strong>{progress.degree} ({progress.specialization})</strong>.</p>
+        <div className="student-dashboard animate-fade">
+            <header className="student-hero">
+                <div className="hero-content">
+                    <span className="welcome-tag">Student Overview</span>
+                    <h1>Welcome Back, <span className="highlight">{progress.studentName}</span></h1>
+                    <p>{progress.degree} • {progress.specialization} • Batch of 2025</p>
+                </div>
+                <div className="hero-stats">
+                    <div className="hero-stat-card">
+                        <span className="label">GPA</span>
+                        <span className="value">3.82</span>
+                    </div>
+                    <div className="hero-stat-card">
+                        <span className="label">Rank</span>
+                        <span className="value">#12</span>
+                    </div>
+                </div>
             </header>
 
-            <div className="dashboard-grid">
-                {/* Summary Card with Circle Progress */}
-                <div className="summary-card">
-                    <h3>Overall Completion</h3>
-                    <div className="progress-circle-container">
-                        <svg className="progress-circle-svg" width="220" height="220">
-                            <circle className="progress-circle-bg" cx="110" cy="110" r={radius} />
-                            <circle 
-                                className="progress-circle-fill" 
-                                cx="110" cy="110" r={radius} 
-                                style={{ strokeDasharray: circumference, strokeDashoffset: offset }}
-                            />
-                        </svg>
-                        <div className="progress-text">
-                            <span className="percentage">{progress.completionPercentage}%</span>
-                            <span className="label">Complete</span>
-                        </div>
+            <div className="student-grid-layout">
+                {/* Visual Completion Card */}
+                <div className="glass-card main-progress">
+                    <div className="card-header">
+                        <h3>Degree Completion</h3>
+                        <span className="badge-outline">Live Sync</span>
                     </div>
                     
-                    <div className="stats-row">
-                        <div className="mini-stat">
-                            <span className="val">{progress.totalCreditsCompleted}</span>
-                            <span className="lbl">Earned</span>
+                    <div className="circular-container">
+                        <svg width="240" height="240" viewBox="0 0 240 240">
+                            <defs>
+                                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style={{stopColor: '#8B0000', stopOpacity: 1}} />
+                                    <stop offset="100%" style={{stopColor: '#D32F2F', stopOpacity: 1}} />
+                                </linearGradient>
+                            </defs>
+                            <circle className="circle-bg" cx="120" cy="120" r={radius} />
+                            <circle 
+                                className="circle-progress" 
+                                cx="120" cy="120" r={radius} 
+                                style={{ 
+                                    strokeDasharray: circumference, 
+                                    strokeDashoffset: offset,
+                                    stroke: 'url(#grad1)'
+                                }}
+                            />
+                        </svg>
+                        <div className="inner-text">
+                            <span className="big-percent">{progress.completionPercentage}%</span>
+                            <span className="sub-label">Audit Score</span>
                         </div>
-                        <div className="mini-stat">
-                            <span className="val">{progress.totalCreditsRequired}</span>
-                            <span className="lbl">Required</span>
+                    </div>
+
+                    <div className="credit-pills">
+                        <div className="pill">
+                            <strong>{progress.totalCreditsCompleted}</strong>
+                            <span>Earned</span>
+                        </div>
+                        <div className="pill dark">
+                            <strong>{progress.totalCreditsRequired}</strong>
+                            <span>Required</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Category Breakdown */}
-                <div className="categories-card">
-                    <h3>Credit Breakdown by Category</h3>
-                    <div className="category-list" style={{ marginTop: '2rem' }}>
+                {/* Categories Card */}
+                <div className="glass-card categories-breakdown">
+                    <div className="card-header">
+                        <h3>Academic Categories</h3>
+                        <p>Credit distribution across your curriculum</p>
+                    </div>
+                    
+                    <div className="category-scroll">
                         {Object.entries(progress.categorySummaries).map(([name, data]) => (
-                            <div key={name} className="category-item">
-                                <div className="category-info">
-                                    <h4>{name}</h4>
-                                    <span>{data.completed} / {data.required} Credits</span>
+                            <div key={name} className="cat-row">
+                                <div className="cat-meta">
+                                    <span className="cat-name">{name}</span>
+                                    <span className="cat-count">{data.completed}/{data.required}</span>
                                 </div>
-                                <div className="category-bar-bg">
+                                <div className="cat-progress-bg">
                                     <div 
-                                        className="category-bar-fill" 
+                                        className="cat-progress-fill" 
                                         style={{ width: `${data.percentage}%` }}
                                     ></div>
                                 </div>
@@ -94,16 +125,24 @@ export default function StudentDashboard() {
                 </div>
             </div>
 
-            {/* Course History Table */}
-            <div className="course-table-card">
-                <h3>Course History</h3>
-                <div className="table-wrapper" style={{ marginTop: '1.5rem' }}>
-                    <table className="modern-table">
+            {/* Course History Section */}
+            <section className="history-section">
+                <div className="section-header">
+                    <h2>Academic Transcript</h2>
+                    <div className="filters">
+                        <button className="filter-chip active">All Courses</button>
+                        <button className="filter-chip">Mandatory</button>
+                        <button className="filter-chip">Electives</button>
+                    </div>
+                </div>
+
+                <div className="transcript-card">
+                    <table className="transcript-table">
                         <thead>
                             <tr>
                                 <th>Code</th>
-                                <th>Course Name</th>
-                                <th>Semester</th>
+                                <th>Course Title</th>
+                                <th>Category</th>
                                 <th>Credits</th>
                                 <th>Grade</th>
                                 <th>Status</th>
@@ -111,29 +150,29 @@ export default function StudentDashboard() {
                         </thead>
                         <tbody>
                             {progress.completedCourses.map((course, idx) => (
-                                <tr key={idx}>
-                                    <td><code>{course.courseCode}</code></td>
+                                <tr key={idx} className="course-row">
+                                    <td><code className="code-pill">{course.courseCode}</code></td>
                                     <td><strong>{course.courseName}</strong></td>
-                                    <td>{course.semester}</td>
+                                    <td><span className="cat-tag">{course.category}</span></td>
                                     <td>{course.credits}</td>
-                                    <td><span className="grade-badge">{course.grade}</span></td>
-                                    <td><span className="status-badge completed">Completed</span></td>
+                                    <td><span className="grade-box">{course.grade}</span></td>
+                                    <td><span className="status-tag success">Pass</span></td>
                                 </tr>
                             ))}
                             {progress.missingMandatory.map((course, idx) => (
-                                <tr key={`missing-${idx}`}>
-                                    <td><code>{course.courseCode}</code></td>
-                                    <td style={{ color: 'var(--primary-red)' }}><strong>{course.courseName}</strong></td>
-                                    <td>-</td>
+                                <tr key={`missing-${idx}`} className="course-row pending">
+                                    <td><code className="code-pill">PENDING</code></td>
+                                    <td className="pending-text"><strong>{course.courseName}</strong></td>
+                                    <td><span className="cat-tag">{course.category}</span></td>
                                     <td>{course.credits}</td>
-                                    <td>-</td>
-                                    <td><span className="status-badge pending">Pending</span></td>
+                                    <td>—</td>
+                                    <td><span className="status-tag warning">Required</span></td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
         </div>
     );
 }

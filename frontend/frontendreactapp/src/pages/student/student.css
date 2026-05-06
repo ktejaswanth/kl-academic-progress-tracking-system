@@ -2,158 +2,165 @@
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
-    animation: fadeIn 0.8s ease-out;
 }
 
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 2rem;
-    margin-top: 2rem;
-}
-
-@media (max-width: 1024px) {
-    .dashboard-grid { grid-template-columns: 1fr; }
-}
-
-.summary-card {
-    background: white;
-    padding: 2.5rem;
-    border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    border: 1px solid var(--border);
-    text-align: center;
-}
-
-.progress-circle-container {
-    position: relative;
-    width: 220px;
-    height: 220px;
-    margin: 0 auto 2rem;
-}
-
-.progress-circle-svg {
-    transform: rotate(-90deg);
-}
-
-.progress-circle-bg {
-    fill: none;
-    stroke: var(--soft-red);
-    stroke-width: 12;
-}
-
-.progress-circle-fill {
-    fill: none;
-    stroke: var(--primary-red);
-    stroke-width: 12;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.progress-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.progress-text .percentage {
-    display: block;
-    font-size: 3rem;
-    font-weight: 800;
-    color: var(--deep-red);
-}
-
-.progress-text .label {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.stats-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.mini-stat {
-    padding: 1.5rem;
-    background: var(--off-white);
-    border-radius: 16px;
-    border: 1px solid var(--border);
-}
-
-.mini-stat span {
-    display: block;
-}
-
-.mini-stat .val {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--primary-red);
-}
-
-.mini-stat .lbl {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    font-weight: 600;
-}
-
-/* Category Progress Bars */
-.categories-card {
-    background: white;
-    padding: 2.5rem;
-    border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    border: 1px solid var(--border);
-}
-
-.category-item {
-    margin-bottom: 2rem;
-}
-
-.category-info {
+.student-hero {
+    background: linear-gradient(135deg, #8B0000 0%, #4A0000 100%);
+    padding: 3.5rem;
+    border-radius: 32px;
+    color: white;
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 20px 40px rgba(74, 0, 0, 0.2);
 }
 
-.category-info h4 {
-    color: var(--text-main);
+.hero-content h1 { font-size: 2.8rem; margin: 0.5rem 0; font-weight: 800; }
+.hero-content .highlight { color: #FFD700; } /* Golden name */
+.welcome-tag { 
+    background: rgba(255,255,255,0.1); 
+    padding: 6px 16px; 
+    border-radius: 20px; 
+    font-size: 0.85rem; 
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.category-bar-bg {
-    height: 10px;
-    background: var(--off-white);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.category-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary-red), var(--deep-red));
-    border-radius: 10px;
-    transition: width 1s ease-out;
-}
-
-.course-table-card {
-    margin-top: 3rem;
-    background: white;
-    padding: 2.5rem;
-    border-radius: 24px;
-    border: 1px solid var(--border);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-}
-
-.status-badge {
-    padding: 4px 12px;
+.hero-stats { display: flex; gap: 1.5rem; }
+.hero-stat-card {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem 2.5rem;
     border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 700;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.hero-stat-card .label { display: block; font-size: 0.8rem; opacity: 0.8; margin-bottom: 4px; }
+.hero-stat-card .value { font-size: 2rem; font-weight: 800; }
+
+.student-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
 }
 
-.status-badge.completed { background: #dcfce7; color: #166534; }
-.status-badge.pending { background: #fff7ed; color: #9a3412; }
+.glass-card {
+    background: white;
+    border-radius: 28px;
+    padding: 2.5rem;
+    border: 1px solid #E9ECEF;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+.card-header h3 { font-size: 1.4rem; font-weight: 800; color: #2D3436; }
+.badge-outline { 
+    border: 1.5px solid #8B0000; 
+    color: #8B0000; 
+    padding: 4px 12px; 
+    border-radius: 20px; 
+    font-size: 0.75rem; 
+    font-weight: 800; 
+}
+
+.circular-container {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: 0 auto 2.5rem;
+}
+
+.circle-bg { fill: none; stroke: #F8F9FA; stroke-width: 14; }
+.circle-progress { 
+    fill: none; 
+    stroke-width: 14; 
+    stroke-linecap: round; 
+    transition: stroke-dashoffset 2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.inner-text {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.inner-text .big-percent { display: block; font-size: 3.5rem; font-weight: 900; color: #8B0000; }
+.inner-text .sub-label { font-size: 0.9rem; color: #636E72; font-weight: 600; text-transform: uppercase; }
+
+.credit-pills { display: flex; gap: 1rem; }
+.pill {
+    flex: 1;
+    background: #FFF5F5;
+    padding: 1.2rem;
+    border-radius: 18px;
+    text-align: center;
+}
+.pill.dark { background: #8B0000; color: white; }
+.pill strong { display: block; font-size: 1.5rem; margin-bottom: 2px; }
+.pill span { font-size: 0.8rem; font-weight: 600; opacity: 0.8; }
+
+.category-scroll { display: flex; flex-direction: column; gap: 1.8rem; }
+.cat-meta { display: flex; justify-content: space-between; margin-bottom: 0.8rem; }
+.cat-name { font-weight: 700; color: #2D3436; }
+.cat-count { font-weight: 800; color: #8B0000; font-size: 0.9rem; }
+.cat-progress-bg { height: 10px; background: #F1F3F5; border-radius: 10px; overflow: hidden; }
+.cat-progress-fill { height: 100%; background: #8B0000; border-radius: 10px; transition: width 1.5s ease; }
+
+.history-section { margin-top: 1rem; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.section-header h2 { font-size: 1.8rem; font-weight: 800; color: #2D3436; }
+
+.filter-chip {
+    background: white; border: 1px solid #E9ECEF;
+    padding: 8px 20px; border-radius: 12px;
+    font-weight: 700; color: #636E72;
+    margin-left: 10px; cursor: pointer; transition: all 0.3s;
+}
+.filter-chip.active { background: #8B0000; color: white; border-color: #8B0000; }
+
+.transcript-card {
+    background: white; border-radius: 28px;
+    border: 1px solid #E9ECEF; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+.transcript-table { width: 100%; border-collapse: collapse; }
+.transcript-table th { 
+    background: #F8F9FA; padding: 1.2rem 2rem; 
+    text-align: left; font-size: 0.85rem; 
+    color: #636E72; font-weight: 800; 
+    text-transform: uppercase;
+}
+.course-row td { padding: 1.2rem 2rem; border-bottom: 1px solid #F1F3F5; font-size: 0.95rem; }
+.code-pill { background: #F1F3F5; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
+.cat-tag { color: #636E72; font-size: 0.85rem; font-weight: 600; }
+.grade-box { font-weight: 900; color: #8B0000; font-size: 1.1rem; }
+.status-tag { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; }
+.status-tag.success { background: #E6F8F4; color: #00B894; }
+.status-tag.warning { background: #FFF5F5; color: #8B0000; }
+
+.pending-text { color: #8B0000; }
+
+.student-loader-container {
+    height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+}
+.premium-loader {
+    width: 50px; height: 50px;
+    border: 4px solid #F1F3F5;
+    border-top: 4px solid #8B0000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1.5rem;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+@media (max-width: 1024px) {
+    .student-hero { flex-direction: column; text-align: center; gap: 2rem; }
+    .student-grid-layout { grid-template-columns: 1fr; }
+}
