@@ -106,6 +106,7 @@ public class AuthService {
 
         User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setRawPassword(newPassword);
         user.setForcePasswordChange(false);
         userRepository.save(user);
 
@@ -118,6 +119,7 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setRawPassword(newPassword);
         user.setForcePasswordChange(false);
         userRepository.save(user);
     }

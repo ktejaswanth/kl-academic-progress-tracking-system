@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import StudentDashboard from './StudentDashboard';
+import StudentProfile from './StudentProfile';
 import '../../admin/admin.css'; // Reusing layout styles
 
 export default function StudentNavBar() {
@@ -64,7 +65,7 @@ export default function StudentNavBar() {
                     <Routes>
                         <Route path="home" element={<StudentDashboard />} />
                         <Route path="courses" element={<div>Coming Soon: Detailed Course View</div>} />
-                        <Route path="profile" element={<div>Coming Soon: Student Profile Management</div>} />
+                        <Route path="profile" element={<StudentProfile />} />
                         <Route index element={<StudentDashboard />} />
                     </Routes>
                 </div>

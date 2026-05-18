@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import ChangePassword from './pages/ChangePassword';
 import AdminNavBar from './admin/AdminNavBar';
 import StudentNavBar from './pages/student/StudentNavBar';
 import FacultyNavBar from './pages/faculty/FacultyNavBar';
@@ -18,6 +19,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route 
+            path="/change-password" 
+            element={
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'FACULTY', 'STUDENT']}>
+                <ChangePassword />
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/" element={<Navigate to="/login" />} />
 
           {/* Super Admin Routes */}

@@ -93,8 +93,8 @@ public class BulkUploadService {
                 user.setPasswordHash(passwordEncoder.encode(rawPassword));
                 user.setRawPassword(rawPassword);
                 user.setRole(UserRole.STUDENT);
-                user.setDepartment(department.isEmpty() ? "REGULAR" : department);
-                user.setSubDepartment(subDept.isEmpty() ? "N/A" : subDept);
+                user.setDepartment(department.isEmpty() ? "N/A" : department);
+                user.setSubDepartment(subDept.isEmpty() ? "REGULAR" : subDept);
                 user.setSpecializationType(specType.isEmpty() ? "NONE" : specType.toUpperCase());
                 user.setSpecializationName(specName.isEmpty() ? "N/A" : specName);
                 user.setForcePasswordChange(true);

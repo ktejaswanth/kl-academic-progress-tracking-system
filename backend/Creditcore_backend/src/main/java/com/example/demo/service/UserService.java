@@ -2,7 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.model.User;
 import com.example.demo.model.UserRole;
+import com.example.demo.model.StudentProfile;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.StudentProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private StudentProfileRepository studentProfileRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -37,7 +42,19 @@ public class UserService {
             student.setRawPassword(student.getPassword());
         }
         student.setForcePasswordChange(true);
-        return userRepository.save(student);
+        User savedStudent = userRepository.save(student);
+
+        // Auto-create StudentProfile to prevent portal load crashes
+        StudentProfile profile = new StudentProfile();
+        profile.setUser(savedStudent);
+        profile.setDegreeType("B.Tech");
+        profile.setSpecialization(savedStudent.getDepartment() != null ? savedStudent.getDepartment() : "CSE");
+        profile.setHonorsType(savedStudent.getSubDepartment() != null ? savedStudent.getSubDepartment() : "REGULAR");
+        profile.setCurrentYear(1);
+        profile.setAdmissionYear(java.time.LocalDate.now().getYear());
+        studentProfileRepository.save(profile);
+
+        return savedStudent;
     }
 
     public List<User> getAllUsers() {
