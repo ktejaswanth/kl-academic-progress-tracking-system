@@ -1,0 +1,49 @@
+# =============================================================================
+# CodeRabbit AI Configuration
+# Documentation: https://docs.coderabbit.ai/configuration
+# =============================================================================
+
+language: "en-US"
+
+# Tone & Style of reviews
+tone_instructions: >
+  Be professional, constructive, and concise. Focus on actionable suggestions.
+  Highlight security concerns, performance issues, and best practices.
+
+# Review settings
+reviews:
+  # Automatically review every PR (no need to tag @coderabbitai)
+  auto_review:
+    enabled: true
+    # Ignore drafts until they're marked ready
+    drafts: false
+
+  # Generate a high-level summary/walkthrough for each PR
+  request_changes_workflow: true
+
+  # Review profile — "chill" for balanced feedback, "assertive" for strict
+  profile: "chill"
+
+  # Path-based filters — exclude files that don't need AI review
+  path_filters:
+    - "!node_modules/**"
+    - "!**/node_modules/**"
+    - "!target/**"
+    - "!**/target/**"
+    - "!**/*.lock"
+    - "!**/package-lock.json"
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+    - "!**/.mvn/**"
+    - "!**/dist/**"
+    - "!**/build/**"
+
+  # Tools to use during review
+  tools:
+    # Enable AST-based analysis
+    ast_grep:
+      enabled: true
+
+# Chat settings — allow devs to interact with CodeRabbit in PR comments
+chat:
+  auto_reply: true

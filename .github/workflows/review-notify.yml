@@ -1,0 +1,71 @@
+# =============================================================================
+# 📧 PR Review Email Notification
+# Sends email when a PR review is submitted (includes CodeRabbit AI reviews)
+# =============================================================================
+
+name: "📧 PR Review Notification"
+
+# ─── Trigger: When any PR review is submitted ────────────────────────────────
+on:
+  pull_request_review:
+    types: [submitted]
+
+# ─── Jobs ────────────────────────────────────────────────────────────────────
+jobs:
+  review-notify:
+    name: "📧 Notify on PR Review"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "📧 Send Review Notification Email"
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          secure: true
+          username: ${{ secrets.EMAIL_USER }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: "🔍 PR Review: ${{ github.event.review.state }} — #${{ github.event.pull_request.number }}"
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: "Review Bot <${{ secrets.EMAIL_USER }}>"
+          html_body: |
+            <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
+              <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">🔍 PR Review Submitted</h1>
+              </div>
+              <div style="padding: 24px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                  <tr>
+                    <td style="padding: 8px 12px; font-weight: bold; color: #374151;">Pull Request</td>
+                    <td style="padding: 8px 12px; color: #6b7280;">#${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}</td>
+                  </tr>
+                  <tr style="background: #f9fafb;">
+                    <td style="padding: 8px 12px; font-weight: bold; color: #374151;">Reviewer</td>
+                    <td style="padding: 8px 12px; color: #6b7280;">${{ github.event.review.user.login }}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 12px; font-weight: bold; color: #374151;">Review State</td>
+                    <td style="padding: 8px 12px;">
+                      <strong style="color: #6366f1;">${{ github.event.review.state }}</strong>
+                    </td>
+                  </tr>
+                  <tr style="background: #f9fafb;">
+                    <td style="padding: 8px 12px; font-weight: bold; color: #374151;">Branch</td>
+                    <td style="padding: 8px 12px; color: #6b7280;">${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 12px; font-weight: bold; color: #374151;">Author</td>
+                    <td style="padding: 8px 12px; color: #6b7280;">${{ github.event.pull_request.user.login }}</td>
+                  </tr>
+                </table>
+                <div style="text-align: center; margin-top: 20px;">
+                  <a href="${{ github.event.review.html_url }}"
+                     style="display: inline-block; padding: 10px 24px; background: #6366f1; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                    View Review →
+                  </a>
+                </div>
+              </div>
+              <div style="background: #f9fafb; padding: 12px; text-align: center; font-size: 12px; color: #9ca3af;">
+                KL Academic Progress Tracking System — AI Code Review Pipeline
+              </div>
+            </div>

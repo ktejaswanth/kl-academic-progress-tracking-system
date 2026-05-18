@@ -23,6 +23,21 @@
     *   Implemented **Protected Routes** to securely partition content between Students, Faculty, and Admins.
     *   Streamlined API communication using a relative `/api` path.
 
+## 🤖 AI-Powered CI/CD Pipeline
+1.  **CodeRabbit AI Integration**:
+    *   Integrated **CodeRabbit AI** from GitHub Marketplace for automated Pull Request code reviews.
+    *   Configured `.coderabbit.yaml` with path filters, auto-review, and professional review tone.
+    *   AI generates PR summaries, walkthroughs, security analysis, and actionable suggestions.
+2.  **GitHub Actions CI Pipeline**:
+    *   **Backend Job**: Maven compile, unit tests, and JAR packaging (Java 21, Temurin).
+    *   **Frontend Job**: npm install, ESLint linting, and Vite production build (Node 20).
+    *   **Docker Job**: Docker Compose validation and image build verification.
+    *   Triggers on `push` to `main` and on `pull_request` targeting `main`.
+3.  **Email Notification System**:
+    *   Automated **success/failure emails** with premium HTML templates via Gmail SMTP.
+    *   **PR Review notifications** sent when CodeRabbit or team members submit reviews.
+    *   Emails include repository info, commit details, job results, and direct workflow links.
+
 ## ✅ Current Status: PRODUCTION READY
 *   **Backend**: 100% Operational (Security, Audit Engine, Identity Management).
 *   **Frontend**: 100% Operational (Dashboards, Recovery Flow, Responsive UI).
