@@ -7,8 +7,8 @@ export default function AddStudent() {
         firstName: "",
         lastName: "",
         email: "",
-        department: "REGULAR",
-        subDepartment: "",
+        department: "",
+        subDepartment: "REGULAR",
         specializationType: "NONE",
         specializationName: "",
         password: ""
@@ -40,8 +40,8 @@ export default function AddStudent() {
                 firstName: "",
                 lastName: "",
                 email: "",
-                department: "REGULAR",
-                subDepartment: "",
+                department: "",
+                subDepartment: "REGULAR",
                 specializationType: "NONE",
                 specializationName: "",
                 password: ""
@@ -113,24 +113,25 @@ export default function AddStudent() {
                         </div>
                         <div className="form-group">
                             <label>Department</label>
-                            <select name="department" className="input-field" value={formdata.department} onChange={handleChange}>
+                            <input 
+                                type="text" 
+                                name="department" 
+                                value={formdata.department} 
+                                className="input-field"
+                                required 
+                                onChange={handleChange}
+                                placeholder="e.g. CSE, AIDS"
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Sub-Department</label>
+                            <select name="subDepartment" className="input-field" value={formdata.subDepartment} onChange={handleChange}>
                                 <option value="REGULAR">Regular</option>
                                 <option value="HONOR">Honors</option>
                                 <option value="HTE">HTE</option>
                                 <option value="HTR">HTR</option>
                                 <option value="HTI">HTI</option>
                             </select>
-                        </div>
-                        <div className="form-group">
-                            <label>Sub-Department</label>
-                            <input 
-                                type="text" 
-                                name="subDepartment" 
-                                value={formdata.subDepartment} 
-                                className="input-field"
-                                onChange={handleChange}
-                                placeholder="e.g. AI & ML"
-                            />
                         </div>
                         <div className="form-group">
                             <label>Specialization Type</label>

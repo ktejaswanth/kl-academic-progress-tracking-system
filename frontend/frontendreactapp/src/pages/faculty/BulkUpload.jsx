@@ -74,7 +74,7 @@ export default function BulkUpload() {
                 "ID NUMBER": "2100030001",
                 "MAIL ID": "johndoe@kluniversity.in",
                 "DEPARTMENT": "CSE",
-                "SUB DEPT": "Software Engineering",
+                "SUB DEPT": "REGULAR",
                 "SPEC. TYPE": "Specialization",
                 "SPEC. NAME": "Cloud Computing"
             }
@@ -180,8 +180,8 @@ export default function BulkUpload() {
                                         <td>{student.email}</td>
                                         <td>
                                             <div className="dept-cell">
-                                                <span className="main-dept">{student.department || 'REGULAR'}</span>
-                                                <span className="sub-dept">{student.subDepartment || 'N/A'}</span>
+                                                <span className="main-dept">{student.department || 'N/A'}</span>
+                                                <span className="sub-dept">{student.subDepartment || 'REGULAR'}</span>
                                             </div>
                                         </td>
                                         <td>
