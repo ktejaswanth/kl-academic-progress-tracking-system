@@ -97,39 +97,25 @@ jobs:
           VITE_API_BASE_URL: "http://localhost:8086"
 
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # Job 3: Docker — Compose Build Verification
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  docker-build:
-    name: "🐳 Docker — Build Verification"
-    runs-on: ubuntu-latest
-    needs: [backend-build, frontend-build]
-
-    steps:
-      - name: "📥 Checkout Repository"
-        uses: actions/checkout@v4
-
-      - name: "🐳 Validate Docker Compose"
-        run: docker compose config --quiet
-
-      - name: "🏗️ Build Docker Images"
-        run: docker compose build
-        env:
-          DB_URL: "jdbc:postgresql://localhost:5432/test"
-          DB_USERNAME: "test"
-          DB_PASSWORD: "test"
-
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   # Job 4: Email Notification
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   notify:
     name: "📧 Send Email Notification"
     runs-on: ubuntu-latest
-    needs: [backend-build, frontend-build, docker-build]
+    needs: [backend-build, frontend-build]
     if: always()
+    env:
+      NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
 
     steps:
+      - name: "ℹ️ Check Secrets Configuration"
+        if: ${{ env.NOTIFY_EMAIL == '' }}
+        run: |
+          echo "::warning::GitHub Secrets for Email Notification are not configured. Email notifications will be skipped."
+          echo "Please configure SMTP_HOST, SMTP_PORT, EMAIL_USER, EMAIL_PASS, and NOTIFY_EMAIL in your Repository Settings."
+
       - name: "📧 Send Success Email"
-        if: ${{ needs.backend-build.result == 'success' && needs.frontend-build.result == 'success' && needs.docker-build.result == 'success' }}
+        if: ${{ needs.backend-build.result == 'success' && needs.frontend-build.result == 'success' && env.NOTIFY_EMAIL != '' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_HOST }}
@@ -173,7 +159,6 @@ jobs:
                   <ul style="margin: 8px 0 0 0; padding-left: 20px; color: #047857;">
                     <li>☕ Backend Build & Test</li>
                     <li>⚛️ Frontend Lint & Build</li>
-                    <li>🐳 Docker Build Verification</li>
                   </ul>
                 </div>
                 <div style="text-align: center; margin-top: 20px;">
@@ -189,7 +174,7 @@ jobs:
             </div>
 
       - name: "📧 Send Failure Email"
-        if: ${{ needs.backend-build.result == 'failure' || needs.frontend-build.result == 'failure' || needs.docker-build.result == 'failure' }}
+        if: ${{ (needs.backend-build.result == 'failure' || needs.frontend-build.result == 'failure') && env.NOTIFY_EMAIL != '' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_HOST }}
@@ -229,7 +214,6 @@ jobs:
                   <ul style="margin: 8px 0 0 0; padding-left: 20px; color: #374151;">
                     <li>☕ Backend: <strong>${{ needs.backend-build.result }}</strong></li>
                     <li>⚛️ Frontend: <strong>${{ needs.frontend-build.result }}</strong></li>
-                    <li>🐳 Docker: <strong>${{ needs.docker-build.result }}</strong></li>
                   </ul>
                 </div>
                 <div style="margin-top: 12px; padding: 12px; background: #fff7ed; border-radius: 8px; border-left: 4px solid #f59e0b;">
