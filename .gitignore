@@ -1,6 +1,9 @@
 # IDE
 .vscode/
 .idea/
+.metadata/
+*.log
+*_logs.txt
 
 # OS
 .DS_Store
