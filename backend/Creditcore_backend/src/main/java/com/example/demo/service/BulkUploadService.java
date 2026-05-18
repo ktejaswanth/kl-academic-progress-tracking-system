@@ -103,8 +103,8 @@ public class BulkUploadService {
 
                 StudentProfile profile = new StudentProfile();
                 profile.setUser(user);
-                profile.setDegreeType("REGULAR");
-                profile.setSpecialization(user.getSpecializationType());
+                profile.setDegreeType("B.Tech");
+                profile.setSpecialization(user.getDepartment() != null && !user.getDepartment().equals("N/A") ? user.getDepartment() : "CSE");
                 studentProfileRepository.save(profile);
 
                 credentials.add(new CredentialInfo(studentId, rawPassword, email, fullName, user.getDepartment(), user.getSubDepartment(), user.getSpecializationType(), user.getSpecializationName()));
