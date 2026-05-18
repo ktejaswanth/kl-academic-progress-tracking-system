@@ -15,16 +15,18 @@ jobs:
   review-notify:
     name: "📧 Notify on PR Review"
     runs-on: ubuntu-latest
+    env:
+      NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
 
     steps:
       - name: "ℹ️ Check Secrets Configuration"
-        if: ${{ secrets.NOTIFY_EMAIL == '' }}
+        if: ${{ env.NOTIFY_EMAIL == '' }}
         run: |
           echo "::warning::GitHub Secrets for Email Notification are not configured. Email notifications will be skipped."
           echo "Please configure SMTP_HOST, SMTP_PORT, EMAIL_USER, EMAIL_PASS, and NOTIFY_EMAIL in your Repository Settings."
 
       - name: "📧 Send Review Notification Email"
-        if: ${{ secrets.NOTIFY_EMAIL != '' }}
+        if: ${{ env.NOTIFY_EMAIL != '' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_HOST }}
