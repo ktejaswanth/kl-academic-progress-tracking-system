@@ -106,8 +106,14 @@ jobs:
     if: always()
 
     steps:
+      - name: "ℹ️ Check Secrets Configuration"
+        if: ${{ secrets.NOTIFY_EMAIL == '' }}
+        run: |
+          echo "::warning::GitHub Secrets for Email Notification are not configured. Email notifications will be skipped."
+          echo "Please configure SMTP_HOST, SMTP_PORT, EMAIL_USER, EMAIL_PASS, and NOTIFY_EMAIL in your Repository Settings."
+
       - name: "📧 Send Success Email"
-        if: ${{ needs.backend-build.result == 'success' && needs.frontend-build.result == 'success' }}
+        if: ${{ needs.backend-build.result == 'success' && needs.frontend-build.result == 'success' && secrets.NOTIFY_EMAIL != '' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_HOST }}
@@ -166,7 +172,7 @@ jobs:
             </div>
 
       - name: "📧 Send Failure Email"
-        if: ${{ needs.backend-build.result == 'failure' || needs.frontend-build.result == 'failure' }}
+        if: ${{ (needs.backend-build.result == 'failure' || needs.frontend-build.result == 'failure') && secrets.NOTIFY_EMAIL != '' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_HOST }}
