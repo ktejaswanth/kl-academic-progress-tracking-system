@@ -9,6 +9,12 @@ services:
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --tries=1 http://localhost:8086/api/auth/login 2>&1 | grep -q 'HTTP/' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   frontend:
     build:
@@ -19,4 +25,5 @@ services:
       - VITE_API_BASE_URL=http://localhost:8086
     restart: always
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
