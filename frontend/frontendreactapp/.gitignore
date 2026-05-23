@@ -29,5 +29,4 @@ dist-ssr
 !.env.example
 
 # Docker
-Dockerfile
 .dockerignore
