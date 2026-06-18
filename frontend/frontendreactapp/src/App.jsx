@@ -5,6 +5,10 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import ChangePassword from './pages/ChangePassword';
+import FirstLogin from './pages/FirstLogin';
+import CreatePassword from './pages/CreatePassword';
+import ProfileSetup from './pages/ProfileSetup';
+import SecondYearSelection from './pages/SecondYearSelection';
 import AdminNavBar from './admin/AdminNavBar';
 import StudentNavBar from './pages/student/StudentNavBar';
 import FacultyNavBar from './pages/faculty/FacultyNavBar';
@@ -17,6 +21,10 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
+          <Route path="/first-login" element={<FirstLogin />} />
+          <Route path="/create-password" element={<CreatePassword />} />
+          <Route path="/profile-setup" element={<ProfileSetup />} />
+          <Route path="/second-year-selection" element={<SecondYearSelection />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route 

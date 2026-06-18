@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuditService;
+import com.example.demo.service.EligibilityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,6 +19,9 @@ public class StudentController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EligibilityService eligibilityService;
 
     @GetMapping("/progress")
     public ResponseEntity<?> getMyProgress() {
@@ -55,6 +59,19 @@ public class StudentController {
             return ResponseEntity.ok(profile);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching profile: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/roadmap")
+    public ResponseEntity<?> getStudentRoadmap() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            return ResponseEntity.ok(eligibilityService.generateRoadmap(user.getId()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error generating roadmap: " + e.getMessage());
         }
     }
 }

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -55,6 +56,12 @@ public class User {
 
     @Column(name = "raw_password")
     private String rawPassword;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "first_login_completed")
+    private Boolean firstLoginCompleted = false;
 
     @Column(name = "is_active")
     private Boolean isActive = true;

@@ -3,6 +3,8 @@ import { Link, Route, Routes, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext';
 import StudentDashboard from './StudentDashboard';
 import StudentProfile from './StudentProfile';
+import EligibilityChecker from './EligibilityChecker';
+import RoadmapGenerator from './RoadmapGenerator';
 import '../../admin/admin.css'; // Reusing layout styles
 
 export default function StudentNavBar() {
@@ -18,6 +20,8 @@ export default function StudentNavBar() {
     const navItems = [
         { path: '/student/home', label: 'Progress Dashboard', icon: '📈' },
         { path: '/student/courses', label: 'My Courses', icon: '📚' },
+        { path: '/student/eligibility', label: 'Eligibility', icon: '✅' },
+        { path: '/student/roadmap', label: 'Roadmap', icon: '🗺️' },
         { path: '/student/profile', label: 'My Profile', icon: '👤' },
     ];
 
@@ -65,6 +69,8 @@ export default function StudentNavBar() {
                     <Routes>
                         <Route path="home" element={<StudentDashboard />} />
                         <Route path="courses" element={<div>Coming Soon: Detailed Course View</div>} />
+                        <Route path="eligibility" element={<EligibilityChecker />} />
+                        <Route path="roadmap" element={<RoadmapGenerator />} />
                         <Route path="profile" element={<StudentProfile />} />
                         <Route index element={<StudentDashboard />} />
                     </Routes>

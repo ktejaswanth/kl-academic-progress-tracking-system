@@ -31,6 +31,18 @@ public class StudentProfile {
     @Column(name = "honors_type")
     private String honorsType;
 
+    private String branch;
+
+    private Integer batch;
+
+    private String section;
+
+    @Column(name = "honors_option")
+    private String honorsOption;
+
+    @Column(name = "extension_type")
+    private String extensionType;
+
     @Column(name = "current_year")
     private Integer currentYear = 1;
 

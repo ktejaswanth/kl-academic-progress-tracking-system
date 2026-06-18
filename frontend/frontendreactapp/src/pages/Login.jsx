@@ -96,6 +96,7 @@ export default function Login() {
 
                     <div className="login-footer">
                         <p>Forgot password? <a href="/forgot-password">Recover Account</a></p>
+                        <p>First time here? <a href="/first-login">Verify your account</a></p>
                     </div>
                 </div>
             </div>

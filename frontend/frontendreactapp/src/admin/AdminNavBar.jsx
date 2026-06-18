@@ -7,6 +7,7 @@ import BulkUpload from '../pages/faculty/BulkUpload';
 import ViewAllStudents from './ViewAllStudents';
 import AddFaculty from './AddFaculty';
 import ViewAllFaculty from './ViewAllFaculty';
+import CurriculumAdmin from './CurriculumAdmin';
 import './admin.css';
 
 export default function AdminNavBar() {
@@ -25,6 +26,7 @@ export default function AdminNavBar() {
         { path: '/super_admin/addstudent', label: 'Add Student', icon: '👤' },
         { path: '/super_admin/bulk-upload', label: 'Bulk Upload (Excel)', icon: '📁' },
         { path: '/super_admin/viewallstudents', label: 'View Students', icon: '👥' },
+        { path: '/super_admin/curriculum-management', label: 'Curriculum Setup', icon: '📚' },
         { path: '/super_admin/addfaculty', label: 'Add Faculty', icon: '👨‍🏫' },
         { path: '/super_admin/viewallfaculty', label: 'View Faculty', icon: '🏢' },
     ];
@@ -63,8 +65,24 @@ export default function AdminNavBar() {
                     </div>
 
                     <div className="nav-group">
+                        <span className="group-label">Program Management</span>
+                        {navItems.slice(4, 5).map((item) => (
+                            <Link 
+                                key={item.path} 
+                                to={item.path} 
+                                className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
+                                onClick={() => setSidebarOpen(false)}
+                            >
+                                <span className="nav-icon">{item.icon}</span>
+                                <span className="nav-label">{item.label}</span>
+                                {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
+                            </Link>
+                        ))}
+                    </div>
+
+                    <div className="nav-group">
                         <span className="group-label">Staff Management</span>
-                        {navItems.slice(4).map((item) => (
+                        {navItems.slice(5).map((item) => (
                             <Link 
                                 key={item.path} 
                                 to={item.path} 
@@ -113,9 +131,10 @@ export default function AdminNavBar() {
                 <div className="content-area animate-fade">
                     <Routes>
                         <Route path="home" element={<AdminDashboard />} />
-                        <Route path="addstudent" element={<AddStudent />} />
+                            <Route path="addstudent" element={<AddStudent />} />
                         <Route path="bulk-upload" element={<BulkUpload />} />
                         <Route path="viewallstudents" element={<ViewAllStudents />} />
+                        <Route path="curriculum-management" element={<CurriculumAdmin />} />
                         <Route path="addfaculty" element={<AddFaculty />} />
                         <Route path="viewallfaculty" element={<ViewAllFaculty />} />
                         <Route index element={<AdminDashboard />} />
