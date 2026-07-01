@@ -14,11 +14,11 @@ export default function FacultyDashboard() {
         const fetchStats = async () => {
             try {
                 const response = await api.get('/faculty/analytics');
-                setStats({
-                    ...stats,
+                setStats(prev => ({
+                    ...prev,
                     totalStudents: response.data.totalStudents,
                     recentUploads: response.data.recentUploads
-                });
+                }));
             } catch (err) {
                 console.error("Failed to fetch faculty stats", err);
             } finally {

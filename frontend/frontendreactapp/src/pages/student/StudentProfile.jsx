@@ -18,7 +18,7 @@ export default function StudentProfile() {
             try {
                 const response = await api.get('/student/profile');
                 setProfile(response.data);
-            } catch (err) {
+            } catch {
                 setError('Failed to fetch profile details.');
             } finally {
                 setLoading(false);

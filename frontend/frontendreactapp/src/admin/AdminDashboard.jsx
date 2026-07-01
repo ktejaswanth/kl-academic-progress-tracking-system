@@ -14,11 +14,11 @@ export default function AdminDashboard() {
         const fetchAnalytics = async () => {
             try {
                 const response = await api.get('/admin/analytics');
-                setRealStats({
-                    ...realStats,
+                setRealStats(prev => ({
+                    ...prev,
                     totalStudents: response.data.totalStudents,
                     totalFaculty: response.data.totalFaculty,
-                });
+                }));
             } catch (err) {
                 console.error("Failed to fetch analytics", err);
             } finally {

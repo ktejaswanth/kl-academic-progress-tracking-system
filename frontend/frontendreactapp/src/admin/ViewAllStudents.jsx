@@ -13,7 +13,7 @@ export default function ViewAllStudents() {
         try {
             const response = await api.get("/admin/students");
             setData(response.data);
-        } catch (err) {
+        } catch {
             setError("Failed to fetch students. Please check your connection.");
         } finally {
             setLoading(false);

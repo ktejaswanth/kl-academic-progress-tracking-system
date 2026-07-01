@@ -25,7 +25,7 @@ export default function SecondYearSelection() {
             try {
                 const response = await api.get('/onboarding/curriculum/programs');
                 setPrograms(response.data || []);
-            } catch (err) {
+            } catch {
                 setError('Unable to load programs. Please try again later.');
             }
         };
@@ -49,7 +49,7 @@ export default function SecondYearSelection() {
                 setVersions(versionsResp.data || []);
                 setSpecializations(specializationsResp.data || []);
                 setHonorsPrograms(honorsResp.data || []);
-            } catch (err) {
+            } catch {
                 setError('Unable to load curriculum options for selected program.');
             }
         };

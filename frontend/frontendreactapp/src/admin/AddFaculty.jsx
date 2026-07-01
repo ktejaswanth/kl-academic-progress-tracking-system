@@ -27,7 +27,7 @@ export default function AddFaculty() {
         setError("");
 
         try {
-            const response = await api.post("/admin/faculty", {
+            await api.post("/admin/faculty", {
                 ...formdata,
                 role: 'FACULTY'
             });

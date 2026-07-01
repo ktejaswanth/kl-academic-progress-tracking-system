@@ -2,8 +2,6 @@ import React, { useEffect } from 'react'
 
 export default function StudentHome() {
   useEffect(() => {
-    // You can fetch student data from sessionStorage or API
-    const studentEmail = sessionStorage.getItem("studentEmail")
   }, [])
 
   return (

@@ -12,7 +12,7 @@ export default function StudentDashboard() {
             try {
                 const response = await api.get('/student/progress');
                 setProgress(response.data);
-            } catch (err) {
+            } catch {
                 setError('Failed to load academic progress. Please ensure your profile is set up.');
             } finally {
                 setLoading(false);

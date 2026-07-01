@@ -19,16 +19,12 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (username, password) => {
-        try {
-            const response = await api.post('/auth/login', { username, password });
-            const userData = response.data;
-            setUser(userData);
-            localStorage.setItem('user', JSON.stringify(userData));
-            localStorage.setItem('token', userData.token);
-            return userData;
-        } catch (error) {
-            throw error;
-        }
+        const response = await api.post('/auth/login', { username, password });
+        const userData = response.data;
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', userData.token);
+        return userData;
     };
 
     const logout = () => {
@@ -52,4 +48,5 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

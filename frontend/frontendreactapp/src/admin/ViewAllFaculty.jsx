@@ -13,7 +13,7 @@ export default function ViewAllFaculty() {
         try {
             const response = await api.get("/admin/faculty");
             setData(response.data);
-        } catch (err) {
+        } catch {
             setError("Failed to fetch faculty records.");
         } finally {
             setLoading(false);
