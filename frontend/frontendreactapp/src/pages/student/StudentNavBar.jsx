@@ -5,6 +5,8 @@ import StudentDashboard from './StudentDashboard';
 import StudentProfile from './StudentProfile';
 import EligibilityChecker from './EligibilityChecker';
 import RoadmapGenerator from './RoadmapGenerator';
+import BucketProgressView from './BucketProgressView';
+import MyCourses from './MyCourses';
 import '../../admin/admin.css'; // Reusing layout styles
 
 export default function StudentNavBar() {
@@ -20,6 +22,7 @@ export default function StudentNavBar() {
     const navItems = [
         { path: '/student/home', label: 'Progress Dashboard', icon: '📈' },
         { path: '/student/courses', label: 'My Courses', icon: '📚' },
+        { path: '/student/buckets', label: 'Bucket Details', icon: '🪣' },
         { path: '/student/eligibility', label: 'Eligibility', icon: '✅' },
         { path: '/student/roadmap', label: 'Roadmap', icon: '🗺️' },
         { path: '/student/profile', label: 'My Profile', icon: '👤' },
@@ -38,7 +41,7 @@ export default function StudentNavBar() {
                         <Link 
                             key={item.path} 
                             to={item.path} 
-                            className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
+                            className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
                         >
                             <span className="nav-icon">{item.icon}</span>
                             <span className="nav-label">{item.label}</span>
@@ -57,7 +60,7 @@ export default function StudentNavBar() {
             <main className="admin-main">
                 <div className="top-bar">
                     <div className="breadcrumb">
-                        Student / <span>{navItems.find(i => location.pathname.includes(i.path))?.label || 'Dashboard'}</span>
+                        Student / <span>{navItems.find(i => location.pathname === i.path)?.label || 'Dashboard'}</span>
                     </div>
                     <div className="user-info">
                         <span className="user-role">Regular Track</span>
@@ -68,7 +71,8 @@ export default function StudentNavBar() {
                 <div className="content-area animate-fade">
                     <Routes>
                         <Route path="home" element={<StudentDashboard />} />
-                        <Route path="courses" element={<div>Coming Soon: Detailed Course View</div>} />
+                        <Route path="courses" element={<MyCourses />} />
+                        <Route path="buckets" element={<BucketProgressView />} />
                         <Route path="eligibility" element={<EligibilityChecker />} />
                         <Route path="roadmap" element={<RoadmapGenerator />} />
                         <Route path="profile" element={<StudentProfile />} />

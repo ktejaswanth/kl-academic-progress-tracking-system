@@ -164,3 +164,237 @@
     .student-hero { flex-direction: column; text-align: center; gap: 2rem; }
     .student-grid-layout { grid-template-columns: 1fr; }
 }
+
+/* Bucket Progress View Styles */
+.buckets-view-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.bucket-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #E9ECEF;
+}
+
+.bucket-card.expanded {
+    box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    border-color: #8B0000;
+}
+
+.bucket-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.bucket-info-main {
+    flex: 1;
+    min-width: 250px;
+}
+
+.bucket-code-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.bucket-title-text {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #2D3436;
+    margin: 0;
+}
+
+.bucket-meta-stats {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.credits-display {
+    text-align: right;
+}
+
+.credits-number {
+    display: block;
+    font-size: 1.15rem;
+    color: #2D3436;
+}
+
+.credits-number strong {
+    font-size: 1.4rem;
+    color: #8B0000;
+}
+
+.credits-label {
+    font-size: 0.75rem;
+    color: #636E72;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.expand-indicator {
+    font-size: 0.8rem;
+    color: #636E72;
+    background: #F8F9FA;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.bucket-card-header:hover .expand-indicator {
+    background: #E9ECEF;
+    color: #8B0000;
+}
+
+.bucket-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 1.5rem;
+}
+
+.bucket-progress-row .cat-progress-bg {
+    flex: 1;
+}
+
+.bucket-progress-row .cat-progress-fill.success { background: #00B894; }
+.bucket-progress-row .cat-progress-fill.warning { background: #EF6C00; }
+.bucket-progress-row .cat-progress-fill.danger { background: #D32F2F; }
+
+.percentage-text {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #2D3436;
+    min-width: 45px;
+    text-align: right;
+}
+
+.divider {
+    border: 0;
+    height: 1px;
+    background: #E9ECEF;
+    margin: 2rem 0;
+}
+
+.course-split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+}
+
+@media (max-width: 768px) {
+    .course-split-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+.course-list-box h4 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #2D3436;
+    margin-bottom: 1.2rem;
+    border-left: 4px solid #8B0000;
+    padding-left: 10px;
+}
+
+.course-mini-table {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.course-mini-row {
+    background: #F8F9FA;
+    padding: 1rem 1.25rem;
+    border-radius: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #E9ECEF;
+}
+
+.course-mini-row.pending-course {
+    background: #FFFBFB;
+    border-color: #FFF0F0;
+}
+
+.c-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.c-code {
+    font-weight: 800;
+    color: #8B0000;
+    font-size: 0.85rem;
+}
+
+.c-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2D3436;
+}
+
+.c-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.c-credits {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #636E72;
+    background: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid #E9ECEF;
+}
+
+.grade-badge {
+    background: #FFF5F5;
+    color: #8B0000;
+    font-weight: 900;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.sem-offered {
+    font-size: 0.8rem;
+    color: #636E72;
+}
+
+.mandatory-star {
+    color: #FFD700;
+    font-size: 1.2rem;
+}
+
+.no-courses-placeholder {
+    color: #636E72;
+    font-size: 0.9rem;
+    background: #F8F9FA;
+    padding: 1.5rem;
+    border-radius: 14px;
+    text-align: center;
+    border: 1px dashed #CBD5E1;
+}
+
+.no-courses-placeholder.success-msg {
+    background: #ECFDF5;
+    color: #065F46;
+    border-color: #A7F3D0;
+    border-style: solid;
+}

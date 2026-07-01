@@ -37,6 +37,37 @@ public class CompletedCourse {
 
     private String semester;
 
+    private String ltps;
+
+    @Column(name = "bucket_group")
+    private String bucketGroup;
+
+    @Column(name = "course_type")
+    private String courseType;
+
+    @Column(name = "academic_year")
+    private String academicYear;
+
+    @Column(name = "study_year")
+    private Integer studyYear;
+
+    @Column(name = "section_no")
+    private String sectionNo;
+
+    @Column(name = "course_ref")
+    private String courseRef;
+
+    @Column(name = "offer_to")
+    private String offerTo;
+
+    @Column(name = "offer_by")
+    private String offerBy;
+
+    private String branch;
+
+    @Column(name = "register_date")
+    private LocalDate registerDate;
+
     @Column(name = "completed_date")
     private LocalDate completedDate;
 

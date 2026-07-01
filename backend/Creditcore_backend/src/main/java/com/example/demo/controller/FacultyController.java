@@ -1,59 +1,50 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.UploadHistory;
+import com.example.demo.model.StudentDegreeStatus;
 import com.example.demo.model.User;
+import com.example.demo.repository.StudentDegreeStatusRepository;
 import com.example.demo.repository.UserRepository;
-import com.example.demo.service.BulkUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/faculty")
+@RequestMapping("/api/dyod/faculty")
+@CrossOrigin(origins = "http://localhost:5173")
 public class FacultyController {
 
     @Autowired
-    private BulkUploadService bulkUploadService;
-
+    private StudentDegreeStatusRepository statusRepository;
+    
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping("/upload-students")
-    public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file) {
+    @GetMapping("/dashboard")
+    public ResponseEntity<?> getFacultyDashboard() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User uploadedBy = userRepository.findByUsername(username).orElseThrow();
-
-        try {
-            List<BulkUploadService.CredentialInfo> credentials = bulkUploadService.processBulkUpload(file, uploadedBy);
-            return ResponseEntity.ok(credentials);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Upload failed: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/download-credentials/{uploadId}")
-    public ResponseEntity<byte[]> downloadCredentials(@PathVariable Long uploadId) {
-        try {
-            byte[] excelContent = bulkUploadService.generateCredentialsExcel(uploadId);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=credentials_" + uploadId + ".xlsx")
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(excelContent);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @GetMapping("/analytics")
-    public ResponseEntity<?> getAnalytics() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username).orElseThrow();
-        return ResponseEntity.ok(bulkUploadService.getFacultyAnalytics(user));
+        User faculty = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Faculty not found"));
+                
+        String dept = faculty.getDepartment();
+        if (dept == null || dept.isEmpty()) dept = "CSE"; // Fallback
+        
+        long totalStudents = statusRepository.countByDepartment(dept);
+        long eligibleStudents = statusRepository.countEligibleByDepartment(dept);
+        
+        List<StudentDegreeStatus> students = statusRepository.findByDepartment(dept);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("department", dept);
+        result.put("totalStudents", totalStudents);
+        result.put("eligibleStudents", eligibleStudents);
+        result.put("pendingStudents", totalStudents - eligibleStudents);
+        result.put("students", students);
+        
+        return ResponseEntity.ok(result);
     }
 }

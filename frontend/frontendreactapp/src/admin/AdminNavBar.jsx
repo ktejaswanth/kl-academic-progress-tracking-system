@@ -7,7 +7,9 @@ import BulkUpload from '../pages/faculty/BulkUpload';
 import ViewAllStudents from './ViewAllStudents';
 import AddFaculty from './AddFaculty';
 import ViewAllFaculty from './ViewAllFaculty';
-import CurriculumAdmin from './CurriculumAdmin';
+import CurriculumAdmin from '../pages/admin/CurriculumAdmin';
+import UploadCourses from '../pages/faculty/UploadCourses';
+import FacultyStudentDetail from '../pages/faculty/FacultyStudentDetail';
 import './admin.css';
 
 export default function AdminNavBar() {
@@ -25,6 +27,7 @@ export default function AdminNavBar() {
         { path: '/super_admin/home', label: 'Dashboard', icon: '📊' },
         { path: '/super_admin/addstudent', label: 'Add Student', icon: '👤' },
         { path: '/super_admin/bulk-upload', label: 'Bulk Upload (Excel)', icon: '📁' },
+        { path: '/super_admin/upload-courses', label: 'Upload Courses', icon: '📚' },
         { path: '/super_admin/viewallstudents', label: 'View Students', icon: '👥' },
         { path: '/super_admin/curriculum-management', label: 'Curriculum Setup', icon: '📚' },
         { path: '/super_admin/addfaculty', label: 'Add Faculty', icon: '👨‍🏫' },
@@ -131,8 +134,10 @@ export default function AdminNavBar() {
                 <div className="content-area animate-fade">
                     <Routes>
                         <Route path="home" element={<AdminDashboard />} />
-                            <Route path="addstudent" element={<AddStudent />} />
+                        <Route path="addstudent" element={<AddStudent />} />
                         <Route path="bulk-upload" element={<BulkUpload />} />
+                        <Route path="upload-courses" element={<UploadCourses />} />
+                        <Route path="student/:studentId" element={<FacultyStudentDetail />} />
                         <Route path="viewallstudents" element={<ViewAllStudents />} />
                         <Route path="curriculum-management" element={<CurriculumAdmin />} />
                         <Route path="addfaculty" element={<AddFaculty />} />

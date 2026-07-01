@@ -1,0 +1,1119 @@
+=== PAGE 1 ===
+Y23: B.Tech. - Computer Science and Engineering 30
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+Program - Degrees(Design your own Degree)
+S# Major Flexibility Program Addon
+1 Honors through Experiential Learning Minor
+2 Honors through Experiential Learning Double Major
+3 Honors through Experiential Learning Specialization
+4 Honors through Experiential Learning No Add-on
+5 Honors through Innovation Minor
+6 Honors through Innovation Double Major
+7 Honors through Innovation Specialization
+8 Honors through Innovation No Add-on
+9 Honors through Research Minor
+10 Honors through Research Double Major
+11 Honors through Research Specialization
+12 Honors through Research No Add-on
+13 Honors Minor
+14 Honors Double Major
+15 Honors Specialization
+16 Honors No Add-on
+17 No Flexibility Minor
+18 No Flexibility Double Major
+19 No Flexibility Specialization
+20 No Flexibility No Add-on
+
+=== PAGE 2 ===
+Y23: B.Tech. - Computer Science and Engineering 31
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+Degree-wise Credit Requirements
+1. Honors through Experiential Learning with Minor
+a) Credit Requirement Total Credit Required: 203
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1
+14 HFC HFC-CORE 0 16 0 4
+15 HEC HEC-CORE 8 16 2 4
+16 SDC SDP-1 2 4 1 1
+17 SDC SDP-2 2 4 1 1
+18 SDC SDP-3 2 4 1 1
+19 PEC PE-1 5 5 1 1
+20 PEC PE-2 3 3 1 1
+21 PEC PE-3 5 5 1 1
+22 PEC PE-4 3 3 1 1
+23 PRI PRI-CORE 20 20 4 4 PROJECT
+24 OEC OE-1 4 4 1 1
+25 OEC OE-2 4 4 1 1
+26 OEC OE-3 4 4 1 1
+27 VAC VAC-SPORTS 0 0 1 1
+
+=== PAGE 3 ===
+Y23: B.Tech. - Computer Science and Engineering 32
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+28 VAC VAC-CERT 0 0 4 4
+29 AUC AUC-CORE 0 0 5 6
+30 AUC AUC-CAREER 0 0 1 1
+31 SIL SIL-CORE 3 3 3 3
+32 MIN MIN-CORE 16 16 4 4 MINOR
+33 MSDC MIN-SDP 4 4 1 1 MINOR
+b) Outcome Requirement
+Minimum CGPA 8.00•
+Additional credits must be acquired from specified category of courses PCC, HFC, HEC, SDC, PRI•
+No History of Backlogs & No History of Betterment•
+Minimum One Scopus Journal Publication•
+Minimum One Design Patents•
+Two Consultancy Projects•
+All MIN & MSDC Credits (16 + 4) must be from selected MINOR Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 4 ===
+Y23: B.Tech. - Computer Science and Engineering 33
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+2. Honors through Experiential Learning with Double Major
+a) Credit Requirement Total Credit Required: 208
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1 DOUBLE MAJOR
+14 HFC HFC-CORE 0 16 0 4
+15 HEC HEC-CORE 8 16 2 4
+16 SDC SDP-1 2 4 1 1
+17 SDC SDP-2 2 4 1 1
+18 SDC SDP-3 2 4 1 1
+19 PEC PE-1 5 5 1 1
+20 PEC PE-2 3 3 1 1
+21 PEC PE-3 5 5 1 1
+22 PEC PE-4 3 3 1 1
+23 PRI PRI-CORE 20 20 4 4 PROJECT
+24 OEC OE-1 4 4 1 1 DOUBLE MAJOR
+25 OEC OE-2 4 4 1 1 DOUBLE MAJOR
+26 OEC OE-3 4 4 1 1 DOUBLE MAJOR
+27 VAC VAC-SPORTS 0 0 1 1
+28 VAC VAC-CERT 0 0 4 4
+
+=== PAGE 5 ===
+Y23: B.Tech. - Computer Science and Engineering 34
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 AUC AUC-CORE 0 0 5 6
+30 AUC AUC-CAREER 0 0 1 1
+31 SIL SIL-CORE 3 3 3 3
+32 SMFC SMFC-CORE 21 21 5 5 DOUBLE MAJOR
+33 SMFC SMFC-SDP 4 4 1 1 DOUBLE MAJOR
+b) Outcome Requirement
+Minimum CGPA 8.00 •
+Additional credits must be acquired from specified category of courses PCC, HFC, HEC, SDC, PRI•
+No History of Backlogs & No History of Betterment •
+Minimum One Scopus Journal Publication •
+Minimum One Design Patents•
+Two Consultancy Projects•
+All 40 Credits (SMFC+OEC+FCC) must be from selected Second Major Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 6 ===
+Y23: B.Tech. - Computer Science and Engineering 35
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+3. Honors through Experiential Learning with Specialization
+a) Credit Requirement Total Credit Required: 193
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1
+14 HFC HFC-CORE 0 16 0 4
+15 HEC HEC-CORE 8 16 2 4
+16 SDC SDP-1 2 4 1 1
+17 SDC SDP-2 2 4 1 1
+18 SDC SDP-3 2 4 1 1
+19 SDC SDP-4 4 4 1 1 SPECIALIZATION
+20 PEC PE-1 7 7 1 1 SPECIALIZATION
+21 PEC PE-2 3 3 1 1 SPECIALIZATION
+22 PEC PE-3 7 7 1 1 SPECIALIZATION
+23 PEC PE-4 3 3 1 1 SPECIALIZATION
+24 PEC PE-5 3 3 1 1 SPECIALIZATION
+25 PRI PRI-CORE 20 20 4 4 PROJECT
+26 OEC OE-1 4 4 1 1
+27 OEC OE-2 4 4 1 1
+28 OEC OE-3 4 4 1 1
+
+=== PAGE 7 ===
+Y23: B.Tech. - Computer Science and Engineering 36
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 VAC VAC-SPORTS 0 0 1 1
+30 VAC VAC-CERT 0 0 4 4
+31 AUC AUC-CORE 0 0 5 6
+32 AUC AUC-CAREER 0 0 1 1
+33 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 8.00 •
+Additional credits must be acquired from specified category of courses PCC, HFC, HEC, SDC, PRI•
+No History of Backlogs & No History of Betterment•
+Minimum One Scopus Journal Publication •
+Minimum One Design Patents•
+Two Consultancy Projects•
+All PEC and SDP-4 Credits must be from selected specialization•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 8 ===
+Y23: B.Tech. - Computer Science and Engineering 37
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+4. Honors through Experiential Learning with No Add-on
+a) Credit Requirement Total Credit Required: 183
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1
+14 HFC HFC-CORE 0 16 0 4
+15 HEC HEC-CORE 8 16 2 4
+16 SDC SDP-1 2 4 1 1
+17 SDC SDP-2 2 4 1 1
+18 SDC SDP-3 2 4 1 1
+19 PEC PE-1 5 5 1 1
+20 PEC PE-2 3 3 1 1
+21 PEC PE-3 5 5 1 1
+22 PEC PE-4 3 3 1 1
+23 PRI PRI-CORE 20 20 4 4 PROJECT
+24 OEC OE-1 4 4 1 1
+25 OEC OE-2 4 4 1 1
+26 OEC OE-3 4 4 1 1
+27 VAC VAC-SPORTS 0 0 1 1
+28 VAC VAC-CERT 0 0 4 4
+
+=== PAGE 9 ===
+Y23: B.Tech. - Computer Science and Engineering 38
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 AUC AUC-CORE 0 0 5 6
+30 AUC AUC-CAREER 0 0 1 1
+31 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 8.00•
+Additional credits must be acquired from specified category of courses PCC, HFC, HEC, SDC, PRI•
+No History of Backlogs & No History of Betterment•
+Minimum One Scopus Journal Publication•
+Minimum One Design Patents•
+Two Consultancy Projects•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 10 ===
+Y23: B.Tech. - Computer Science and Engineering 39
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+5. Honors through Innovation with Minor
+a) Credit Requirement Total Credit Required: 201
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 28 7 7
+13 FCC FC-1 3 3 1 1
+14 FCC FC-2 0 0 0 0
+15 HFC HFC-CORE 0 16 0 4
+16 HRC HRC-CORE 0 0 0 0
+17 HIC HIC-CORE 8 16 2 4
+18 HEC HEC-CORE 0 16 0 4
+19 SDC SDP-1 2 4 1 1
+20 SDC SDP-2 2 4 1 1
+21 SDC SDP-3 2 4 1 1
+22 PEC PE-1 5 5 1 1
+23 PEC PE-2 3 3 1 1
+24 PEC PE-3 5 5 1 1
+25 PEC PE-4 3 3 1 1
+26 PRI PRI-CORE 20 20 4 4 PROJECT
+27 OEC OE-1 4 4 1 1
+28 OEC OE-2 4 4 1 1
+
+=== PAGE 11 ===
+Y23: B.Tech. - Computer Science and Engineering 40
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 OEC OE-3 4 4 1 1
+30 VAC VAC-SPORTS 0 0 1 1
+31 VAC VAC-CERT 0 0 3 3
+32 AUC AUC-CORE 0 0 5 6
+33 AUC AUC-CAREER 0 0 1 1
+34 SIL SIL-CORE 3 3 3 3
+35 MIN MIN-CORE 16 16 4 4 MINOR
+36 MSDC MIN-SDP 4 4 1 1 MINOR
+b) Outcome Requirement
+Minimum CGPA 8.00•
+Additional credits must be acquired from specified category of courses HFC, HIC, HEC, SDC, PRI•
+No History of Backlogs & No History of Betterment•
+Minimum One Web of Science Journal Publications •
+Minimum Two Design Patents & One Utility Patent •
+LLP Establishment •
+All MIN & MSDC Credits (16 + 4) must be from selected MINOR Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 12 ===
+Y23: B.Tech. - Computer Science and Engineering 41
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+6. Honors through Innovation with Double Major
+a) Credit Requirement Total Credit Required: 208
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 28 7 7
+13 FCC FC-1 3 3 1 1 DOUBLE MAJOR
+14 HFC HFC-CORE 0 16 0 4
+15 HIC HIC-CORE 8 16 2 4
+16 HEC HEC-CORE 0 16 0 4
+17 SDC SDP-1 2 4 1 1
+18 SDC SDP-2 2 4 1 1
+19 SDC SDP-3 2 4 1 1
+20 PEC PE-1 5 5 1 1
+21 PEC PE-2 3 3 1 1
+22 PEC PE-3 5 5 1 1
+23 PEC PE-4 3 3 1 1
+24 PRI PRI-CORE 20 20 4 4 PROJECT
+25 OEC OE-1 4 4 1 1 DOUBLE MAJOR
+26 OEC OE-2 4 4 1 1 DOUBLE MAJOR
+27 OEC OE-3 4 4 1 1 DOUBLE MAJOR
+28 VAC VAC-SPORTS 0 0 1 1
+
+=== PAGE 13 ===
+Y23: B.Tech. - Computer Science and Engineering 42
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 VAC VAC-CERT 0 0 3 3
+30 AUC AUC-CORE 0 0 5 6
+31 AUC AUC-CAREER 0 0 1 1
+32 SIL SIL-CORE 3 3 3 3
+33 SMFC SMFC-CORE 21 21 5 5 DOUBLE MAJOR
+34 SMFC SMFC-SDP 4 4 1 1 DOUBLE MAJOR
+b) Outcome Requirement
+Minimum CGPA 8.00•
+Additional credits must be acquired from specified category of courses HFC, HIC, HEC, SDC, PRI•
+No History of Backlogs & No History of Betterment•
+Minimum One Web of Science Journal Publications •
+Minimum Two Design Patents & One Utility Patent •
+LLP Establishment •
+All 40 Credits (SMFC+OEC+FCC) must be from selected Second Major Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 14 ===
+Y23: B.Tech. - Computer Science and Engineering 43
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+7. Honors through Innovation with Specialization
+a) Credit Requirement Total Credit Required: 193
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 28 7 7
+13 FCC FC-1 3 3 1 1
+14 HFC HFC-CORE 0 16 0 4
+15 HIC HIC-CORE 8 16 2 4
+16 HEC HEC-CORE 0 16 0 4
+17 SDC SDP-1 2 4 1 1
+18 SDC SDP-2 2 4 1 1
+19 SDC SDP-3 2 4 1 1
+20 SDC SDP-4 4 4 1 1 SPECIALIZATION
+21 PEC PE-1 7 7 1 1 SPECIALIZATION
+22 PEC PE-2 3 3 1 1 SPECIALIZATION
+23 PEC PE-3 7 7 1 1 SPECIALIZATION
+24 PEC PE-4 3 3 1 1 SPECIALIZATION
+25 PEC PE-5 3 3 1 1 SPECIALIZATION
+26 PRI PRI-CORE 20 20 4 4 PROJECT
+27 OEC OE-1 4 4 1 1
+28 OEC OE-2 4 4 1 1
+
+=== PAGE 15 ===
+Y23: B.Tech. - Computer Science and Engineering 44
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 OEC OE-3 4 4 1 1
+30 VAC VAC-SPORTS 0 0 1 1
+31 VAC VAC-CERT 0 0 3 3
+32 AUC AUC-CORE 0 0 5 6
+33 AUC AUC-CAREER 0 0 1 1
+34 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 8.00 •
+Additional credits must be acquired from specified category of courses HFC, HIC, HEC, SDC, PRI•
+No History of Backlogs & No History of Betterment•
+Minimum One Web of Science Journal Publications •
+Minimum Two Design Patents & One Utility Patent•
+LLP Establishment •
+All PEC and SDP-4 Credits must be from selected specialization•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 16 ===
+Y23: B.Tech. - Computer Science and Engineering 45
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+8. Honors through Innovation with No Add-on
+a) Credit Requirement Total Credit Required: 183
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 28 7 7
+13 FCC FC-1 3 3 1 1
+14 HFC HFC-CORE 0 16 0 4
+15 HIC HIC-CORE 8 16 2 4
+16 HEC HEC-CORE 0 16 0 4
+17 SDC SDP-1 2 4 1 1
+18 SDC SDP-2 2 4 1 1
+19 SDC SDP-3 2 4 1 1
+20 PEC PE-1 5 5 1 1
+21 PEC PE-2 3 3 1 1
+22 PEC PE-3 5 5 1 1
+23 PEC PE-4 3 3 1 1
+24 PRI PRI-CORE 20 20 4 4 PROJECT
+25 OEC OE-1 4 4 1 1
+26 OEC OE-2 4 4 1 1
+27 OEC OE-3 4 4 1 1
+28 VAC VAC-SPORTS 0 0 1 1
+
+=== PAGE 17 ===
+Y23: B.Tech. - Computer Science and Engineering 46
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 VAC VAC-CERT 0 0 3 3
+30 AUC AUC-CORE 0 0 5 6
+31 AUC AUC-CAREER 0 0 1 1
+32 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 8.00•
+Additional credits must be acquired from specified category of courses HFC, HIC, HEC, SDC, PRI •
+No History of Backlogs & No History of Betterment•
+Minimum One Web of Science Journal Publications •
+Minimum Two Design Patents & One Utility Patent •
+LLP Establishment•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 18 ===
+Y23: B.Tech. - Computer Science and Engineering 47
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+9. Honors through Research with Minor
+a) Credit Requirement Total Credit Required: 201
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1
+14 FCC FC-2 0 0 0 0
+15 HFC HFC-CORE 0 16 0 4
+16 HRC HRC-CORE 9 12 3 4
+17 HIC HIC-CORE 0 0 0 0
+18 HEC HEC-CORE 0 16 0 4
+19 SDC SDP-1 2 4 1 1
+20 SDC SDP-2 2 4 1 1
+21 SDC SDP-3 2 4 1 1
+22 PEC PE-1 5 5 1 1
+23 PEC PE-2 3 3 1 1
+24 PEC PE-3 5 5 1 1
+25 PEC PE-4 3 3 1 1
+26 PRI PRI-CORE 20 20 4 4 PROJECT
+27 OEC OE-1 4 4 1 1
+28 OEC OE-2 4 4 1 1
+
+=== PAGE 19 ===
+Y23: B.Tech. - Computer Science and Engineering 48
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 OEC OE-3 4 4 1 1
+30 VAC VAC-SPORTS 0 0 1 1
+31 VAC VAC-CERT 0 0 3 3
+32 AUC AUC-CORE 0 0 5 6
+33 AUC AUC-CAREER 0 0 1 1
+34 SIL SIL-CORE 3 3 3 3
+35 MIN MIN-CORE 16 16 4 4 MINOR
+36 MSDC MIN-SDP 4 4 1 1 MINOR
+b) Outcome Requirement
+Minimum CGPA 8.00 •
+Additional credits must be acquired from specified category of courses PCC, HFC, HRC, SDC, PRI •
+No History of Backlogs & No History of Betterment•
+Minimum Three Web of Science Journal Publications •
+Minimum One Design Patent •
+All MIN & MSDC Credits (16 + 4) must be from selected MINOR Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 20 ===
+Y23: B.Tech. - Computer Science and Engineering 49
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+10. Honors through Research with Double Major
+a) Credit Requirement Total Credit Required: 208
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1 DOUBLE MAJOR
+14 HFC HFC-CORE 0 16 0 4
+15 HRC HRC-CORE 9 12 3 4
+16 HIC HIC-CORE 0 0 0 0
+17 HEC HEC-CORE 0 16 0 4
+18 SDC SDP-1 2 4 1 1
+19 SDC SDP-2 2 4 1 1
+20 SDC SDP-3 2 4 1 1
+21 PEC PE-1 5 5 1 1
+22 PEC PE-2 3 3 1 1
+23 PEC PE-3 5 5 1 1
+24 PEC PE-4 3 3 1 1
+25 PRI PRI-CORE 20 20 4 4 PROJECT
+26 OEC OE-1 4 4 1 1 DOUBLE MAJOR
+27 OEC OE-2 4 4 1 1 DOUBLE MAJOR
+28 OEC OE-3 4 4 1 1 DOUBLE MAJOR
+
+=== PAGE 21 ===
+Y23: B.Tech. - Computer Science and Engineering 50
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 VAC VAC-SPORTS 0 0 1 1
+30 VAC VAC-CERT 0 0 3 3
+31 AUC AUC-CORE 0 0 5 6
+32 AUC AUC-CAREER 0 0 1 1
+33 SIL SIL-CORE 3 3 3 3
+34 SMFC SMFC-CORE 21 21 5 5 DOUBLE MAJOR
+35 SMFC SMFC-SDP 4 4 1 1 DOUBLE MAJOR
+b) Outcome Requirement
+Minimum CGPA 8.00•
+Additional credits must be acquired from specified category of courses PCC, HFC, HRC, SDC, PRI •
+No History of Backlogs & No History of Betterment•
+Minimum Three Web of Science Journal Publications•
+Minimum One Design Patent•
+All 40 Credits (SMFC+OEC+FCC) must be from selected Second Major Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 22 ===
+Y23: B.Tech. - Computer Science and Engineering 51
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+11. Honors through Research with Specialization
+a) Credit Requirement Total Credit Required: 193
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1
+14 HFC HFC-CORE 0 16 0 4
+15 HRC HRC-CORE 9 12 3 4
+16 HEC HEC-CORE 0 16 0 4
+17 SDC SDP-1 2 4 1 1
+18 SDC SDP-2 2 4 1 1
+19 SDC SDP-3 2 4 1 1
+20 SDC SDP-4 4 4 1 1 SPECIALIZATION
+21 PEC PE-1 7 7 1 1 SPECIALIZATION
+22 PEC PE-2 3 3 1 1 SPECIALIZATION
+23 PEC PE-3 7 7 1 1 SPECIALIZATION
+24 PEC PE-4 3 3 1 1 SPECIALIZATION
+25 PEC PE-5 3 3 1 1 SPECIALIZATION
+26 PRI PRI-CORE 20 20 4 4 PROJECT
+27 OEC OE-1 4 4 1 1
+28 OEC OE-2 4 4 1 1
+
+=== PAGE 23 ===
+Y23: B.Tech. - Computer Science and Engineering 52
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 OEC OE-3 4 4 1 1
+30 VAC VAC-SPORTS 0 0 1 1
+31 VAC VAC-CERT 0 0 3 3
+32 AUC AUC-CORE 0 0 5 6
+33 AUC AUC-CAREER 0 0 1 1
+34 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 8.00 •
+Additional credits must be acquired from specified category of courses PCC, HFC, HRC, SDC, PRI•
+No History of Backlogs & No History of Betterment•
+Minimum Three Web of Science Journal Publications•
+Minimum One Design Patent •
+All PEC and SDP-4 Credits must be from selected specialization•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 24 ===
+Y23: B.Tech. - Computer Science and Engineering 53
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+12. Honors through Research with No Add-on
+a) Credit Requirement Total Credit Required: 183
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1
+14 HFC HFC-CORE 0 16 0 4
+15 HRC HRC-CORE 9 12 3 4
+16 HEC HEC-CORE 0 16 0 4
+17 SDC SDP-1 2 4 1 1
+18 SDC SDP-2 2 4 1 1
+19 SDC SDP-3 2 4 1 1
+20 PEC PE-1 5 5 1 1
+21 PEC PE-2 3 3 1 1
+22 PEC PE-3 5 5 1 1
+23 PEC PE-4 3 3 1 1
+24 PRI PRI-CORE 20 20 4 4 PROJECT
+25 OEC OE-1 4 4 1 1
+26 OEC OE-2 4 4 1 1
+27 OEC OE-3 4 4 1 1
+28 VAC VAC-SPORTS 0 0 1 1
+
+=== PAGE 25 ===
+Y23: B.Tech. - Computer Science and Engineering 54
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 VAC VAC-CERT 0 0 3 3
+30 AUC AUC-CORE 0 0 5 6
+31 AUC AUC-CAREER 0 0 1 1
+32 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 8.00 •
+Additional credits must be acquired from specified category of courses PCC, HFC, HRC, SDC, PRI•
+No History of Backlogs & No History of Betterment•
+Minimum Three Web of Science Journal Publications •
+Minimum One Design Patent•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 26 ===
+Y23: B.Tech. - Computer Science and Engineering 55
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+13. Honors with Minor
+a) Credit Requirement Total Credit Required: 201
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1
+14 FCC FC-2 0 0 0 0
+15 HFC HFC-CORE 8 16 2 4
+16 HRC HRC-CORE 0 0 0 0
+17 HIC HIC-CORE 0 0 0 0
+18 HEC HEC-CORE 0 16 0 4
+19 SDC SDP-1 2 4 1 1
+20 SDC SDP-2 2 4 1 1
+21 SDC SDP-3 2 4 1 1
+22 PEC PE-1 5 5 1 1
+23 PEC PE-2 3 3 1 1
+24 PEC PE-3 5 5 1 1
+25 PEC PE-4 3 3 1 1
+26 PRI PRI-CORE 16 16 4 4
+27 OEC OE-1 4 4 1 1
+28 OEC OE-2 4 4 1 1
+
+=== PAGE 27 ===
+Y23: B.Tech. - Computer Science and Engineering 56
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 OEC OE-3 4 4 1 1
+30 VAC VAC-SPORTS 0 0 1 1
+31 VAC VAC-CERT 0 0 4 4
+32 AUC AUC-CORE 0 0 5 6
+33 AUC AUC-CAREER 0 0 1 1
+34 SIL SIL-CORE 3 3 3 3
+35 MIN MIN-CORE 16 16 4 4 MINOR
+36 MSDC MIN-SDP 4 4 1 1 MINOR
+b) Outcome Requirement
+Minimum CGPA 8.00 •
+Additional credits must be acquired from specified category of courses PCC, HFC, HEC, SDC•
+No History of Backlogs & No History of Betterment•
+Minimum one Scopus Journal Publication•
+All MIN & MSDC Credits (16 + 4) must be from selected MINOR Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 28 ===
+Y23: B.Tech. - Computer Science and Engineering 57
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+14. Honors with Double Major
+a) Credit Requirement Total Credit Required: 208
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1 DOUBLE MAJOR
+14 HFC HFC-CORE 8 16 2 4
+15 HRC HRC-CORE 0 0 0 0
+16 HIC HIC-CORE 0 0 0 0
+17 HEC HEC-CORE 0 16 0 4
+18 SDC SDP-1 2 4 1 1
+19 SDC SDP-2 2 4 1 1
+20 SDC SDP-3 2 4 1 1
+21 PEC PE-1 5 5 1 1
+22 PEC PE-2 3 3 1 1
+23 PEC PE-3 5 5 1 1
+24 PEC PE-4 3 3 1 1
+25 PRI PRI-CORE 16 16 4 4
+26 OEC OE-1 4 4 1 1 DOUBLE MAJOR
+27 OEC OE-2 4 4 1 1 DOUBLE MAJOR
+28 OEC OE-3 4 4 1 1 DOUBLE MAJOR
+
+=== PAGE 29 ===
+Y23: B.Tech. - Computer Science and Engineering 58
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 VAC VAC-SPORTS 0 0 1 1
+30 VAC VAC-CERT 0 0 4 4
+31 AUC AUC-CORE 0 0 5 6
+32 AUC AUC-CAREER 0 0 1 1
+33 SIL SIL-CORE 3 3 3 3
+34 SMFC SMFC-CORE 21 21 5 5 DOUBLE MAJOR
+35 SMFC SMFC-SDP 4 4 1 1 DOUBLE MAJOR
+b) Outcome Requirement
+Minimum CGPA 8.00•
+Additional credits must be acquired from specified category of courses PCC, HFC, HEC, SDC •
+No History of Backlogs & No History of Betterment•
+Minimum one Scopus Journal Publication•
+All 40 Credits (SMFC+OEC+FCC) must be from selected Second Major Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 30 ===
+Y23: B.Tech. - Computer Science and Engineering 59
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+15. Honors with Specialization
+a) Credit Requirement Total Credit Required: 193
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1
+14 HFC HFC-CORE 8 16 2 4
+15 HEC HEC-CORE 0 16 0 4
+16 SDC SDP-1 2 4 1 1
+17 SDC SDP-2 2 4 1 1
+18 SDC SDP-3 2 4 1 1
+19 SDC SDP-4 4 4 1 1 SPECIALIZATION
+20 PEC PE-1 7 7 1 1 SPECIALIZATION
+21 PEC PE-2 3 3 1 1 SPECIALIZATION
+22 PEC PE-3 7 7 1 1 SPECIALIZATION
+23 PEC PE-4 3 3 1 1 SPECIALIZATION
+24 PEC PE-5 3 3 1 1 SPECIALIZATION
+25 PRI PRI-CORE 16 16 4 4
+26 OEC OE-1 4 4 1 1
+27 OEC OE-2 4 4 1 1
+28 OEC OE-3 4 4 1 1
+
+=== PAGE 31 ===
+Y23: B.Tech. - Computer Science and Engineering 60
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 VAC VAC-SPORTS 0 0 1 1
+30 VAC VAC-CERT 0 0 4 4
+31 AUC AUC-CORE 0 0 5 6
+32 AUC AUC-CAREER 0 0 1 1
+33 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 8.00•
+Additional credits must be acquired from specified category of courses PCC, HFC, HEC, SDC•
+No History of Backlogs & No History of Betterment•
+Minimum one Scopus Journal Publication •
+All PEC and SDP-4 Credits must be from selected specialization•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 32 ===
+Y23: B.Tech. - Computer Science and Engineering 61
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+16. Honors with No Add-on
+a) Credit Requirement Total Credit Required: 183
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 36 7 7
+13 FCC FC-1 3 3 1 1
+14 HFC HFC-CORE 8 16 2 4
+15 HEC HEC-CORE 0 16 0 4
+16 SDC SDP-1 2 4 1 1
+17 SDC SDP-2 2 4 1 1
+18 SDC SDP-3 2 4 1 1
+19 PEC PE-1 5 5 1 1
+20 PEC PE-2 3 3 1 1
+21 PEC PE-3 5 5 1 1
+22 PEC PE-4 3 3 1 1
+23 PRI PRI-CORE 16 16 4 4
+24 OEC OE-1 4 4 1 1
+25 OEC OE-2 4 4 1 1
+26 OEC OE-3 4 4 1 1
+27 VAC VAC-SPORTS 0 0 1 1
+28 VAC VAC-CERT 0 0 4 4
+
+=== PAGE 33 ===
+Y23: B.Tech. - Computer Science and Engineering 62
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 AUC AUC-CORE 0 0 5 6
+30 AUC AUC-CAREER 0 0 1 1
+31 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 8.00•
+Additional credits must be acquired from specified category of courses PCC, HFC, HEC, SDC•
+No History of Backlogs & No History of Betterment•
+Minimum one Scopus Journal Publication•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 34 ===
+Y23: B.Tech. - Computer Science and Engineering 63
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+17. No Flexibility with Minor
+a) Credit Requirement Total Credit Required: 183
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 28 7 7
+13 FCC FC-1 3 3 1 1
+14 FCC FC-2 0 0 0 0
+15 HFC HFC-CORE 0 0 0 0
+16 HRC HRC-CORE 0 0 0 0
+17 HIC HIC-CORE 0 0 0 0
+18 HEC HEC-CORE 0 0 0 0
+19 SDC SDP-1 2 2 1 1
+20 SDC SDP-2 2 2 1 1
+21 SDC SDP-3 2 2 1 1
+22 PEC PE-1 5 5 1 1
+23 PEC PE-2 3 3 1 1
+24 PEC PE-3 5 5 1 1
+25 PEC PE-4 3 3 1 1
+26 PRI PRI-CORE 16 16 4 4
+27 OEC OE-1 4 4 1 1
+28 OEC OE-2 4 4 1 1
+
+=== PAGE 35 ===
+Y23: B.Tech. - Computer Science and Engineering 64
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 OEC OE-3 4 4 1 1
+30 VAC VAC-SPORTS 0 0 1 1
+31 VAC VAC-CERT 0 0 3 3
+32 AUC AUC-CORE 0 0 5 6
+33 AUC AUC-CAREER 0 0 1 1
+34 SIL SIL-CORE 3 3 3 3
+35 MIN MIN-CORE 16 16 4 4 MINOR
+36 MSDC MIN-SDP 4 4 1 1 MINOR
+b) Outcome Requirement
+Minimum CGPA 6.75 •
+All MIN & MSDC Credits (16 + 4) must be from selected MINOR Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 36 ===
+Y23: B.Tech. - Computer Science and Engineering 65
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+18. No Flexibility with Double Major
+a) Credit Requirement Total Credit Required: 188
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 28 7 7
+13 FCC FC-1 3 3 1 1 DOUBLE MAJOR
+14 HFC HFC-CORE 0 0 0 0
+15 HRC HRC-CORE 0 0 0 0
+16 HIC HIC-CORE 0 0 0 0
+17 HEC HEC-CORE 0 0 0 0
+18 SDC SDP-1 2 2 1 1
+19 SDC SDP-2 2 2 1 1
+20 SDC SDP-3 2 2 1 1
+21 PEC PE-1 5 5 1 1
+22 PEC PE-2 3 3 1 1
+23 PEC PE-3 5 5 1 1
+24 PEC PE-4 3 3 1 1
+25 PRI PRI-CORE 16 16 4 4
+26 OEC OE-1 4 4 1 1 DOUBLE MAJOR
+27 OEC OE-2 4 4 1 1 DOUBLE MAJOR
+28 OEC OE-3 4 4 1 1 DOUBLE MAJOR
+
+=== PAGE 37 ===
+Y23: B.Tech. - Computer Science and Engineering 66
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 VAC VAC-SPORTS 0 0 1 1
+30 VAC VAC-CERT 0 0 3 3
+31 AUC AUC-CORE 0 0 5 6
+32 AUC AUC-CAREER 0 0 1 1
+33 SIL SIL-CORE 3 3 3 3
+34 SMFC SMFC-CORE 21 21 5 5 DOUBLE MAJOR
+35 SMFC SMFC-SDP 4 4 1 1 DOUBLE MAJOR
+b) Outcome Requirement
+Minimum CGPA 7.75•
+All 40 Credits (SMFC+OEC+FCC) must be from selected Second Major Degree•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 38 ===
+Y23: B.Tech. - Computer Science and Engineering 67
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+19. No Flexibility with Specialization
+a) Credit Requirement Total Credit Required: 168
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 28 7 7
+13 FCC FC-1 3 3 1 1
+14 SDC SDP-1 2 2 1 1
+15 SDC SDP-2 2 2 1 1
+16 SDC SDP-3 2 2 1 1
+17 SDC SDP-4 2 2 1 1 SPECIALIZATION
+18 PEC PE-1 5 5 1 1 SPECIALIZATION
+19 PEC PE-2 3 3 1 1 SPECIALIZATION
+20 PEC PE-3 5 5 1 1 SPECIALIZATION
+21 PEC PE-4 3 3 1 1 SPECIALIZATION
+22 PEC PE-5 3 3 1 1 SPECIALIZATION
+23 PRI PRI-CORE 16 16 4 4
+24 OEC OE-1 4 4 1 1
+25 OEC OE-2 4 4 1 1
+26 OEC OE-3 4 4 1 1
+27 VAC VAC-SPORTS 0 0 1 1
+28 VAC VAC-CERT 0 0 3 3
+
+=== PAGE 39 ===
+Y23: B.Tech. - Computer Science and Engineering 68
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 AUC AUC-CORE 0 0 5 6
+30 AUC AUC-CAREER 0 0 1 1
+31 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 6.75 •
+All PEC and SDP-4 Credits must be from selected specialization•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+
+=== PAGE 40 ===
+Y23: B.Tech. - Computer Science and Engineering 69
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+20. No Flexibility with No Add-on
+a) Credit Requirement Total Credit Required: 163
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+1 HAS HAS-CORE 10 10 5 5
+2 HAS HAS-FLE 3 3 1 1
+3 HAS HAS-MGE 4 4 1 1
+4 BSC BSC-CORE 8 8 2 2
+5 BSC BSC-ME-1 4 4 1 1
+6 BSC BSC-ME-2 4 4 1 1
+7 BSC BSC-ME-3 4 4 1 1
+8 BSC BSC-SE-1 4 4 1 1
+9 BSC BSC-SE-2 4 4 1 1
+10 BSC BSC-SE-3 4 4 1 1
+11 ESC ESC-CORE 30 30 8 8
+12 PCC PCC-CORE 28 28 7 7
+13 FCC FC-1 3 3 1 1
+14 SDC SDP-1 2 2 1 1
+15 SDC SDP-2 2 2 1 1
+16 SDC SDP-3 2 2 1 1
+17 PEC PE-1 5 5 1 1
+18 PEC PE-2 3 3 1 1
+19 PEC PE-3 5 5 1 1
+20 PEC PE-4 3 3 1 1
+21 PRI PRI-CORE 16 16 4 4
+22 OEC OE-1 4 4 1 1
+23 OEC OE-2 4 4 1 1
+24 OEC OE-3 4 4 1 1
+25 VAC VAC-SPORTS 0 0 1 1
+26 VAC VAC-CERT 0 0 3 3
+27 AUC AUC-CORE 0 0 5 6
+28 AUC AUC-CAREER 0 0 1 1
+
+=== PAGE 41 ===
+Y23: B.Tech. - Computer Science and Engineering 70
+Koneru Lakshmaiah Education Foundation (Deemed to be University)
+S# Category Sub-Category Min-Credit Max-Credit Min-Courses Max-Courses Grouping
+29 SIL SIL-CORE 3 3 3 3
+b) Outcome Requirement
+Minimum CGPA 5.25•
+Must have finished all the above-mentioned requirements in less than twice the period of the program, which 
+includes deceleration period chosen by the student, deceleration imposed by KLEF or debarred from the KLEF.
+•
+

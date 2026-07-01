@@ -29,9 +29,11 @@ public class AuditHistory {
     @JoinColumn(name = "performed_by")
     private com.example.demo.model.User performedBy;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String payload;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String result;
 

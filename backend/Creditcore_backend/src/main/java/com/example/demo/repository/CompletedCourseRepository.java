@@ -11,4 +11,7 @@ import java.util.List;
 public interface CompletedCourseRepository extends JpaRepository<CompletedCourse, Long> {
     List<CompletedCourse> findByStudent(User student);
     List<CompletedCourse> findByStudentId(Long studentId);
+    List<CompletedCourse> findByStudentIdOrderByRegisterDateDesc(Long studentId);
+    boolean existsByStudentIdAndCourseCode(Long studentId, String courseCode);
+    long countByStudentId(Long studentId);
 }

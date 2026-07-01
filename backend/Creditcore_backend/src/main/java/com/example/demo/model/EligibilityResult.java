@@ -40,6 +40,7 @@ public class EligibilityResult {
     @Column(name = "specialization_eligible")
     private Boolean specializationEligible = false;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String details;
 

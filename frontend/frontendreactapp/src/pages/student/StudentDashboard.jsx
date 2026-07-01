@@ -3,17 +3,17 @@ import api from '../../api';
 import './student.css';
 
 export default function StudentDashboard() {
-    const [progress, setProgress] = useState(null);
+    const [progressData, setProgressData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchProgress = async () => {
             try {
-                const response = await api.get('/student/progress');
-                setProgress(response.data);
+                const response = await api.get('/dyod/progress/student/me');
+                setProgressData(response.data);
             } catch (err) {
-                setError('Failed to load academic progress. Please ensure your profile is set up.');
+                setError('Failed to load academic progress. Your degree path might not be assigned yet.');
             } finally {
                 setLoading(false);
             }
@@ -30,26 +30,57 @@ export default function StudentDashboard() {
 
     if (error) return <div className="student-dashboard"><div className="alert error">{error}</div></div>;
 
+    const { status, buckets, studentName, department, subDepartment, specialization } = progressData;
+
+    const handleDownloadReport = async () => {
+        try {
+            const response = await api.get('/reports/student/me/excel', { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${studentName.replace(/\s+/g, '_')}_progress_report.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (err) {
+            alert('Failed to download progress report.');
+        }
+    };
+
     const radius = 85;
     const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (progress?.completionPercentage / 100) * circumference;
+    const offset = circumference - (status.completionPercentage / 100) * circumference;
+
+    // Group buckets by category for the breakdown
+    const categories = {};
+    buckets.forEach(b => {
+        const cat = b.bucketCategory || 'Other';
+        if (!categories[cat]) categories[cat] = { earned: 0, required: 0 };
+        categories[cat].earned += b.earnedCredits;
+        categories[cat].required += b.requiredCredits;
+    });
 
     return (
         <div className="student-dashboard animate-fade">
             <header className="student-hero">
                 <div className="hero-content">
                     <span className="welcome-tag">Student Overview</span>
-                    <h1>Welcome Back, <span className="highlight">{progress.studentName}</span></h1>
-                    <p>{progress.degree} • {progress.specialization} • Batch of 2025</p>
+                    <h1>Welcome Back, <span className="highlight">{studentName}</span></h1>
+                    <p>{department} • {subDepartment} {specialization ? `• ${specialization}` : ''}</p>
                 </div>
-                <div className="hero-stats">
-                    <div className="hero-stat-card">
-                        <span className="label">GPA</span>
-                        <span className="value">3.82</span>
-                    </div>
-                    <div className="hero-stat-card">
-                        <span className="label">Rank</span>
-                        <span className="value">#12</span>
+                <div className="hero-stats" style={{ alignItems: 'center' }}>
+                    <div className="hero-stat-card" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                        <span className="label">Status</span>
+                        <span className={`value ${status.isDegreeEligible ? 'success' : ''}`}>
+                            {status.isDegreeEligible ? 'Eligible' : 'In Progress'}
+                        </span>
+                        <button 
+                            onClick={handleDownloadReport}
+                            className="filter-chip active" 
+                            style={{ margin: '8px 0 0 0', padding: '6px 12px', fontSize: '0.8rem', background: '#FFD700', color: '#8B0000', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                        >
+                            📥 Download Report
+                        </button>
                     </div>
                 </div>
             </header>
@@ -82,18 +113,18 @@ export default function StudentDashboard() {
                             />
                         </svg>
                         <div className="inner-text">
-                            <span className="big-percent">{progress.completionPercentage}%</span>
+                            <span className="big-percent">{status.completionPercentage}%</span>
                             <span className="sub-label">Audit Score</span>
                         </div>
                     </div>
 
                     <div className="credit-pills">
                         <div className="pill">
-                            <strong>{progress.totalCreditsCompleted}</strong>
+                            <strong>{status.totalEarnedCredits}</strong>
                             <span>Earned</span>
                         </div>
                         <div className="pill dark">
-                            <strong>{progress.totalCreditsRequired}</strong>
+                            <strong>{status.totalRequiredCredits}</strong>
                             <span>Required</span>
                         </div>
                     </div>
@@ -107,66 +138,71 @@ export default function StudentDashboard() {
                     </div>
                     
                     <div className="category-scroll">
-                        {Object.entries(progress.categorySummaries).map(([name, data]) => (
-                            <div key={name} className="cat-row">
-                                <div className="cat-meta">
-                                    <span className="cat-name">{name}</span>
-                                    <span className="cat-count">{data.completed}/{data.required}</span>
+                        {Object.entries(categories).map(([name, data]) => {
+                            const percent = data.required > 0 ? Math.min(100, (data.earned / data.required) * 100) : 100;
+                            return (
+                                <div key={name} className="cat-row">
+                                    <div className="cat-meta">
+                                        <span className="cat-name">{name}</span>
+                                        <span className="cat-count">{data.earned}/{data.required}</span>
+                                    </div>
+                                    <div className="cat-progress-bg">
+                                        <div 
+                                            className="cat-progress-fill" 
+                                            style={{ width: `${percent}%` }}
+                                        ></div>
+                                    </div>
                                 </div>
-                                <div className="cat-progress-bg">
-                                    <div 
-                                        className="cat-progress-fill" 
-                                        style={{ width: `${data.percentage}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </div>
 
-            {/* Course History Section */}
+            {/* Bucket Progress Section */}
             <section className="history-section">
                 <div className="section-header">
-                    <h2>Academic Transcript</h2>
-                    <div className="filters">
-                        <button className="filter-chip active">All Courses</button>
-                        <button className="filter-chip">Mandatory</button>
-                        <button className="filter-chip">Electives</button>
-                    </div>
+                    <h2>Bucket Progress</h2>
                 </div>
 
                 <div className="transcript-card">
                     <table className="transcript-table">
                         <thead>
                             <tr>
-                                <th>Code</th>
-                                <th>Course Title</th>
+                                <th>Bucket</th>
                                 <th>Category</th>
-                                <th>Credits</th>
-                                <th>Grade</th>
+                                <th>Earned / Required</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {progress.completedCourses.map((course, idx) => (
-                                <tr key={idx} className="course-row">
-                                    <td><code className="code-pill">{course.courseCode}</code></td>
-                                    <td><strong>{course.courseName}</strong></td>
-                                    <td><span className="cat-tag">{course.category}</span></td>
-                                    <td>{course.credits}</td>
-                                    <td><span className="grade-box">{course.grade}</span></td>
-                                    <td><span className="status-tag success">Pass</span></td>
-                                </tr>
-                            ))}
-                            {progress.missingMandatory.map((course, idx) => (
-                                <tr key={`missing-${idx}`} className="course-row pending">
-                                    <td><code className="code-pill">PENDING</code></td>
-                                    <td className="pending-text"><strong>{course.courseName}</strong></td>
-                                    <td><span className="cat-tag">{course.category}</span></td>
-                                    <td>{course.credits}</td>
-                                    <td>—</td>
-                                    <td><span className="status-tag warning">Required</span></td>
+                            {buckets.map((bucket, idx) => (
+                                <tr key={idx} className={`course-row ${bucket.status === 'COMPLETED' ? '' : 'pending'}`}>
+                                    <td>
+                                        <strong>{bucket.bucketCode}</strong>
+                                        <div className="sub-text">{bucket.bucketName}</div>
+                                    </td>
+                                    <td><span className="cat-tag">{bucket.bucketCategory}</span></td>
+                                    <td>
+                                        <div className="bucket-credits-bar">
+                                            <span>{bucket.earnedCredits} / {bucket.requiredCredits}</span>
+                                            <div className="mini-progress-bg">
+                                                <div 
+                                                    className="mini-progress-fill" 
+                                                    style={{ width: `${bucket.completionPercentage}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {bucket.status === 'COMPLETED' ? (
+                                            <span className="status-tag success">Completed</span>
+                                        ) : bucket.status === 'IN_PROGRESS' ? (
+                                            <span className="status-tag warning">In Progress</span>
+                                        ) : (
+                                            <span className="status-tag danger">Pending</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

@@ -1,5 +1,6 @@
 import api from '../api';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 
 export default function ViewAllStudents() {
@@ -8,6 +9,7 @@ export default function ViewAllStudents() {
     const [error, setError] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const [visiblePasswords, setVisiblePasswords] = useState({});
+    const navigate = useNavigate();
 
     const fetchStudents = async () => {
         try {
@@ -153,6 +155,13 @@ export default function ViewAllStudents() {
                                         </td>
                                         <td>
                                             <div className="row-actions">
+                                                <button 
+                                                    className="action-btn" 
+                                                    onClick={() => navigate(`/super_admin/student/${student.id}`)}
+                                                    title="View/Edit Student Courses"
+                                                >
+                                                    📚
+                                                </button>
                                                 <button 
                                                     className="action-btn delete" 
                                                     onClick={() => deleteStudent(student.id)}
