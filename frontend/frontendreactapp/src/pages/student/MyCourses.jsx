@@ -168,6 +168,51 @@ export default function MyCourses() {
         );
     };
 
+    const countCompleted = (courseList) => {
+        const completedCodes = curriculum.completedCourseCodes || [];
+        return courseList.filter(course => 
+            completedCodes.some(code => code && course.courseCode && code.trim().toUpperCase() === course.courseCode.trim().toUpperCase())
+        ).length;
+    };
+
+    const renderProgressBar = (percentage, fillColor) => {
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '180px' }}>
+                <div style={{
+                    flex: 1,
+                    height: '8px',
+                    background: '#E2E8F0',
+                    borderRadius: '10px',
+                    overflow: 'hidden',
+                    position: 'relative'
+                }}>
+                    <div style={{
+                        width: `${percentage}%`,
+                        height: '100%',
+                        background: fillColor,
+                        borderRadius: '10px',
+                        transition: 'width 0.5s ease-out'
+                    }}></div>
+                </div>
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#475569', minWidth: '35px', textAlign: 'right' }}>
+                    {percentage}%
+                </span>
+            </div>
+        );
+    };
+
+    const deptCompleted = countCompleted(departmentCourses);
+    const deptPercent = departmentCourses.length > 0 ? Math.round((deptCompleted / departmentCourses.length) * 100) : 0;
+
+    const specCompleted = countCompleted(specializationCourses);
+    const specPercent = specializationCourses.length > 0 ? Math.round((specCompleted / specializationCourses.length) * 100) : 0;
+
+    const honorsCompleted = countCompleted(honorsCourses);
+    const honorsPercent = honorsCourses.length > 0 ? Math.round((honorsCompleted / honorsCourses.length) * 100) : 0;
+
+    const generalCompleted = countCompleted(generalCourses);
+    const generalPercent = generalCourses.length > 0 ? Math.round((generalCompleted / generalCourses.length) * 100) : 0;
+
     const totalCredits = (courses || []).reduce((sum, c) => sum + (c.credits || 0), 0);
 
     return (
@@ -195,13 +240,16 @@ export default function MyCourses() {
 
             {/* 1. Department Requirements Section */}
             <section className="curriculum-section">
-                <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '1.5rem' }}>🏢</span>
-                        <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Department Requirements ({department})</h2>
+                <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '1.5rem' }}>🏢</span>
+                            <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Department Requirements ({department})</h2>
+                        </div>
+                        {renderProgressBar(deptPercent, '#E11D48')}
                     </div>
                     <span className="count-badge" style={{ background: '#FFF1F2', color: '#BE123C', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
-                        {departmentCourses.length} Courses
+                        {deptCompleted} / {departmentCourses.length} Completed
                     </span>
                 </div>
                 {renderCourseTable(departmentCourses, "Department Requirements", "No department requirements found in the catalog.")}
@@ -210,13 +258,16 @@ export default function MyCourses() {
             {/* 2. Specialization Requirements Section */}
             {specializationType !== 'NONE' && specializationName !== 'N/A' && (
                 <section className="curriculum-section">
-                    <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '1.5rem' }}>🎯</span>
-                            <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Specialization Track ({specializationName})</h2>
+                    <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '15px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ fontSize: '1.5rem' }}>🎯</span>
+                                <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Specialization Track ({specializationName})</h2>
+                            </div>
+                            {renderProgressBar(specPercent, '#2563EB')}
                         </div>
                         <span className="count-badge" style={{ background: '#EFF6FF', color: '#1D4ED8', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
-                            {specializationCourses.length} Courses
+                            {specCompleted} / {specializationCourses.length} Completed
                         </span>
                     </div>
                     {renderCourseTable(specializationCourses, "Specialization Requirements", `No specialization courses found for ${specializationName}.`)}
@@ -226,13 +277,16 @@ export default function MyCourses() {
             {/* 3. Honors Requirements Section */}
             {honorsType !== 'REGULAR' && honorsType !== 'NONE' && (
                 <section className="curriculum-section">
-                    <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '1.5rem' }}>🏅</span>
-                            <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Honors Program Track ({honorsType})</h2>
+                    <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '15px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ fontSize: '1.5rem' }}>🏅</span>
+                                <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Honors Program Track ({honorsType})</h2>
+                            </div>
+                            {renderProgressBar(honorsPercent, '#7C3AED')}
                         </div>
                         <span className="count-badge" style={{ background: '#F5F3FF', color: '#6D28D9', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
-                            {honorsCourses.length} Courses
+                            {honorsCompleted} / {honorsCourses.length} Completed
                         </span>
                     </div>
                     {renderCourseTable(honorsCourses, "Honors Requirements", `No honors courses found for ${honorsType}.`)}
@@ -241,13 +295,16 @@ export default function MyCourses() {
 
             {/* 4. General / Electives Section */}
             <section className="curriculum-section">
-                <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '1.5rem' }}>📚</span>
-                        <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>General Requirements & Electives</h2>
+                <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '1.5rem' }}>📚</span>
+                            <h2 style={{ fontSize: '1.3rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>General Requirements & Electives</h2>
+                        </div>
+                        {renderProgressBar(generalPercent, '#059669')}
                     </div>
                     <span className="count-badge" style={{ background: '#ECFDF5', color: '#047857', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
-                        {generalCourses.length} Courses
+                        {generalCompleted} / {generalCourses.length} Completed
                     </span>
                 </div>
                 {renderCourseTable(generalCourses, "General Requirements", "No general/elective requirements found in the catalog.")}
