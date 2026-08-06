@@ -214,6 +214,11 @@ export default function MyCourses() {
     const generalPercent = generalCourses.length > 0 ? Math.round((generalCompleted / generalCourses.length) * 100) : 0;
 
     const totalCredits = (courses || []).reduce((sum, c) => sum + (c.credits || 0), 0);
+    const totalCoursesCount = courses ? courses.length : 0;
+    const overallCompleted = (courses || []).filter(course => 
+        (curriculum.completedCourseCodes || []).some(code => code && course.courseCode && code.trim().toUpperCase() === course.courseCode.trim().toUpperCase())
+    ).length;
+    const overallPercent = totalCoursesCount > 0 ? Math.round((overallCompleted / totalCoursesCount) * 100) : 0;
 
     return (
         <div className="student-dashboard animate-fade" style={{ paddingBottom: '3rem' }}>
@@ -237,6 +242,38 @@ export default function MyCourses() {
                     </div>
                 </div>
             </header>
+
+            {/* Overall Progress Panel */}
+            <div className="transcript-card animate-fade" style={{ padding: '2rem', background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', marginBottom: '2.5rem', border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>Overall B.Tech Curriculum Progress</h2>
+                        <p style={{ fontSize: '0.9rem', color: '#64748B', margin: '4px 0 0 0' }}>
+                            You have completed <strong>{overallCompleted}</strong> out of <strong>{totalCoursesCount}</strong> total curriculum requirements.
+                        </p>
+                    </div>
+                    <span style={{ fontSize: '1.8rem', fontWeight: 900, color: '#E11D48' }}>
+                        {overallPercent}%
+                    </span>
+                </div>
+                <div style={{
+                    width: '100%',
+                    height: '14px',
+                    background: '#E2E8F0',
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+                }}>
+                    <div style={{
+                        width: `${overallPercent}%`,
+                        height: '100%',
+                        background: 'linear-gradient(90deg, #E11D48 0%, #BE123C 100%)',
+                        borderRadius: '20px',
+                        transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}></div>
+                </div>
+            </div>
 
             {/* 1. Department Requirements Section */}
             <section className="curriculum-section">
