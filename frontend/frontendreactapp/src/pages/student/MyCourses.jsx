@@ -132,8 +132,8 @@ export default function MyCourses() {
                                                 checked={isCompleted || isPlanned}
                                                 disabled={isCompleted}
                                                 onChange={() => togglePlanCourse(course.courseCode)}
-                                                className={`curriculum-checkbox ${isCompleted ? 'completed-check' : 'planned-check'}`}
-                                                title={isCompleted ? "Verified Course" : "Mark as Planned"}
+                                                className={`curriculum-checkbox ${isCompleted ? 'completed-check' : (isPlanned ? 'planned-check' : 'unregistered-check')}`}
+                                                title={isCompleted ? "Completed Course" : (isPlanned ? "Planned Course" : "Not Registered")}
                                             />
                                         </div>
                                     </td>
@@ -259,20 +259,60 @@ export default function MyCourses() {
                     align-items: center;
                     justify-content: center;
                 }
+                
                 .curriculum-checkbox {
-                    width: 18px;
-                    height: 18px;
-                    border-radius: 4px;
-                    border: 2px solid #CBD5E1;
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 6px;
+                    display: grid;
+                    place-content: center;
                     cursor: pointer;
-                    accent-color: #2563EB;
-                    transition: all 0.2s;
+                    background: #fff;
+                    transition: all 0.2s ease-in-out;
+                    margin: 0;
+                    position: relative;
                 }
-                .curriculum-checkbox:disabled {
+
+                .curriculum-checkbox::before {
+                    content: "";
+                    width: 10px;
+                    height: 6px;
+                    border-left: 2.5px solid white;
+                    border-bottom: 2.5px solid white;
+                    transform: rotate(-45deg) scale(0);
+                    transition: transform 0.15s ease-in-out;
+                    margin-top: -2px;
+                }
+
+                .curriculum-checkbox:checked::before {
+                    transform: rotate(-45deg) scale(1);
+                }
+
+                /* Completed: Green */
+                .completed-check {
+                    border: 2px solid #10B981;
+                    background-color: #10B981;
                     cursor: not-allowed;
-                    accent-color: #10B981;
-                    opacity: 0.8;
                 }
+
+                /* Planned / On-Progress: Blue ("dont do anything special") */
+                .planned-check {
+                    border: 2px solid #2563EB;
+                    background-color: #2563EB;
+                }
+
+                /* Unregistered: Red */
+                .unregistered-check {
+                    border: 2px solid #EF4444;
+                    background-color: #FFF5F5;
+                }
+                .unregistered-check:hover {
+                    border-color: #DC2626;
+                    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+                }
+
                 .completed-row {
                     background: #F0FDF4 !important; /* Soft green */
                     opacity: 0.85;
