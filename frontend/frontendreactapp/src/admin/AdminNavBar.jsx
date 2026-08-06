@@ -9,6 +9,7 @@ import AddFaculty from './AddFaculty';
 import ViewAllFaculty from './ViewAllFaculty';
 import CurriculumAdmin from './CurriculumAdmin';
 import ManageIssues from './ManageIssues';
+import StudentLookupView from '../components/StudentLookupView';
 import './admin.css';
 
 export default function AdminNavBar() {
@@ -28,6 +29,7 @@ export default function AdminNavBar() {
         { path: '/super_admin/bulk-upload', label: 'Bulk Upload (Excel)', icon: '📁' },
         { path: '/super_admin/viewallstudents', label: 'View Students', icon: '👥' },
         { path: '/super_admin/student-issues', label: 'Student Issues', icon: '⚠️' },
+        { path: '/super_admin/student-lookup', label: 'Student Lookup', icon: '🔍' },
         { path: '/super_admin/curriculum-management', label: 'Curriculum Setup', icon: '📚' },
         { path: '/super_admin/addfaculty', label: 'Add Faculty', icon: '👨‍🏫' },
         { path: '/super_admin/viewallfaculty', label: 'View Faculty', icon: '🏢' },
@@ -52,7 +54,7 @@ export default function AdminNavBar() {
                 <nav className="sidebar-nav">
                     <div className="nav-group">
                         <span className="group-label">Main Menu</span>
-                        {navItems.slice(0, 5).map((item) => (
+                        {navItems.slice(0, 6).map((item) => (
                             <Link 
                                 key={item.path} 
                                 to={item.path} 
@@ -68,7 +70,7 @@ export default function AdminNavBar() {
 
                     <div className="nav-group">
                         <span className="group-label">Program Management</span>
-                        {navItems.slice(5, 6).map((item) => (
+                        {navItems.slice(6, 7).map((item) => (
                             <Link 
                                 key={item.path} 
                                 to={item.path} 
@@ -84,7 +86,7 @@ export default function AdminNavBar() {
 
                     <div className="nav-group">
                         <span className="group-label">Staff Management</span>
-                        {navItems.slice(6).map((item) => (
+                        {navItems.slice(7).map((item) => (
                             <Link 
                                 key={item.path} 
                                 to={item.path} 
@@ -137,6 +139,7 @@ export default function AdminNavBar() {
                         <Route path="bulk-upload" element={<BulkUpload />} />
                         <Route path="viewallstudents" element={<ViewAllStudents />} />
                         <Route path="student-issues" element={<ManageIssues />} />
+                        <Route path="student-lookup" element={<StudentLookupView endpointPrefix="/admin" />} />
                         <Route path="curriculum-management" element={<CurriculumAdmin />} />
                         <Route path="addfaculty" element={<AddFaculty />} />
                         <Route path="viewallfaculty" element={<ViewAllFaculty />} />

@@ -21,6 +21,9 @@ public class SuperAdminController {
     @Autowired
     private StudentIssueRepository studentIssueRepository;
 
+    @Autowired
+    private com.example.demo.service.AuditService auditService;
+
     @PostMapping("/faculty")
     public ResponseEntity<?> createFaculty(@RequestBody User faculty) {
         try {
@@ -57,6 +60,15 @@ public class SuperAdminController {
     @GetMapping("/students")
     public ResponseEntity<?> getStudents() {
         return ResponseEntity.ok(userService.getUsersByRole(UserRole.STUDENT));
+    }
+
+    @GetMapping("/students/lookup/{username}")
+    public ResponseEntity<?> lookupStudentCurriculum(@PathVariable String username) {
+        try {
+            return ResponseEntity.ok(auditService.getStudentCurriculumCourses(username));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error looking up student: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/users/{id}")
