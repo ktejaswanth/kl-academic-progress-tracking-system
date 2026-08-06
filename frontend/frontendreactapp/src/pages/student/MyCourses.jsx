@@ -220,6 +220,12 @@ export default function MyCourses() {
     ).length;
     const overallPercent = totalCoursesCount > 0 ? Math.round((overallCompleted / totalCoursesCount) * 100) : 0;
 
+    const plannedCount = (courses || []).filter(course => 
+        plannedCourses.some(code => code && course.courseCode && code.trim().toUpperCase() === course.courseCode.trim().toUpperCase()) && 
+        !(curriculum.completedCourseCodes || []).some(code => code && course.courseCode && code.trim().toUpperCase() === course.courseCode.trim().toUpperCase())
+    ).length;
+    const plannedPercent = totalCoursesCount > 0 ? Math.round((plannedCount / totalCoursesCount) * 100) : 0;
+
     return (
         <div className="student-dashboard animate-fade" style={{ paddingBottom: '3rem' }}>
             {/* Header Track Panel */}
@@ -243,35 +249,104 @@ export default function MyCourses() {
                 </div>
             </header>
 
-            {/* Overall Progress Panel */}
-            <div className="transcript-card animate-fade" style={{ padding: '2rem', background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', marginBottom: '2.5rem', border: '1px solid #E2E8F0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '10px' }}>
-                    <div>
-                        <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>Overall B.Tech Curriculum Progress</h2>
-                        <p style={{ fontSize: '0.9rem', color: '#64748B', margin: '4px 0 0 0' }}>
-                            You have completed <strong>{overallCompleted}</strong> out of <strong>{totalCoursesCount}</strong> total curriculum requirements.
-                        </p>
+            {/* Analytics Grid */}
+            <div className="analytics-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', marginBottom: '2.5rem' }}>
+                
+                {/* Column 1: Overall Progress Bar Card */}
+                <div className="transcript-card" style={{ padding: '2rem', background: '#ffffff', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <div>
+                            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>Overall B.Tech Curriculum Progress</h2>
+                            <p style={{ fontSize: '0.9rem', color: '#64748B', margin: '4px 0 0 0' }}>
+                                You have completed <strong>{overallCompleted}</strong> out of <strong>{totalCoursesCount}</strong> total curriculum requirements.
+                            </p>
+                        </div>
                     </div>
-                    <span style={{ fontSize: '1.8rem', fontWeight: 900, color: '#E11D48' }}>
-                        {overallPercent}%
-                    </span>
-                </div>
-                <div style={{
-                    width: '100%',
-                    height: '14px',
-                    background: '#E2E8F0',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
-                }}>
                     <div style={{
-                        width: `${overallPercent}%`,
-                        height: '100%',
-                        background: 'linear-gradient(90deg, #E11D48 0%, #BE123C 100%)',
+                        width: '100%',
+                        height: '14px',
+                        background: '#E2E8F0',
                         borderRadius: '20px',
-                        transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}></div>
+                        overflow: 'hidden',
+                        position: 'relative',
+                        boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)',
+                        marginBottom: '1.5rem'
+                    }}>
+                        <div style={{
+                            width: `${overallPercent}%`,
+                            height: '100%',
+                            background: 'linear-gradient(90deg, #E11D48 0%, #BE123C 100%)',
+                            borderRadius: '20px',
+                            transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}></div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        <div style={{ background: '#F8FAFC', padding: '10px 15px', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block' }}>Department Completion</span>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#E11D48' }}>{deptPercent}%</span>
+                        </div>
+                        <div style={{ background: '#F8FAFC', padding: '10px 15px', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block' }}>Electives & General Completion</span>
+                            <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#059669' }}>{generalPercent}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Column 2: Donut Pie Chart Card */}
+                <div className="transcript-card" style={{ padding: '2rem', background: '#ffffff', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0F172A', margin: '0 0 1.25rem 0', width: '100%', textAlign: 'center' }}>Curriculum Breakdown</h3>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', justifyContent: 'center', width: '100%', flexWrap: 'wrap' }}>
+                        {/* Conic Donut Chart */}
+                        <div style={{
+                            width: '110px',
+                            height: '110px',
+                            borderRadius: '50%',
+                            background: `conic-gradient(
+                                #10B981 0% ${overallPercent}%, 
+                                #2563EB ${overallPercent}% ${overallPercent + plannedPercent}%, 
+                                #EF4444 ${overallPercent + plannedPercent}% 100%
+                            )`,
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.08)',
+                            position: 'relative',
+                            flexShrink: 0
+                        }}>
+                            <div style={{
+                                width: '70px',
+                                height: '70px',
+                                borderRadius: '50%',
+                                background: '#ffffff',
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 800,
+                                fontSize: '1.1rem',
+                                color: '#1E293B'
+                            }}>
+                                {overallPercent}%
+                            </div>
+                        </div>
+
+                        {/* Legend */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '100px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
+                                <span style={{ fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>Done ({overallPercent}%)</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#2563EB', display: 'inline-block' }}></span>
+                                <span style={{ fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>Planned ({plannedPercent}%)</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', display: 'inline-block' }}></span>
+                                <span style={{ fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>Not Reg ({Math.max(0, 100 - overallPercent - plannedPercent)}%)</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -413,6 +488,11 @@ export default function MyCourses() {
                 }
                 .planned-row {
                     background: #EFF6FF !important; /* Soft blue */
+                }
+                @media (max-width: 900px) {
+                    .analytics-grid {
+                        grid-template-columns: 1fr !important;
+                    }
                 }
             `}</style>
         </div>
