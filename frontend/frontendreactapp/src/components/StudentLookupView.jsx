@@ -294,7 +294,7 @@ export default function StudentLookupView({ endpointPrefix }) {
                                         transform: 'translate(-50%, -50%)',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justify-content: 'center',
+                                        justifyContent: 'center',
                                         fontWeight: 800,
                                         fontSize: '1.1rem',
                                         color: '#1E293B'
