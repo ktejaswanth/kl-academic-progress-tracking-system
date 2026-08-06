@@ -120,8 +120,8 @@ export default function MyCourses() {
                     </thead>
                     <tbody>
                         {courseList.map((course, idx) => {
-                            const isCompleted = completedCodes.includes(course.courseCode);
-                            const isPlanned = plannedCourses.includes(course.courseCode);
+                            const isCompleted = completedCodes.some(code => code && course.courseCode && code.trim().toUpperCase() === course.courseCode.trim().toUpperCase());
+                            const isPlanned = plannedCourses.some(code => code && course.courseCode && code.trim().toUpperCase() === course.courseCode.trim().toUpperCase());
 
                             return (
                                 <tr key={idx} className={`course-row ${isCompleted ? 'completed-row' : ''} ${isPlanned && !isCompleted ? 'planned-row' : ''}`}>
