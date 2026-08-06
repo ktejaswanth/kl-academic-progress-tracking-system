@@ -153,6 +153,12 @@ public class AuditService {
             }
         }
 
+        // Fetch completed course codes for this student
+        List<CompletedCourse> completed = completedCourseRepository.findByStudentId(user.getId());
+        Set<String> completedCodes = completed.stream()
+                .map(CompletedCourse::getCourseCode)
+                .collect(Collectors.toSet());
+
         Map<String, Object> response = new HashMap<>();
         response.put("degreeType", degreeType);
         response.put("specialization", specialization);
@@ -160,6 +166,7 @@ public class AuditService {
         response.put("department", user.getDepartment() != null ? user.getDepartment() : "CSE");
         response.put("specializationName", user.getSpecializationName() != null ? user.getSpecializationName() : "N/A");
         response.put("specializationType", user.getSpecializationType() != null ? user.getSpecializationType() : "NONE");
+        response.put("completedCourseCodes", completedCodes);
         response.put("courses", curriculumCourses);
         return response;
     }

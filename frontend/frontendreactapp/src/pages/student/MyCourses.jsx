@@ -6,6 +6,15 @@ export default function MyCourses() {
     const [curriculum, setCurriculum] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    
+    // Planner state loaded from local storage specific to the current student
+    const [plannedCourses, setPlannedCourses] = useState(() => {
+        const storedUser = localStorage.getItem('user');
+        const authUser = storedUser ? JSON.parse(storedUser) : null;
+        const key = authUser ? authUser.username : 'default';
+        const saved = localStorage.getItem(`plannedCourses_${key}`);
+        return saved ? JSON.parse(saved) : [];
+    });
 
     useEffect(() => {
         const fetchCurriculum = async () => {
@@ -20,6 +29,24 @@ export default function MyCourses() {
         };
         fetchCurriculum();
     }, []);
+
+    // Save planned courses to localStorage on update
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        const authUser = storedUser ? JSON.parse(storedUser) : null;
+        const key = authUser ? authUser.username : 'default';
+        localStorage.setItem(`plannedCourses_${key}`, JSON.stringify(plannedCourses));
+    }, [plannedCourses]);
+
+    const togglePlanCourse = (courseCode) => {
+        setPlannedCourses(prev => {
+            if (prev.includes(courseCode)) {
+                return prev.filter(code => code !== courseCode);
+            } else {
+                return [...prev, courseCode];
+            }
+        });
+    };
 
     if (loading) {
         return (
@@ -77,32 +104,64 @@ export default function MyCourses() {
             );
         }
 
+        const completedCodes = curriculum.completedCourseCodes || [];
+
         return (
             <div className="transcript-card" style={{ padding: '1.5rem', background: '#fff', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.02)', marginBottom: '2.5rem', border: '1px solid #F1F5F9' }}>
                 <table className="transcript-table">
                     <thead>
                         <tr>
+                            <th style={{ width: '8%', textAlign: 'center' }}>Plan</th>
                             <th style={{ width: '15%' }}>Course Code</th>
-                            <th style={{ width: '50%' }}>Course Title</th>
+                            <th style={{ width: '42%' }}>Course Title</th>
                             <th style={{ width: '15%' }}>Credits</th>
                             <th style={{ width: '20%' }}>Type</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {courseList.map((course, idx) => (
-                            <tr key={idx} className="course-row">
-                                <td><code className="code-pill">{course.courseCode}</code></td>
-                                <td><strong>{course.courseName}</strong></td>
-                                <td style={{ fontWeight: 600 }}>{course.credits} Credits</td>
-                                <td>
-                                    {course.isMandatory ? (
-                                        <span className="status-tag success" style={{ background: '#DCFCE7', color: '#15803D', border: '1px solid #BBF7D0' }}>Mandatory</span>
-                                    ) : (
-                                        <span className="status-tag warning" style={{ background: '#FEF3C7', color: '#D97706', border: '1px solid #FDE68A' }}>Elective</span>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
+                        {courseList.map((course, idx) => {
+                            const isCompleted = completedCodes.includes(course.courseCode);
+                            const isPlanned = plannedCourses.includes(course.courseCode);
+
+                            return (
+                                <tr key={idx} className={`course-row ${isCompleted ? 'completed-row' : ''} ${isPlanned && !isCompleted ? 'planned-row' : ''}`}>
+                                    <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                        <div className="checkbox-wrapper">
+                                            <input 
+                                                type="checkbox"
+                                                checked={isCompleted || isPlanned}
+                                                disabled={isCompleted}
+                                                onChange={() => togglePlanCourse(course.courseCode)}
+                                                className={`curriculum-checkbox ${isCompleted ? 'completed-check' : 'planned-check'}`}
+                                                title={isCompleted ? "Verified Course" : "Mark as Planned"}
+                                            />
+                                        </div>
+                                    </td>
+                                    <td><code className="code-pill">{course.courseCode}</code></td>
+                                    <td>
+                                        <strong>{course.courseName}</strong>
+                                        {isCompleted && (
+                                            <span style={{ marginLeft: '10px', background: '#DCFCE7', color: '#15803D', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                                                ✓ Completed
+                                            </span>
+                                        )}
+                                        {isPlanned && !isCompleted && (
+                                            <span style={{ marginLeft: '10px', background: '#EFF6FF', color: '#1D4ED8', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                                                📅 Planned
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td style={{ fontWeight: 600 }}>{course.credits} Credits</td>
+                                    <td>
+                                        {course.isMandatory ? (
+                                            <span className="status-tag success" style={{ background: '#DCFCE7', color: '#15803D', border: '1px solid #BBF7D0' }}>Mandatory</span>
+                                        ) : (
+                                            <span className="status-tag warning" style={{ background: '#FEF3C7', color: '#D97706', border: '1px solid #FDE68A' }}>Elective</span>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
@@ -193,6 +252,35 @@ export default function MyCourses() {
                 </div>
                 {renderCourseTable(generalCourses, "General Requirements", "No general/elective requirements found in the catalog.")}
             </section>
+
+            <style>{`
+                .checkbox-wrapper {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .curriculum-checkbox {
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 4px;
+                    border: 2px solid #CBD5E1;
+                    cursor: pointer;
+                    accent-color: #2563EB;
+                    transition: all 0.2s;
+                }
+                .curriculum-checkbox:disabled {
+                    cursor: not-allowed;
+                    accent-color: #10B981;
+                    opacity: 0.8;
+                }
+                .completed-row {
+                    background: #F0FDF4 !important; /* Soft green */
+                    opacity: 0.85;
+                }
+                .planned-row {
+                    background: #EFF6FF !important; /* Soft blue */
+                }
+            `}</style>
         </div>
     );
 }
