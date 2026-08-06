@@ -5,6 +5,7 @@ import StudentDashboard from './StudentDashboard';
 import StudentProfile from './StudentProfile';
 import EligibilityChecker from './EligibilityChecker';
 import RoadmapGenerator from './RoadmapGenerator';
+import MyCourses from './MyCourses';
 import '../../admin/admin.css'; // Reusing layout styles
 
 export default function StudentNavBar() {
@@ -68,7 +69,7 @@ export default function StudentNavBar() {
                 <div className="content-area animate-fade">
                     <Routes>
                         <Route path="home" element={<StudentDashboard />} />
-                        <Route path="courses" element={<div>Coming Soon: Detailed Course View</div>} />
+                        <Route path="courses" element={<MyCourses />} />
                         <Route path="eligibility" element={<EligibilityChecker />} />
                         <Route path="roadmap" element={<RoadmapGenerator />} />
                         <Route path="profile" element={<StudentProfile />} />

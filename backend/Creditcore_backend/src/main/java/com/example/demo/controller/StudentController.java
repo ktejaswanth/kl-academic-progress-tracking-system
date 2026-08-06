@@ -74,4 +74,15 @@ public class StudentController {
             return ResponseEntity.badRequest().body("Error generating roadmap: " + e.getMessage());
         }
     }
+
+    @GetMapping("/curriculum-courses")
+    public ResponseEntity<?> getMyCurriculumCourses() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            return ResponseEntity.ok(auditService.getStudentCurriculumCourses(username));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching curriculum: " + e.getMessage());
+        }
+    }
 }

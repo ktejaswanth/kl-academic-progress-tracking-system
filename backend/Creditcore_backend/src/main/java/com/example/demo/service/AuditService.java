@@ -95,4 +95,69 @@ public class AuditService {
 
         return response;
     }
+
+    public Map<String, Object> getStudentCurriculumCourses(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Optional<StudentProfile> profileOpt = studentProfileRepository.findByUserId(user.getId());
+
+        String degreeType = "B.Tech";
+        String specialization = "CSE";
+        String honorsType = "REGULAR";
+
+        if (profileOpt.isPresent()) {
+            StudentProfile profile = profileOpt.get();
+            if (profile.getDegreeType() != null && !profile.getDegreeType().isEmpty()) degreeType = profile.getDegreeType();
+            if (profile.getSpecialization() != null && !profile.getSpecialization().isEmpty()) specialization = profile.getSpecialization();
+            if (profile.getHonorsType() != null && !profile.getHonorsType().isEmpty()) honorsType = profile.getHonorsType();
+        } else {
+            // Fall back to User database fields populated by HOD
+            if (user.getDepartment() != null && !user.getDepartment().isEmpty()) {
+                specialization = user.getDepartment();
+            }
+            if (user.getSubDepartment() != null && !user.getSubDepartment().isEmpty()) {
+                honorsType = user.getSubDepartment();
+            }
+        }
+
+        // Final fallback if fields are empty
+        if ("N/A".equalsIgnoreCase(specialization) || specialization.trim().isEmpty()) {
+            specialization = "CSE";
+        }
+        if ("N/A".equalsIgnoreCase(honorsType) || honorsType.trim().isEmpty()) {
+            honorsType = "REGULAR";
+        }
+
+        // Fetch core specialization requirements
+        List<Requirement> specReqs = requirementRepository.findByDegreeTypeAndSpecialization(degreeType, specialization);
+        
+        // Fetch additional honors requirements if honors is selected
+        List<Requirement> honorsReqs = new ArrayList<>();
+        if (!"REGULAR".equalsIgnoreCase(honorsType) && !"NONE".equalsIgnoreCase(honorsType)) {
+            honorsReqs = requirementRepository.findByDegreeTypeAndSpecializationAndHonorsType(degreeType, specialization, honorsType);
+        }
+
+        // De-duplicate requirements by course code
+        Set<String> seenCodes = new HashSet<>();
+        List<Requirement> curriculumCourses = new ArrayList<>();
+        
+        for (Requirement r : specReqs) {
+            if (r.getCourseCode() != null && seenCodes.add(r.getCourseCode())) {
+                curriculumCourses.add(r);
+            }
+        }
+        for (Requirement r : honorsReqs) {
+            if (r.getCourseCode() != null && seenCodes.add(r.getCourseCode())) {
+                curriculumCourses.add(r);
+            }
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("degreeType", degreeType);
+        response.put("specialization", specialization);
+        response.put("honorsType", honorsType);
+        response.put("courses", curriculumCourses);
+        return response;
+    }
 }
