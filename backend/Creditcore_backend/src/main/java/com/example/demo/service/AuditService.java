@@ -157,6 +157,9 @@ public class AuditService {
         response.put("degreeType", degreeType);
         response.put("specialization", specialization);
         response.put("honorsType", honorsType);
+        response.put("department", user.getDepartment() != null ? user.getDepartment() : "CSE");
+        response.put("specializationName", user.getSpecializationName() != null ? user.getSpecializationName() : "N/A");
+        response.put("specializationType", user.getSpecializationType() != null ? user.getSpecializationType() : "NONE");
         response.put("courses", curriculumCourses);
         return response;
     }
