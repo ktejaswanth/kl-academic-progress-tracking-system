@@ -76,4 +76,46 @@ public class UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
+
+    public User updateStudentProfile(Long studentId, Map<String, Object> payload) {
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+        
+        student.setFirstName((String) payload.getOrDefault("firstName", student.getFirstName()));
+        student.setLastName((String) payload.getOrDefault("lastName", student.getLastName()));
+        student.setEmail((String) payload.getOrDefault("email", student.getEmail()));
+        
+        String newDept = (String) payload.get("department");
+        String newSubDept = (String) payload.get("subDepartment");
+        String newSpecType = (String) payload.get("specializationType");
+        String newSpecName = (String) payload.get("specializationName");
+        
+        if (newDept != null) student.setDepartment(newDept);
+        if (newSubDept != null) student.setSubDepartment(newSubDept);
+        if (newSpecType != null) student.setSpecializationType(newSpecType);
+        if (newSpecName != null) student.setSpecializationName(newSpecName);
+        
+        User savedStudent = userRepository.save(student);
+        
+        StudentProfile profile = studentProfileRepository.findByUserId(studentId)
+                .orElseGet(() -> {
+                    StudentProfile newProfile = new StudentProfile();
+                    newProfile.setUser(savedStudent);
+                    newProfile.setDegreeType("B.Tech");
+                    newProfile.setCurrentYear(1);
+                    newProfile.setAdmissionYear(java.time.LocalDate.now().getYear());
+                    return newProfile;
+                });
+                
+        if (newDept != null) {
+            profile.setSpecialization(newDept);
+            profile.setBranch(newDept);
+        }
+        if (newSubDept != null) {
+            profile.setHonorsType(newSubDept);
+        }
+        
+        studentProfileRepository.save(profile);
+        return savedStudent;
+    }
 }

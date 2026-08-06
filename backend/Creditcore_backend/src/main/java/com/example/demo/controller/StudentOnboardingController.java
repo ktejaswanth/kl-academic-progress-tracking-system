@@ -59,4 +59,13 @@ public class StudentOnboardingController {
     public ResponseEntity<StudentSelection> saveSelection(@RequestBody StudentSelection selection) {
         return ResponseEntity.ok(onboardingService.saveSelection(selection));
     }
+
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getOnboardingProfile(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(onboardingService.getOnboardingProfile(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching profile: " + e.getMessage());
+        }
+    }
 }

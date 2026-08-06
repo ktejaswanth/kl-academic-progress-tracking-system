@@ -27,6 +27,35 @@ export default function ProfileSetup() {
     const stored = localStorage.getItem('firstLoginUser');
     const user = stored ? JSON.parse(stored) : null;
 
+    React.useEffect(() => {
+        const loadProfileData = async () => {
+            if (!user?.userId) return;
+            setLoading(true);
+            try {
+                const response = await api.get(`/onboarding/profile/${user.userId}`);
+                const data = response.data;
+                setProfile({
+                    degreeType: data.degreeType || 'B.Tech',
+                    specialization: data.specialization || data.department || '',
+                    honorsType: data.honorsType || data.subDepartment || 'REGULAR',
+                    branch: data.branch || data.department || '',
+                    batch: data.batch ? String(data.batch) : '',
+                    currentYear: data.currentYear ? String(data.currentYear) : '2',
+                    section: data.section || '',
+                    honorsOption: data.honorsOption || '',
+                    extensionType: data.extensionType || '',
+                    phoneNumber: data.phoneNumber || '',
+                    address: data.address || ''
+                });
+            } catch (err) {
+                setError('Failed to load prefilled student profile. Please contact department HOD.');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadProfileData();
+    }, [user?.userId]);
+
     const handleChange = (e) => {
         setProfile({ ...profile, [e.target.name]: e.target.value });
     };
@@ -75,56 +104,61 @@ export default function ProfileSetup() {
                     <form onSubmit={handleSubmit}>
                         <div className="form-grid">
                             <div className="form-group">
-                                <label>Degree Type</label>
+                                <label>Degree Type (Managed by HOD)</label>
                                 <input
                                     type="text"
                                     name="degreeType"
-                                    className="input-field"
+                                    className="input-field disabled-field"
                                     value={profile.degreeType}
                                     onChange={handleChange}
                                     required
+                                    disabled
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Specialization</label>
+                                <label>Specialization (Managed by HOD)</label>
                                 <input
                                     type="text"
                                     name="specialization"
-                                    className="input-field"
+                                    className="input-field disabled-field"
                                     value={profile.specialization}
                                     onChange={handleChange}
+                                    disabled
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Honors Type</label>
+                                <label>Honors Type (Managed by HOD)</label>
                                 <input
                                     type="text"
                                     name="honorsType"
-                                    className="input-field"
+                                    className="input-field disabled-field"
                                     value={profile.honorsType}
                                     onChange={handleChange}
+                                    disabled
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Branch</label>
+                                <label>Branch (Managed by HOD)</label>
                                 <input
                                     type="text"
                                     name="branch"
-                                    className="input-field"
+                                    className="input-field disabled-field"
                                     value={profile.branch}
                                     onChange={handleChange}
                                     required
+                                    disabled
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Batch</label>
+                                <label>Batch (Managed by HOD)</label>
                                 <input
                                     type="text"
                                     name="batch"
-                                    className="input-field"
+                                    className="input-field disabled-field"
                                     value={profile.batch}
                                     onChange={handleChange}
                                     required
+                                    disabled
                                 />
                             </div>
                             <div className="form-group">
@@ -202,6 +236,15 @@ export default function ProfileSetup() {
                     </form>
                 </div>
             </div>
+            <style>{`
+                .disabled-field {
+                    background: #F8FAFC !important;
+                    color: #64748B !important;
+                    cursor: not-allowed !important;
+                    border-color: #E2E8F0 !important;
+                    opacity: 0.8;
+                }
+            `}</style>
         </div>
     );
 }

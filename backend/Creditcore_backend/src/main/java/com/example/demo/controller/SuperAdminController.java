@@ -58,4 +58,13 @@ public class SuperAdminController {
         userService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully");
     }
+
+    @PutMapping("/students/{id}")
+    public ResponseEntity<?> updateStudentProfile(@PathVariable Long id, @RequestBody java.util.Map<String, Object> updatePayload) {
+        try {
+            return ResponseEntity.ok(userService.updateStudentProfile(id, updatePayload));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error updating student: " + e.getMessage());
+        }
+    }
 }
