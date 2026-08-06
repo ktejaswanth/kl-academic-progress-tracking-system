@@ -6,6 +6,7 @@ import StudentProfile from './StudentProfile';
 import EligibilityChecker from './EligibilityChecker';
 import RoadmapGenerator from './RoadmapGenerator';
 import MyCourses from './MyCourses';
+import ReportIssue from './ReportIssue';
 import '../../admin/admin.css'; // Reusing layout styles
 
 export default function StudentNavBar() {
@@ -23,6 +24,7 @@ export default function StudentNavBar() {
         { path: '/student/courses', label: 'My Courses', icon: '📚' },
         { path: '/student/eligibility', label: 'Eligibility', icon: '✅' },
         { path: '/student/roadmap', label: 'Roadmap', icon: '🗺️' },
+        { path: '/student/issues', label: 'Report Issue', icon: '⚠️' },
         { path: '/student/profile', label: 'My Profile', icon: '👤' },
     ];
 
@@ -72,6 +74,7 @@ export default function StudentNavBar() {
                         <Route path="courses" element={<MyCourses />} />
                         <Route path="eligibility" element={<EligibilityChecker />} />
                         <Route path="roadmap" element={<RoadmapGenerator />} />
+                        <Route path="issues" element={<ReportIssue />} />
                         <Route path="profile" element={<StudentProfile />} />
                         <Route index element={<StudentDashboard />} />
                     </Routes>
