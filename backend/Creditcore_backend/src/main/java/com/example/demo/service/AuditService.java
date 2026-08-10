@@ -46,7 +46,10 @@ public class AuditService {
 
         // 1. Calculate Statistics
         int totalRequired = requirements.stream().mapToInt(Requirement::getCredits).sum();
-        int totalCompleted = completed.stream().mapToInt(CompletedCourse::getCredits).sum();
+        int totalCompleted = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                .mapToInt(CompletedCourse::getCredits)
+                .sum();
         double percentage = totalRequired > 0 ? (double) totalCompleted / totalRequired * 100 : 0;
 
         // 2. Map Categorized Progress
@@ -63,6 +66,7 @@ public class AuditService {
             // This is a simplified logic: matching completed courses to buckets
             // In a real system, we'd match by course_code or rules
             int compCredits = completed.stream()
+                    .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
                     .filter(c -> bucketReqs.stream().anyMatch(r -> r.getCourseCode().equals(c.getCourseCode())))
                     .mapToInt(CompletedCourse::getCredits)
                     .sum();
@@ -86,13 +90,93 @@ public class AuditService {
         response.put("completedCourses", completed);
         
         // Identify missing mandatory courses
+        Set<String> completedCodesForMandatory = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                .map(CompletedCourse::getCourseCode)
+                .collect(Collectors.toSet());
         List<Requirement> missingMandatory = requirements.stream()
                 .filter(Requirement::getIsMandatory)
-                .filter(r -> completed.stream().noneMatch(c -> c.getCourseCode().equals(r.getCourseCode())))
+                .filter(r -> !completedCodesForMandatory.contains(r.getCourseCode()))
                 .collect(Collectors.toList());
         
         response.put("missingMandatory", missingMandatory);
 
+        return response;
+    }
+
+    public Map<String, Object> getStudentCurriculumCourses(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Optional<StudentProfile> profileOpt = studentProfileRepository.findByUserId(user.getId());
+
+        String degreeType = "B.Tech";
+        String specialization = "CSE";
+        String honorsType = "REGULAR";
+
+        if (profileOpt.isPresent()) {
+            StudentProfile profile = profileOpt.get();
+            if (profile.getDegreeType() != null && !profile.getDegreeType().isEmpty()) degreeType = profile.getDegreeType();
+            if (profile.getSpecialization() != null && !profile.getSpecialization().isEmpty()) specialization = profile.getSpecialization();
+            if (profile.getHonorsType() != null && !profile.getHonorsType().isEmpty()) honorsType = profile.getHonorsType();
+        } else {
+            // Fall back to User database fields populated by HOD
+            if (user.getDepartment() != null && !user.getDepartment().isEmpty()) {
+                specialization = user.getDepartment();
+            }
+            if (user.getSubDepartment() != null && !user.getSubDepartment().isEmpty()) {
+                honorsType = user.getSubDepartment();
+            }
+        }
+
+        // Final fallback if fields are empty
+        if ("N/A".equalsIgnoreCase(specialization) || specialization.trim().isEmpty()) {
+            specialization = "CSE";
+        }
+        if ("N/A".equalsIgnoreCase(honorsType) || honorsType.trim().isEmpty()) {
+            honorsType = "REGULAR";
+        }
+
+        // Fetch core specialization requirements
+        List<Requirement> specReqs = requirementRepository.findByDegreeTypeAndSpecialization(degreeType, specialization);
+        
+        // Fetch additional honors requirements if honors is selected
+        List<Requirement> honorsReqs = new ArrayList<>();
+        if (!"REGULAR".equalsIgnoreCase(honorsType) && !"NONE".equalsIgnoreCase(honorsType)) {
+            honorsReqs = requirementRepository.findByDegreeTypeAndSpecializationAndHonorsType(degreeType, specialization, honorsType);
+        }
+
+        // De-duplicate requirements by course code
+        Set<String> seenCodes = new HashSet<>();
+        List<Requirement> curriculumCourses = new ArrayList<>();
+        
+        for (Requirement r : specReqs) {
+            if (r.getCourseCode() != null && seenCodes.add(r.getCourseCode())) {
+                curriculumCourses.add(r);
+            }
+        }
+        for (Requirement r : honorsReqs) {
+            if (r.getCourseCode() != null && seenCodes.add(r.getCourseCode())) {
+                curriculumCourses.add(r);
+            }
+        }
+
+        // Fetch completed course codes for this student
+        List<CompletedCourse> completed = completedCourseRepository.findByStudentId(user.getId());
+        Set<String> completedCodes = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                .map(CompletedCourse::getCourseCode)
+                .collect(Collectors.toSet());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("degreeType", degreeType);
+        response.put("specialization", specialization);
+        response.put("honorsType", honorsType);
+        response.put("department", user.getDepartment() != null ? user.getDepartment() : "CSE");
+        response.put("specializationName", user.getSpecializationName() != null ? user.getSpecializationName() : "N/A");
+        response.put("specializationType", user.getSpecializationType() != null ? user.getSpecializationType() : "NONE");
+        response.put("completedCourseCodes", completedCodes);
+        response.put("courses", curriculumCourses);
         return response;
     }
 }

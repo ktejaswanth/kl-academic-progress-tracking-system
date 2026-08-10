@@ -66,17 +66,69 @@ public class StudentOnboardingService {
                     return newProfile;
                 });
 
-        profile.setDegreeType((String) profileData.getOrDefault("degreeType", profile.getDegreeType()));
-        profile.setSpecialization((String) profileData.getOrDefault("specialization", profile.getSpecialization()));
-        profile.setHonorsType((String) profileData.getOrDefault("honorsType", profile.getHonorsType()));
-        profile.setBranch((String) profileData.getOrDefault("branch", profile.getBranch()));
-        profile.setBatch(profileData.get("batch") != null ? Integer.valueOf(profileData.get("batch").toString()) : profile.getBatch());
+        // Secure: Student is NOT allowed to change department, honors, degree, branch, or batch details.
+        // We lock these to existing database profile values or user entity defaults.
+        if (profile.getDegreeType() == null) {
+            profile.setDegreeType("B.Tech");
+        }
+        if (profile.getSpecialization() == null) {
+            profile.setSpecialization(user.getDepartment() != null ? user.getDepartment() : "CSE");
+        }
+        if (profile.getHonorsType() == null) {
+            profile.setHonorsType(user.getSubDepartment() != null ? user.getSubDepartment() : "REGULAR");
+        }
+        if (profile.getBranch() == null) {
+            profile.setBranch(user.getDepartment());
+        }
+        if (profile.getBatch() == null) {
+            profile.setBatch(user.getCreatedAt() != null ? user.getCreatedAt().toLocalDate().getYear() : java.time.LocalDate.now().getYear());
+        }
+
         profile.setCurrentYear(profileData.get("currentYear") != null ? Integer.valueOf(profileData.get("currentYear").toString()) : profile.getCurrentYear());
         profile.setSection((String) profileData.getOrDefault("section", profile.getSection()));
         profile.setHonorsOption((String) profileData.getOrDefault("honorsOption", profile.getHonorsOption()));
         profile.setExtensionType((String) profileData.getOrDefault("extensionType", profile.getExtensionType()));
 
         return studentProfileRepository.save(profile);
+    }
+
+    public Map<String, Object> getOnboardingProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        StudentProfile profile = studentProfileRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    StudentProfile newProfile = new StudentProfile();
+                    newProfile.setUser(user);
+                    newProfile.setDegreeType("B.Tech");
+                    newProfile.setSpecialization(user.getDepartment() != null ? user.getDepartment() : "CSE");
+                    newProfile.setHonorsType(user.getSubDepartment() != null ? user.getSubDepartment() : "REGULAR");
+                    newProfile.setCurrentYear(1);
+                    newProfile.setAdmissionYear(java.time.LocalDate.now().getYear());
+                    return studentProfileRepository.save(newProfile);
+                });
+
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("userId", user.getId());
+        result.put("username", user.getUsername());
+        result.put("email", user.getEmail());
+        result.put("firstName", user.getFirstName());
+        result.put("lastName", user.getLastName());
+        result.put("department", user.getDepartment());
+        result.put("subDepartment", user.getSubDepartment());
+        result.put("specializationType", user.getSpecializationType());
+        result.put("specializationName", user.getSpecializationName());
+        
+        result.put("degreeType", profile.getDegreeType());
+        result.put("specialization", profile.getSpecialization());
+        result.put("honorsType", profile.getHonorsType());
+        result.put("branch", profile.getBranch() != null ? profile.getBranch() : user.getDepartment());
+        result.put("batch", profile.getBatch() != null ? profile.getBatch() : (user.getCreatedAt() != null ? user.getCreatedAt().toLocalDate().getYear() : java.time.LocalDate.now().getYear()));
+        result.put("currentYear", profile.getCurrentYear());
+        result.put("section", profile.getSection());
+        result.put("honorsOption", profile.getHonorsOption());
+        result.put("extensionType", profile.getExtensionType());
+        
+        return result;
     }
 
     public StudentSelection saveSelection(StudentSelection selection) {

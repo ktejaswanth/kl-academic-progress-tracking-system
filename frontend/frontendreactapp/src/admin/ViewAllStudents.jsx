@@ -11,11 +11,27 @@ export default function ViewAllStudents() {
     const [visiblePasswords, setVisiblePasswords] = useState({});
     const navigate = useNavigate();
 
+    // Edit student states
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [currentStudent, setCurrentStudent] = useState(null);
+    const [editForm, setEditForm] = useState({
+        firstName: "",
+        lastName: "",
+        email: "",
+        department: "",
+        subDepartment: "REGULAR",
+        specializationType: "NONE",
+        specializationName: ""
+    });
+    const [editError, setEditError] = useState("");
+    const [editSuccess, setEditSuccess] = useState("");
+    const [updating, setUpdating] = useState(false);
+
     const fetchStudents = async () => {
         try {
             const response = await api.get("/admin/students");
             setData(response.data);
-        } catch (err) {
+        } catch {
             setError("Failed to fetch students. Please check your connection.");
         } finally {
             setLoading(false);
@@ -31,6 +47,51 @@ export default function ViewAllStudents() {
             ...prev,
             [index]: !prev[index]
         }));
+    };
+
+    const openEditModal = (student) => {
+        setCurrentStudent(student);
+        setEditForm({
+            firstName: student.firstName || "",
+            lastName: student.lastName || "",
+            email: student.email || "",
+            department: student.department || "",
+            subDepartment: student.subDepartment || "REGULAR",
+            specializationType: student.specializationType || "NONE",
+            specializationName: student.specializationName || ""
+        });
+        setEditError("");
+        setEditSuccess("");
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditFormChange = (e) => {
+        const { name, value } = e.target;
+        setEditForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        setUpdating(true);
+        setEditError("");
+        setEditSuccess("");
+
+        try {
+            const response = await api.put(`/admin/students/${currentStudent.id}`, editForm);
+            const updatedStudent = response.data;
+            setData(prevData => prevData.map(s => s.id === currentStudent.id ? { ...s, ...updatedStudent } : s));
+            setEditSuccess("Student record updated successfully!");
+            setTimeout(() => {
+                setIsEditModalOpen(false);
+            }, 1200);
+        } catch (err) {
+            setEditError(err.response?.data || "Failed to update student profile.");
+        } finally {
+            setUpdating(false);
+        }
     };
 
     const downloadAllCredentials = () => {
@@ -159,8 +220,17 @@ export default function ViewAllStudents() {
                                                     className="action-btn" 
                                                     onClick={() => navigate(`/super_admin/student/${student.id}`)}
                                                     title="View/Edit Student Courses"
+                                                    style={{ marginRight: '6px' }}
                                                 >
                                                     📚
+                                                </button>
+                                                <button 
+                                                    className="action-btn edit" 
+                                                    onClick={() => openEditModal(student)}
+                                                    title="Edit Student Profile"
+                                                    style={{ marginRight: '6px' }}
+                                                >
+                                                    ✏️
                                                 </button>
                                                 <button 
                                                     className="action-btn delete" 
@@ -183,6 +253,115 @@ export default function ViewAllStudents() {
                     </div>
                 )}
             </div>
+
+            {isEditModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content animate-fade">
+                        <div className="modal-header">
+                            <h2>Edit Student Academic Profile</h2>
+                            <button className="close-btn" onClick={() => setIsEditModalOpen(false)}>✖</button>
+                        </div>
+                        <form onSubmit={handleEditSubmit}>
+                            <div className="form-grid" style={{ marginBottom: '1.5rem' }}>
+                                <div className="form-group">
+                                    <label>First Name</label>
+                                    <input 
+                                        type="text" 
+                                        name="firstName" 
+                                        value={editForm.firstName} 
+                                        onChange={handleEditFormChange} 
+                                        className="input-field" 
+                                        required 
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Last Name</label>
+                                    <input 
+                                        type="text" 
+                                        name="lastName" 
+                                        value={editForm.lastName} 
+                                        onChange={handleEditFormChange} 
+                                        className="input-field" 
+                                        required 
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Email Address</label>
+                                    <input 
+                                        type="email" 
+                                        name="email" 
+                                        value={editForm.email} 
+                                        onChange={handleEditFormChange} 
+                                        className="input-field" 
+                                        required 
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Department (Branch)</label>
+                                    <input 
+                                        type="text" 
+                                        name="department" 
+                                        value={editForm.department} 
+                                        onChange={handleEditFormChange} 
+                                        className="input-field" 
+                                        required 
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Academic Track (Sub-Dept / Honors)</label>
+                                    <select 
+                                        name="subDepartment" 
+                                        value={editForm.subDepartment} 
+                                        onChange={handleEditFormChange} 
+                                        className="input-field"
+                                    >
+                                        <option value="REGULAR">Regular</option>
+                                        <option value="HONOR">Honors</option>
+                                        <option value="HTE">HTE</option>
+                                        <option value="HTR">HTR</option>
+                                        <option value="HTI">HTI</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Specialization Type</label>
+                                    <select 
+                                        name="specializationType" 
+                                        value={editForm.specializationType} 
+                                        onChange={handleEditFormChange} 
+                                        className="input-field"
+                                    >
+                                        <option value="NONE">None</option>
+                                        <option value="MINOR">Minor</option>
+                                        <option value="DOUBLE_MAJOR">Double Major</option>
+                                        <option value="SPECIALIZATION">Specialization</option>
+                                    </select>
+                                </div>
+                                <div className="form-group full-width">
+                                    <label>Specialization Name</label>
+                                    <input 
+                                        type="text" 
+                                        name="specializationName" 
+                                        value={editForm.specializationName} 
+                                        onChange={handleEditFormChange} 
+                                        className="input-field" 
+                                        placeholder="e.g. Artificial Intelligence" 
+                                    />
+                                </div>
+                            </div>
+                            
+                            {editError && <div className="alert error">{editError}</div>}
+                            {editSuccess && <div className="alert success">{editSuccess}</div>}
+                            
+                            <div className="modal-actions">
+                                <button type="button" className="btn-secondary" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+                                <button type="submit" className="btn-primary" disabled={updating}>
+                                    {updating ? "Saving Changes..." : "Save Changes"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             <style>{`
                 .admin-page-container {
@@ -370,6 +549,95 @@ export default function ViewAllStudents() {
                     color: #E11D48;
                     transform: scale(1.1);
                     box-shadow: 0 4px 12px rgba(225, 29, 72, 0.15);
+                }
+
+                .action-btn.edit:hover {
+                    background: #EFF6FF;
+                    border-color: #BFDBFE;
+                    color: #2563EB;
+                    transform: scale(1.1);
+                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+                }
+
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(15, 23, 42, 0.6);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1000;
+                    backdrop-filter: blur(4px);
+                    animation: modalFadeIn 0.2s ease-out;
+                }
+
+                @keyframes modalFadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+
+                .modal-content {
+                    background: white;
+                    border-radius: 24px;
+                    padding: 2.5rem;
+                    width: 90%;
+                    max-width: 650px;
+                    box-shadow: 0 20px 45px rgba(0,0,0,0.15);
+                    border: 1px solid #E2E8F0;
+                }
+
+                .modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 2rem;
+                    border-bottom: 1px solid #F1F5F9;
+                    padding-bottom: 1rem;
+                }
+
+                .modal-header h2 {
+                    font-size: 1.4rem;
+                    color: #0F172A;
+                    margin: 0;
+                }
+
+                .close-btn {
+                    background: none;
+                    border: none;
+                    font-size: 1.2rem;
+                    cursor: pointer;
+                    color: #64748B;
+                    transition: color 0.2s;
+                }
+
+                .close-btn:hover { color: #0F172A; }
+
+                .modal-actions {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 12px;
+                    margin-top: 2rem;
+                    padding-top: 1.5rem;
+                    border-top: 1px dashed #E2E8F0;
+                }
+
+                .btn-secondary {
+                    background: white;
+                    color: #64748B;
+                    border: 1px solid #E2E8F0;
+                    padding: 10px 20px;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                .btn-secondary:hover {
+                    background: #F8FAFC;
+                    color: #0F172A;
                 }
             `}</style>
         </div>

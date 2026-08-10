@@ -18,14 +18,31 @@ export default function SecondYearSelection() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const [studentData, setStudentData] = useState(null);
     const navigate = useNavigate();
+
+    const stored = localStorage.getItem('firstLoginUser');
+    const user = stored ? JSON.parse(stored) : null;
+
+    useEffect(() => {
+        const fetchStudentData = async () => {
+            if (!user?.userId) return;
+            try {
+                const response = await api.get(`/onboarding/profile/${user.userId}`);
+                setStudentData(response.data);
+            } catch (err) {
+                console.error("Error loading onboarding profile", err);
+            }
+        };
+        fetchStudentData();
+    }, [user?.userId]);
 
     useEffect(() => {
         const fetchPrograms = async () => {
             try {
                 const response = await api.get('/onboarding/curriculum/programs');
                 setPrograms(response.data || []);
-            } catch (err) {
+            } catch {
                 setError('Unable to load programs. Please try again later.');
             }
         };
@@ -46,15 +63,40 @@ export default function SecondYearSelection() {
                     api.get(`/onboarding/curriculum/programs/${selection.programId}/specializations`),
                     api.get(`/onboarding/curriculum/programs/${selection.programId}/honors`)
                 ]);
+                const fetchedSpecs = specializationsResp.data || [];
+                const fetchedHonors = honorsResp.data || [];
+
                 setVersions(versionsResp.data || []);
-                setSpecializations(specializationsResp.data || []);
-                setHonorsPrograms(honorsResp.data || []);
-            } catch (err) {
+                setSpecializations(fetchedSpecs);
+                setHonorsPrograms(fetchedHonors);
+
+                // Auto-match pre-assigned specialization and honors
+                if (studentData) {
+                    let matchedSpecId = '';
+                    let matchedHonorsId = '';
+
+                    if (studentData.specializationName && studentData.specializationName !== 'N/A') {
+                        const match = fetchedSpecs.find(s => s.name.toLowerCase() === studentData.specializationName.toLowerCase() || s.code.toLowerCase() === studentData.specializationName.toLowerCase());
+                        if (match) matchedSpecId = match.id;
+                    }
+
+                    if (studentData.subDepartment && studentData.subDepartment !== 'REGULAR') {
+                        const match = fetchedHonors.find(h => h.name.toLowerCase() === studentData.subDepartment.toLowerCase() || h.code.toLowerCase() === studentData.subDepartment.toLowerCase());
+                        if (match) matchedHonorsId = match.id;
+                    }
+
+                    setSelection(prev => ({
+                        ...prev,
+                        specializationId: matchedSpecId,
+                        honorsId: matchedHonorsId
+                    }));
+                }
+            } catch {
                 setError('Unable to load curriculum options for selected program.');
             }
         };
         fetchProgramDetails();
-    }, [selection.programId]);
+    }, [selection.programId, studentData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -146,30 +188,30 @@ export default function SecondYearSelection() {
                             </select>
                         </div>
                         <div className="form-group">
-                            <label>Specialization (optional)</label>
+                            <label>Specialization (Locked by HOD)</label>
                             <select
                                 name="specializationId"
-                                className="input-field"
+                                className="input-field disabled-field"
                                 value={selection.specializationId}
                                 onChange={handleChange}
-                                disabled={!specializations.length}
+                                disabled
                             >
-                                <option value="">No specialization</option>
+                                <option value="">No specialization assigned</option>
                                 {specializations.map((spec) => (
                                     <option key={spec.id} value={spec.id}>{spec.name}</option>
                                 ))}
                             </select>
                         </div>
                         <div className="form-group">
-                            <label>Honors Program (optional)</label>
+                            <label>Honors Program (Locked by HOD)</label>
                             <select
                                 name="honorsId"
-                                className="input-field"
+                                className="input-field disabled-field"
                                 value={selection.honorsId}
                                 onChange={handleChange}
-                                disabled={!honorsPrograms.length}
+                                disabled
                             >
-                                <option value="">No honors</option>
+                                <option value="">No honors assigned</option>
                                 {honorsPrograms.map((honors) => (
                                     <option key={honors.id} value={honors.id}>{honors.name}</option>
                                 ))}
@@ -194,6 +236,15 @@ export default function SecondYearSelection() {
                     </form>
                 </div>
             </div>
+            <style>{`
+                .disabled-field {
+                    background: #F8FAFC !important;
+                    color: #64748B !important;
+                    cursor: not-allowed !important;
+                    border-color: #E2E8F0 !important;
+                    opacity: 0.8;
+                }
+            `}</style>
         </div>
     );
 }

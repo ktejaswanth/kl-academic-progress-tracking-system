@@ -1,4 +1,5 @@
 -- 1. DROP EXISTING TABLES (IF ANY)
+DROP TABLE IF EXISTS student_issues;
 DROP TABLE IF EXISTS upload_failed_records;
 DROP TABLE IF EXISTS upload_history;
 DROP TABLE IF EXISTS completed_courses;
@@ -74,6 +75,8 @@ CREATE TABLE completed_courses (
     semester        VARCHAR(20),
     completed_date  DATE,
     verified_by     BIGINT REFERENCES users(id),    -- Faculty who verified
+    category        VARCHAR(100),
+    status          VARCHAR(50) DEFAULT 'Completed',
     created_at      TIMESTAMP DEFAULT NOW()
 );
 
@@ -243,6 +246,17 @@ CREATE TABLE audit_history (
 CREATE INDEX idx_course_code ON course_catalog(course_code);
 CREATE INDEX idx_program_code ON degree_programs(code);
 CREATE INDEX idx_curriculum_version ON curriculum_versions(program_id);
+
+-- 10.5. CREATE STUDENT ISSUES TABLE
+CREATE TABLE student_issues (
+    id              BIGSERIAL PRIMARY KEY,
+    student_id      BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    title           VARCHAR(150) NOT NULL,
+    description     TEXT NOT NULL,
+    status          VARCHAR(20) DEFAULT 'PENDING',
+    created_at      TIMESTAMP DEFAULT NOW(),
+    resolved_at     TIMESTAMP
+);
 
 -- 11. SAMPLE DATA (empty templates for common programs)
 -- Example: add BTech CSE program placeholder and curricula (admin will manage real data via API)

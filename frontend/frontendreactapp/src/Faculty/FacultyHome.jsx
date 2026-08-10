@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 
 export default function FacultyHome() {
   useEffect(() => {
-    const facultyEmail = sessionStorage.getItem("facultyEmail")
   }, [])
 
   return (

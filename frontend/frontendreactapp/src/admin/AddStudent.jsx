@@ -29,7 +29,7 @@ export default function AddStudent() {
         setError("");
 
         try {
-            const response = await api.post("/admin/students", {
+            await api.post("/admin/students", {
                 ...formdata,
                 role: 'STUDENT'
             });

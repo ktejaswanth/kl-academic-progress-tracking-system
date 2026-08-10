@@ -75,6 +75,11 @@ public class CompletedCourse {
     @JoinColumn(name = "verified_by", referencedColumnName = "id")
     private User verifiedBy;
 
+    private String category;
+
+    @Column(columnDefinition = "varchar(50) default 'Completed'")
+    private String status = "Completed";
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

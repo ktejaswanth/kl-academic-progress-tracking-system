@@ -76,7 +76,7 @@ export default function CurriculumAdmin() {
         try {
             const response = await api.get('/admin/curriculum/programs');
             setPrograms(response.data || []);
-        } catch (err) {
+        } catch {
             setError('Unable to load programs.');
         }
     };
@@ -85,7 +85,7 @@ export default function CurriculumAdmin() {
         try {
             const response = await api.get('/admin/curriculum/courses');
             setCatalogCourses(response.data || []);
-        } catch (err) {
+        } catch {
             // ignore if courses endpoint not present yet
         }
     };
@@ -94,7 +94,7 @@ export default function CurriculumAdmin() {
         try {
             const response = await api.get(`/admin/curriculum/programs/${programId}/curriculum-versions`);
             setVersions(response.data || []);
-        } catch (err) {
+        } catch {
             setError('Unable to load curriculum versions.');
         }
     };
@@ -103,7 +103,7 @@ export default function CurriculumAdmin() {
         try {
             const response = await api.get(`/admin/curriculum/curriculum-versions/${versionId}/courses`);
             setCurriculumCourses(response.data || []);
-        } catch (err) {
+        } catch {
             setError('Unable to load curriculum courses.');
         }
     };
@@ -112,7 +112,7 @@ export default function CurriculumAdmin() {
         try {
             const response = await api.get(`/admin/curriculum/curriculum-versions/${versionId}/requirements`);
             setRequirements(response.data || []);
-        } catch (err) {
+        } catch {
             setError('Unable to load curriculum requirements.');
         }
     };
@@ -264,48 +264,48 @@ export default function CurriculumAdmin() {
         }
     };
 
-    const deleteProgram = async (programId) => {
-        if (!window.confirm('Delete this program and all related curriculum data?')) return;
-        try {
-            await api.delete(`/admin/curriculum/programs/${programId}`);
-            setMessage('Program deleted successfully.');
-            fetchPrograms();
-            if (selectedProgramId === String(programId)) {
-                setSelectedProgramId('');
-                setSelectedVersionId('');
-                setVersions([]);
-                setCurriculumCourses([]);
-                setRequirements([]);
-            }
-        } catch (err) {
-            setError(err.response?.data || 'Could not delete program.');
-        }
-    };
+    // const deleteProgram = async (programId) => {
+    //     if (!window.confirm('Delete this program and all related curriculum data?')) return;
+    //     try {
+    //         await api.delete(`/admin/curriculum/programs/${programId}`);
+    //         setMessage('Program deleted successfully.');
+    //         fetchPrograms();
+    //         if (selectedProgramId === String(programId)) {
+    //             setSelectedProgramId('');
+    //             setSelectedVersionId('');
+    //             setVersions([]);
+    //             setCurriculumCourses([]);
+    //             setRequirements([]);
+    //         }
+    //     } catch (err) {
+    //         setError(err.response?.data || 'Could not delete program.');
+    //     }
+    // };
 
-    const deleteVersion = async (versionId) => {
-        if (!window.confirm('Delete this curriculum version?')) return;
-        try {
-            await api.delete(`/admin/curriculum/curriculum-versions/${versionId}`);
-            setMessage('Curriculum version deleted successfully.');
-            fetchCurriculumVersions(selectedProgramId);
-            setSelectedVersionId('');
-            setCurriculumCourses([]);
-            setRequirements([]);
-        } catch (err) {
-            setError(err.response?.data || 'Could not delete version.');
-        }
-    };
+    // const deleteVersion = async (versionId) => {
+    //     if (!window.confirm('Delete this curriculum version?')) return;
+    //     try {
+    //         await api.delete(`/admin/curriculum/curriculum-versions/${versionId}`);
+    //         setMessage('Curriculum version deleted successfully.');
+    //         fetchCurriculumVersions(selectedProgramId);
+    //         setSelectedVersionId('');
+    //         setCurriculumCourses([]);
+    //         setRequirements([]);
+    //     } catch (err) {
+    //         setError(err.response?.data || 'Could not delete version.');
+    //     }
+    // };
 
-    const deleteCatalogCourse = async (courseId) => {
-        if (!window.confirm('Delete this catalog course?')) return;
-        try {
-            await api.delete(`/admin/curriculum/courses/${courseId}`);
-            setMessage('Course deleted successfully.');
-            fetchCatalogCourses();
-        } catch (err) {
-            setError(err.response?.data || 'Could not delete course.');
-        }
-    };
+    // const deleteCatalogCourse = async (courseId) => {
+    //     if (!window.confirm('Delete this catalog course?')) return;
+    //     try {
+    //         await api.delete(`/admin/curriculum/courses/${courseId}`);
+    //         setMessage('Course deleted successfully.');
+    //         fetchCatalogCourses();
+    //     } catch (err) {
+    //         setError(err.response?.data || 'Could not delete course.');
+    //     }
+    // };
 
     const deleteCurriculumCourse = async (courseId) => {
         if (!window.confirm('Delete this curriculum course mapping?')) return;

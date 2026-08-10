@@ -24,6 +24,9 @@ public class FacultyController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private com.example.demo.service.AuditService auditService;
+
     @GetMapping("/dashboard")
     public ResponseEntity<?> getFacultyDashboard() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -46,5 +49,14 @@ public class FacultyController {
         result.put("students", students);
         
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/students/lookup/{username}")
+    public ResponseEntity<?> lookupStudentCurriculum(@PathVariable String username) {
+        try {
+            return ResponseEntity.ok(auditService.getStudentCurriculumCourses(username));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error looking up student: " + e.getMessage());
+        }
     }
 }
