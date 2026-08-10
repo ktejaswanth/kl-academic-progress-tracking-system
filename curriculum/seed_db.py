@@ -2,7 +2,7 @@ import requests
 import json
 import os
 
-base_url = "http://localhost:8086"
+base_url = "http://127.0.0.1:8086"
 
 def get_auth_token():
     login_data = {
@@ -118,9 +118,9 @@ def seed_paths(headers):
 
 def upload_excel_files(headers):
     # Paths to generated files
-    courses_file = r"c:\Users\kteja\OneDrive\Desktop\Capstone\kl-academic-progress-tracking-system\curriculum\courses.xlsx"
-    requirements_file = r"c:\Users\kteja\OneDrive\Desktop\Capstone\kl-academic-progress-tracking-system\curriculum\requirements.xlsx"
-    mappings_file = r"c:\Users\kteja\OneDrive\Desktop\Capstone\kl-academic-progress-tracking-system\curriculum\mappings.xlsx"
+    courses_file = "courses.xlsx"
+    requirements_file = "requirements.xlsx"
+    mappings_file = "mappings.xlsx"
     
     # 1. Upload Courses
     print("\nUploading courses...")

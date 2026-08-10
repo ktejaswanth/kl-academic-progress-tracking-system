@@ -1,7 +1,7 @@
 import re
 
 def main():
-    db_url = "postgresql://postgres.xbhkyjgjunfzcxgnobss:UYKTSd$dc5Pe8/Q@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres"
+    db_url = "postgresql://postgres:postgres@127.0.0.1:5435/postgres"
     
     try:
         import pg8000
@@ -16,23 +16,32 @@ def main():
         params = m.groupdict()
         
         host = params['host']
-        dns_host = host if host.endswith('.') else host + '.'
-        print(f"Resolving DNS for {dns_host}...")
-        resolved_ip = socket.gethostbyname(dns_host)
-        print(f"Resolved IP: {resolved_ip}")
-        
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        
-        conn = pg8000.connect(
-            user=params['user'],
-            password=params['password'],
-            host=resolved_ip,
-            port=int(params['port']),
-            database=params['database'],
-            ssl_context=ssl_context
-        )
+        if host == "127.0.0.1" or host == "localhost":
+            conn = pg8000.connect(
+                user=params['user'],
+                password=params['password'],
+                host=host,
+                port=int(params['port']),
+                database=params['database']
+            )
+        else:
+            dns_host = host if host.endswith('.') else host + '.'
+            print(f"Resolving DNS for {dns_host}...")
+            resolved_ip = socket.gethostbyname(dns_host)
+            print(f"Resolved IP: {resolved_ip}")
+            
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            
+            conn = pg8000.connect(
+                user=params['user'],
+                password=params['password'],
+                host=resolved_ip,
+                port=int(params['port']),
+                database=params['database'],
+                ssl_context=ssl_context
+            )
     except ImportError:
         print("pg8000 is not installed.")
         return
