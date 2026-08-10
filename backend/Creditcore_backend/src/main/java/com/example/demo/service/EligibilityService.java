@@ -41,7 +41,10 @@ public class EligibilityService {
 
         Map<String, Object> result = new HashMap<>();
         int totalRequiredCredits = requirements.stream().mapToInt(ProgramRequirement::getRequiredCredits).sum();
-        int totalCompletedCredits = completed.stream().mapToInt(CompletedCourse::getCredits).sum();
+        int totalCompletedCredits = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                .mapToInt(CompletedCourse::getCredits)
+                .sum();
 
         List<String> missingCoreCourses = new ArrayList<>();
         List<String> missingFlexiCoreCourses = new ArrayList<>();
@@ -54,7 +57,10 @@ public class EligibilityService {
         boolean minorEligible = true;
         boolean doubleMajorEligible = true;
 
-        Set<String> completedCodes = completed.stream().map(CompletedCourse::getCourseCode).collect(Collectors.toSet());
+        Set<String> completedCodes = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                .map(CompletedCourse::getCourseCode)
+                .collect(Collectors.toSet());
 
         for (ProgramRequirement requirement : requirements) {
             List<String> mandatory = parseJsonArray(requirement.getMandatoryCourseCodes());
@@ -164,6 +170,7 @@ public class EligibilityService {
 
         List<CompletedCourse> completed = completedCourseRepository.findByStudentId(studentId);
         Set<String> completedCodes = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
                 .map(CompletedCourse::getCourseCode)
                 .collect(Collectors.toSet());
 
@@ -218,9 +225,13 @@ public class EligibilityService {
     private int completedCreditsInBucket(ProgramRequirement requirement, List<CompletedCourse> completed) {
         List<String> mandatory = parseJsonArray(requirement.getMandatoryCourseCodes());
         if (mandatory == null || mandatory.isEmpty()) {
-            return completed.stream().mapToInt(CompletedCourse::getCredits).sum();
+            return completed.stream()
+                    .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                    .mapToInt(CompletedCourse::getCredits)
+                    .sum();
         }
         return completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
                 .filter(c -> mandatory.contains(c.getCourseCode()))
                 .mapToInt(CompletedCourse::getCredits)
                 .sum();

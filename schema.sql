@@ -75,6 +75,8 @@ CREATE TABLE completed_courses (
     semester        VARCHAR(20),
     completed_date  DATE,
     verified_by     BIGINT REFERENCES users(id),    -- Faculty who verified
+    category        VARCHAR(100),
+    status          VARCHAR(50) DEFAULT 'Completed',
     created_at      TIMESTAMP DEFAULT NOW()
 );
 

@@ -46,7 +46,10 @@ public class AuditService {
 
         // 1. Calculate Statistics
         int totalRequired = requirements.stream().mapToInt(Requirement::getCredits).sum();
-        int totalCompleted = completed.stream().mapToInt(CompletedCourse::getCredits).sum();
+        int totalCompleted = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                .mapToInt(CompletedCourse::getCredits)
+                .sum();
         double percentage = totalRequired > 0 ? (double) totalCompleted / totalRequired * 100 : 0;
 
         // 2. Map Categorized Progress
@@ -63,6 +66,7 @@ public class AuditService {
             // This is a simplified logic: matching completed courses to buckets
             // In a real system, we'd match by course_code or rules
             int compCredits = completed.stream()
+                    .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
                     .filter(c -> bucketReqs.stream().anyMatch(r -> r.getCourseCode().equals(c.getCourseCode())))
                     .mapToInt(CompletedCourse::getCredits)
                     .sum();
@@ -86,9 +90,13 @@ public class AuditService {
         response.put("completedCourses", completed);
         
         // Identify missing mandatory courses
+        Set<String> completedCodesForMandatory = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                .map(CompletedCourse::getCourseCode)
+                .collect(Collectors.toSet());
         List<Requirement> missingMandatory = requirements.stream()
                 .filter(Requirement::getIsMandatory)
-                .filter(r -> completed.stream().noneMatch(c -> c.getCourseCode().equals(r.getCourseCode())))
+                .filter(r -> !completedCodesForMandatory.contains(r.getCourseCode()))
                 .collect(Collectors.toList());
         
         response.put("missingMandatory", missingMandatory);
@@ -156,6 +164,7 @@ public class AuditService {
         // Fetch completed course codes for this student
         List<CompletedCourse> completed = completedCourseRepository.findByStudentId(user.getId());
         Set<String> completedCodes = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
                 .map(CompletedCourse::getCourseCode)
                 .collect(Collectors.toSet());
 

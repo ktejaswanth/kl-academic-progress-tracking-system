@@ -153,10 +153,14 @@ export default function StudentDashboard() {
                                 <tr key={idx} className="course-row">
                                     <td><code className="code-pill">{course.courseCode}</code></td>
                                     <td><strong>{course.courseName}</strong></td>
-                                    <td><span className="cat-tag">{course.category}</span></td>
+                                    <td><span className="cat-tag">{course.category || 'N/A'}</span></td>
                                     <td>{course.credits}</td>
-                                    <td><span className="grade-box">{course.grade}</span></td>
-                                    <td><span className="status-tag success">Pass</span></td>
+                                    <td><span className="grade-box">{course.grade || '—'}</span></td>
+                                    <td>
+                                        <span className={`status-tag ${course.status === 'On-Progress' ? 'warning' : 'success'}`}>
+                                            {course.status === 'On-Progress' ? 'In Progress' : 'Pass'}
+                                        </span>
+                                    </td>
                                 </tr>
                             ))}
                             {progress.missingMandatory.map((course, idx) => (
