@@ -12,6 +12,9 @@ import UploadCourses from '../pages/faculty/UploadCourses';
 import FacultyStudentDetail from '../pages/faculty/FacultyStudentDetail';
 import ManageIssues from './ManageIssues';
 import StudentLookupView from '../components/StudentLookupView';
+import CurriculumUpload from './CurriculumUpload';
+import CurriculumReview from './CurriculumReview';
+import CurriculumRepository from './CurriculumRepository';
 import './admin.css';
 
 export default function AdminNavBar() {
@@ -33,7 +36,9 @@ export default function AdminNavBar() {
         { path: '/super_admin/viewallstudents', label: 'View Students', icon: '👥' },
         { path: '/super_admin/student-issues', label: 'Student Issues', icon: '⚠️' },
         { path: '/super_admin/student-lookup', label: 'Student Lookup', icon: '🔍' },
-        { path: '/super_admin/curriculum-management', label: 'Curriculum Setup', icon: '📚' },
+        { path: '/super_admin/curriculum-upload', label: 'Upload Curriculum', icon: '📄' },
+        { path: '/super_admin/curriculum-repository', label: 'Curriculum Repository', icon: '📚' },
+        { path: '/super_admin/curriculum-management', label: 'Curriculum Setup', icon: '⚙️' },
         { path: '/super_admin/addfaculty', label: 'Add Faculty', icon: '👨‍🏫' },
         { path: '/super_admin/viewallfaculty', label: 'View Faculty', icon: '🏢' },
     ];
@@ -57,7 +62,7 @@ export default function AdminNavBar() {
                 <nav className="sidebar-nav">
                     <div className="nav-group">
                         <span className="group-label">Main Menu</span>
-                        {navItems.slice(0, 6).map((item) => (
+                        {navItems.slice(0, 5).map((item) => (
                             <Link 
                                 key={item.path} 
                                 to={item.path} 
@@ -72,8 +77,24 @@ export default function AdminNavBar() {
                     </div>
 
                     <div className="nav-group">
-                        <span className="group-label">Program Management</span>
-                        {navItems.slice(6, 7).map((item) => (
+                        <span className="group-label">Student Management</span>
+                        {navItems.slice(5, 7).map((item) => (
+                            <Link 
+                                key={item.path} 
+                                to={item.path} 
+                                className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
+                                onClick={() => setSidebarOpen(false)}
+                            >
+                                <span className="nav-icon">{item.icon}</span>
+                                <span className="nav-label">{item.label}</span>
+                                {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
+                            </Link>
+                        ))}
+                    </div>
+
+                    <div className="nav-group">
+                        <span className="group-label">Curriculum Management</span>
+                        {navItems.slice(7, 10).map((item) => (
                             <Link 
                                 key={item.path} 
                                 to={item.path} 
@@ -89,7 +110,7 @@ export default function AdminNavBar() {
 
                     <div className="nav-group">
                         <span className="group-label">Staff Management</span>
-                        {navItems.slice(7).map((item) => (
+                        {navItems.slice(10).map((item) => (
                             <Link 
                                 key={item.path} 
                                 to={item.path} 
@@ -146,6 +167,9 @@ export default function AdminNavBar() {
                         <Route path="student-issues" element={<ManageIssues />} />
                         <Route path="student-lookup" element={<StudentLookupView endpointPrefix="/admin" />} />
                         <Route path="curriculum-management" element={<CurriculumAdmin />} />
+                        <Route path="curriculum-upload" element={<CurriculumUpload />} />
+                        <Route path="curriculum-review/:importId" element={<CurriculumReview />} />
+                        <Route path="curriculum-repository" element={<CurriculumRepository />} />
                         <Route path="addfaculty" element={<AddFaculty />} />
                         <Route path="viewallfaculty" element={<ViewAllFaculty />} />
                         <Route index element={<AdminDashboard />} />

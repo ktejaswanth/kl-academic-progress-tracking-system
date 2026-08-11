@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/reports/**").hasAnyRole("SUPER_ADMIN", "FACULTY")
                         .requestMatchers("/api/faculty/**").hasAnyRole("SUPER_ADMIN", "FACULTY")
                         .requestMatchers("/api/student/**").hasAnyRole("SUPER_ADMIN", "FACULTY", "STUDENT")
+                        .requestMatchers("/api/curriculum/**").hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

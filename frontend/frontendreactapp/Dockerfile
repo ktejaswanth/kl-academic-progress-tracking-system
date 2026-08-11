@@ -11,6 +11,7 @@ FROM nginx:stable-alpine
 # Add custom nginx config for SPA routing and API proxy
 RUN echo "server { \
     listen 80; \
+    client_max_body_size 20M; \
     location / { \
         root /usr/share/nginx/html; \
         index index.html index.htm; \
@@ -20,6 +21,9 @@ RUN echo "server { \
         resolver 127.0.0.11 valid=30s; \
         set \$upstream_backend backend; \
         proxy_pass http://\$upstream_backend:8086; \
+        proxy_read_timeout 300s; \
+        proxy_connect_timeout 300s; \
+        proxy_send_timeout 300s; \
         proxy_set_header Host \$host; \
         proxy_set_header X-Real-IP \$remote_addr; \
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for; \
