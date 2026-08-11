@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -30,8 +32,30 @@ public class PathBucketRequirement {
     @Column(name = "required_credits", nullable = false)
     private Integer requiredCredits;
 
+    @Column(name = "min_credits")
+    private Integer minCredits = 0;
+
+    @Column(name = "max_credits")
+    private Integer maxCredits;
+
     @Column(name = "min_courses")
     private Integer minCourses;
+
+    @Column(name = "max_courses")
+    private Integer maxCourses;
+
+    @Column(name = "required_count")
+    private Integer requiredCount;
+
+    @Column(name = "selection_rule")
+    private String selectionRule = "CREDIT_MINIMUM";
+
+    @Column(name = "grouping_code")
+    private String groupingCode;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "rules_json", columnDefinition = "jsonb")
+    private String rulesJson;
 
     @Column(name = "is_mandatory")
     private Boolean isMandatory = true;

@@ -22,6 +22,10 @@ public class DegreePath {
     private String pathCode;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "curriculum_version_id")
+    private CurriculumVersion curriculumVersion;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "department_id")
     private DepartmentMaster department;
 
@@ -36,6 +40,18 @@ public class DegreePath {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "regulation_id")
     private RegulationMaster regulation;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "specialization_id")
+    private Specialization specialization;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "minor_id")
+    private MinorProgram minor;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "second_major_id")
+    private SecondMajorProgram secondMajor;
 
     @Column(name = "addon_name")
     private String addonName;

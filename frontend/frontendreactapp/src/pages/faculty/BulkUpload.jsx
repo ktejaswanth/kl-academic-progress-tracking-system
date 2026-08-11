@@ -44,7 +44,9 @@ export default function BulkUpload() {
                 document.getElementById('excel-upload').value = '';
             }
         } catch (err) {
-            setError(err.response?.data || 'Upload failed. Please ensure the Excel follows the 7-column template.');
+            const serverErr = err.response?.data;
+            const errorMsg = typeof serverErr === 'string' ? serverErr : (serverErr?.message || 'Upload failed. Please ensure the Excel follows the 7-column template.');
+            setError(errorMsg);
         } finally {
             setUploading(false);
         }
@@ -433,3 +435,4 @@ export default function BulkUpload() {
         </div>
     );
 }
+

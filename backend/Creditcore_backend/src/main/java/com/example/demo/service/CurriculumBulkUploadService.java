@@ -98,7 +98,11 @@ public class CurriculumBulkUploadService {
             }
             
             if (!toSave.isEmpty()) {
-                courseCatalogRepository.saveAll(toSave);
+                int batchSize = 100;
+                for (int i = 0; i < toSave.size(); i += batchSize) {
+                    int end = Math.min(i + batchSize, toSave.size());
+                    courseCatalogRepository.saveAll(toSave.subList(i, end));
+                }
             }
         }
 

@@ -10,10 +10,17 @@ export default function StudentDashboard() {
     useEffect(() => {
         const fetchProgress = async () => {
             try {
-                const response = await api.get('/dyod/progress/student/me');
+                // Try new unified progress API first
+                const response = await api.get('/student/progress/dashboard');
                 setProgressData(response.data);
             } catch (err) {
-                setError('Failed to load academic progress. Your degree path might not be assigned yet.');
+                try {
+                    // Fallback to legacy endpoint
+                    const response = await api.get('/dyod/progress/student/me');
+                    setProgressData(response.data);
+                } catch (fallbackErr) {
+                    setError('Failed to load academic progress. Your degree path might not be assigned yet.');
+                }
             } finally {
                 setLoading(false);
             }
@@ -30,7 +37,16 @@ export default function StudentDashboard() {
 
     if (error) return <div className="student-dashboard"><div className="alert error">{error}</div></div>;
 
-    const { status, buckets, studentName, department, subDepartment, specialization } = progressData;
+    const student = progressData?.student || {};
+    const degreePath = progressData?.degreePath || {};
+    const status = progressData?.degreeStatus || progressData?.status || {};
+    const buckets = progressData?.buckets || [];
+    const specializationProgress = progressData?.specializationProgress;
+
+    const studentName = student.fullName || progressData?.studentName || 'Student';
+    const department = student.department || progressData?.department || 'AIDS';
+    const degreeTypeName = degreePath.degreeTypeName || student.degreeType || 'Regular';
+    const addonName = degreePath.addonName || student.addonName || '';
 
     const handleDownloadReport = async () => {
         try {
@@ -47,17 +63,19 @@ export default function StudentDashboard() {
         }
     };
 
+    const completionPercentage = status.completionPercentage || 0.0;
+    const isEligible = status.isDegreeEligible || status.degreeEligible;
+
     const radius = 85;
     const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (status.completionPercentage / 100) * circumference;
+    const offset = circumference - (completionPercentage / 100) * circumference;
 
-    // Group buckets by category for the breakdown
     const categories = {};
     buckets.forEach(b => {
         const cat = b.bucketCategory || 'Other';
         if (!categories[cat]) categories[cat] = { earned: 0, required: 0 };
-        categories[cat].earned += b.earnedCredits;
-        categories[cat].required += b.requiredCredits;
+        categories[cat].earned += (b.earnedCredits || 0);
+        categories[cat].required += (b.requiredCredits || 0);
     });
 
     return (
@@ -66,13 +84,13 @@ export default function StudentDashboard() {
                 <div className="hero-content">
                     <span className="welcome-tag">Student Overview</span>
                     <h1>Welcome Back, <span className="highlight">{studentName}</span></h1>
-                    <p>{department} • {subDepartment} {specialization ? `• ${specialization}` : ''}</p>
+                    <p>{department} • {degreeTypeName} {addonName ? `• ${addonName}` : ''}</p>
                 </div>
                 <div className="hero-stats" style={{ alignItems: 'center' }}>
                     <div className="hero-stat-card" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                        <span className="label">Status</span>
-                        <span className={`value ${status.isDegreeEligible ? 'success' : ''}`}>
-                            {status.isDegreeEligible ? 'Eligible' : 'In Progress'}
+                        <span className="label">Degree Status</span>
+                        <span className={`value ${isEligible ? 'success' : ''}`}>
+                            {isEligible ? 'ELIGIBLE' : 'IN PROGRESS'}
                         </span>
                         <button 
                             onClick={handleDownloadReport}
@@ -90,7 +108,7 @@ export default function StudentDashboard() {
                 <div className="glass-card main-progress">
                     <div className="card-header">
                         <h3>Degree Completion</h3>
-                        <span className="badge-outline">Live Sync</span>
+                        <span className="badge-outline">Y23 AIDS Path</span>
                     </div>
                     
                     <div className="circular-container">
@@ -113,19 +131,19 @@ export default function StudentDashboard() {
                             />
                         </svg>
                         <div className="inner-text">
-                            <span className="big-percent">{status.completionPercentage}%</span>
-                            <span className="sub-label">Audit Score</span>
+                            <span className="big-percent">{completionPercentage}%</span>
+                            <span className="sub-label">Completion</span>
                         </div>
                     </div>
 
                     <div className="credit-pills">
                         <div className="pill">
-                            <strong>{status.totalEarnedCredits}</strong>
-                            <span>Earned</span>
+                            <strong>{status.totalEarnedCredits || 0}</strong>
+                            <span>Earned Credits</span>
                         </div>
                         <div className="pill dark">
-                            <strong>{status.totalRequiredCredits}</strong>
-                            <span>Required</span>
+                            <strong>{status.totalRequiredCredits || degreePath.totalRequiredCredits || 163}</strong>
+                            <span>Required Credits</span>
                         </div>
                     </div>
                 </div>
@@ -159,10 +177,25 @@ export default function StudentDashboard() {
                 </div>
             </div>
 
+            {/* Specialization Card if present */}
+            {specializationProgress && (
+                <section className="history-section" style={{ marginTop: '24px' }}>
+                    <div className="glass-card" style={{ padding: '20px' }}>
+                        <div className="card-header">
+                            <h3>Specialization: {specializationProgress.specializationName}</h3>
+                            <span className={`status-tag ${specializationProgress.status === 'COMPLETED' ? 'success' : 'warning'}`}>{specializationProgress.status}</span>
+                        </div>
+                        <p style={{ marginTop: '8px', color: '#636E72' }}>
+                            Earned <strong>{specializationProgress.earnedCredits}</strong> / {specializationProgress.requiredCredits} Credits ({specializationProgress.progressPercentage}%)
+                        </p>
+                    </div>
+                </section>
+            )}
+
             {/* Bucket Progress Section */}
-            <section className="history-section">
+            <section className="history-section" style={{ marginTop: '24px' }}>
                 <div className="section-header">
-                    <h2>Bucket Progress</h2>
+                    <h2>Bucket Requirements & Progress</h2>
                 </div>
 
                 <div className="transcript-card">
@@ -182,10 +215,10 @@ export default function StudentDashboard() {
                                         <strong>{bucket.bucketCode}</strong>
                                         <div className="sub-text">{bucket.bucketName}</div>
                                     </td>
-                                    <td><span className="cat-tag">{bucket.bucketCategory}</span></td>
+                                    <td><span className="cat-tag">{bucket.bucketCategory || 'Core'}</span></td>
                                     <td>
                                         <div className="bucket-credits-bar">
-                                            <span>{bucket.earnedCredits} / {bucket.requiredCredits}</span>
+                                            <span>{bucket.earnedCredits} / {bucket.requiredCredits} Credits</span>
                                             <div className="mini-progress-bg">
                                                 <div 
                                                     className="mini-progress-fill" 

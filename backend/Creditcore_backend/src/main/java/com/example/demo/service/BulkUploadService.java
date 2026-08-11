@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BulkUploadService {
@@ -48,30 +49,60 @@ public class BulkUploadService {
         int success = 0;
         int failed = 0;
 
-        // Skip header
-        if (rows.hasNext()) rows.next();
+        int nameCol = 0;
+        int idCol = 1;
+        int emailCol = 2;
+        int deptCol = 3;
+        int subDeptCol = 4;
+        int specTypeCol = 5;
+        int specNameCol = 6;
+
+        // Parse header row dynamically if present
+        if (rows.hasNext()) {
+            Row headerRow = rows.next();
+            for (int c = 0; c < headerRow.getLastCellNum(); c++) {
+                String header = getCellValue(headerRow, c).toUpperCase().trim();
+                if (header.contains("NAME") && !header.contains("SPEC")) {
+                    nameCol = c;
+                } else if (header.contains("ID") && !header.contains("MAIL") && !header.contains("EMAIL")) {
+                    idCol = c;
+                } else if (header.contains("MAIL") || header.contains("EMAIL")) {
+                    emailCol = c;
+                } else if (header.contains("SUB DEPT") || header.contains("SUB DEPARTMENT") || header.contains("SUB_DEPT") || header.contains("SUBDEPT")) {
+                    subDeptCol = c;
+                } else if (header.contains("DEPARTM") || header.contains("DEPT") || header.contains("DEPARTMENT")) {
+                    deptCol = c;
+                } else if (header.contains("SPEC") && header.contains("TYPE")) {
+                    specTypeCol = c;
+                } else if (header.contains("SPEC") && (header.contains("NAME") || header.contains("TITLE"))) {
+                    specNameCol = c;
+                }
+            }
+        }
 
         List<CredentialInfo> credentials = new ArrayList<>();
 
         while (rows.hasNext()) {
-            total++;
             Row row = rows.next();
+            
+            String fullName = getCellValue(row, nameCol);
+            String studentId = getCellValue(row, idCol);
+            String email = getCellValue(row, emailCol);
+
+            // Skip empty rows
+            if (fullName.isEmpty() && studentId.isEmpty() && email.isEmpty()) {
+                continue;
+            }
+
+            total++;
             try {
-                // User's columns: NAME | ID NUMBER | MAIL ID | DEPARTMENT | SUB DEPARTMENT | SPECIALIZATION TYPE | SPECIALIZATION NAME
-                String fullName = getCellValue(row, 0);
-                String studentId = getCellValue(row, 1);
-                String email = getCellValue(row, 2);
-                String department = getCellValue(row, 3);
-                String subDept = getCellValue(row, 4);
-                String specType = getCellValue(row, 5);
-                String specName = getCellValue(row, 6);
+                String department = getCellValue(row, deptCol);
+                String subDept = getCellValue(row, subDeptCol);
+                String specType = getCellValue(row, specTypeCol);
+                String specName = getCellValue(row, specNameCol);
 
                 if (studentId.isEmpty() || email.isEmpty() || fullName.isEmpty()) {
                     throw new Exception("Missing required fields (Name, ID, or Email)");
-                }
-
-                if (userRepository.findByUsername(studentId).isPresent()) {
-                    throw new Exception("Student ID " + studentId + " already exists");
                 }
 
                 // Split Name into First and Last
@@ -83,31 +114,49 @@ public class BulkUploadService {
                     lastName = fullName.substring(lastSpace + 1);
                 }
 
-                String rawPassword = PasswordGenerator.generateRandomPassword(8);
-                
-                User user = new User();
-                user.setUsername(studentId);
+                Optional<User> existingOpt = userRepository.findByUsername(studentId);
+                User user;
+                String rawPassword;
+
+                if (existingOpt.isPresent()) {
+                    user = existingOpt.get();
+                    rawPassword = user.getRawPassword();
+                    if (rawPassword == null || rawPassword.isEmpty()) {
+                        rawPassword = PasswordGenerator.generateRandomPassword(8);
+                        user.setPasswordHash(passwordEncoder.encode(rawPassword));
+                        user.setRawPassword(rawPassword);
+                    }
+                } else {
+                    rawPassword = PasswordGenerator.generateRandomPassword(8);
+                    user = new User();
+                    user.setUsername(studentId);
+                    user.setPasswordHash(passwordEncoder.encode(rawPassword));
+                    user.setRawPassword(rawPassword);
+                    user.setRole(UserRole.STUDENT);
+                    user.setForcePasswordChange(true);
+                }
+
                 user.setEmail(email);
                 user.setFirstName(firstName);
                 user.setLastName(lastName);
-                user.setPasswordHash(passwordEncoder.encode(rawPassword));
-                user.setRawPassword(rawPassword);
-                user.setRole(UserRole.STUDENT);
                 user.setDepartment(department.isEmpty() ? "N/A" : department);
                 user.setSubDepartment(subDept.isEmpty() ? "REGULAR" : subDept);
                 user.setSpecializationType(specType.isEmpty() ? "NONE" : specType.toUpperCase());
                 user.setSpecializationName(specName.isEmpty() ? "N/A" : specName);
-                user.setForcePasswordChange(true);
-                
-                user = userRepository.save(user);
 
-                StudentProfile profile = new StudentProfile();
-                profile.setUser(user);
+                final User savedUser = userRepository.save(user);
+
+                Optional<StudentProfile> profileOpt = studentProfileRepository.findByUser(savedUser);
+                StudentProfile profile = profileOpt.orElseGet(() -> {
+                    StudentProfile sp = new StudentProfile();
+                    sp.setUser(savedUser);
+                    return sp;
+                });
                 profile.setDegreeType("B.Tech");
-                profile.setSpecialization(user.getDepartment() != null && !user.getDepartment().equals("N/A") ? user.getDepartment() : "CSE");
+                profile.setSpecialization(savedUser.getDepartment() != null && !savedUser.getDepartment().equals("N/A") ? savedUser.getDepartment() : "CSE");
                 studentProfileRepository.save(profile);
 
-                credentials.add(new CredentialInfo(studentId, rawPassword, email, fullName, user.getDepartment(), user.getSubDepartment(), user.getSpecializationType(), user.getSpecializationName()));
+                credentials.add(new CredentialInfo(studentId, rawPassword, email, fullName, savedUser.getDepartment(), savedUser.getSubDepartment(), savedUser.getSpecializationType(), savedUser.getSpecializationName()));
                 success++;
 
             } catch (Exception e) {
@@ -116,8 +165,8 @@ public class BulkUploadService {
                 failedRecord.setUpload(history);
                 failedRecord.setRowNumber(row.getRowNum() + 1);
                 failedRecord.setErrorReason(e.getMessage());
-                failedRecord.setStudentIdNum(getCellValue(row, 1));
-                failedRecord.setEmail(getCellValue(row, 2));
+                failedRecord.setStudentIdNum(getCellValue(row, idCol));
+                failedRecord.setEmail(getCellValue(row, emailCol));
                 failedRecordRepository.save(failedRecord);
             }
         }
@@ -129,6 +178,11 @@ public class BulkUploadService {
         uploadHistoryRepository.save(history);
         
         workbook.close();
+
+        if (total > 0 && success == 0) {
+            throw new RuntimeException("All " + total + " row(s) in the Excel file failed to process. Please ensure required columns (Name, ID, Email) are present and formatted correctly.");
+        }
+
         return credentials;
     }
 
@@ -140,15 +194,19 @@ public class BulkUploadService {
             case STRING: return cell.getStringCellValue().trim();
             case NUMERIC: 
                 if (DateUtil.isCellDateFormatted(cell)) return cell.getDateCellValue().toString();
-                return String.valueOf((long)cell.getNumericCellValue());
+                return new java.text.DecimalFormat("#").format(cell.getNumericCellValue());
             case BOOLEAN: return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                try {
+                    return cell.getStringCellValue().trim();
+                } catch (Exception e) {
+                    return new java.text.DecimalFormat("#").format(cell.getNumericCellValue());
+                }
             default: return "";
         }
     }
 
     public byte[] generateCredentialsExcel(Long uploadId) throws IOException {
-        // Implementation for downloading the generated credentials
-        // This is a placeholder for the logic to generate an Excel with ID, Password, Email
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Credentials");
         
@@ -157,11 +215,6 @@ public class BulkUploadService {
         header.createCell(1).setCellValue("Password");
         header.createCell(2).setCellValue("Email");
 
-        // Note: We don't store raw passwords in DB, so we'd normally generate this file 
-        // DURING the upload process and store it in a secure location or return it immediately.
-        // For now, I'll return a simple dummy byte array to avoid errors, 
-        // but in a real app, you'd handle the file storage.
-        
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         workbook.write(out);
         workbook.close();

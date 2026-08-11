@@ -23,6 +23,9 @@ public class StudentProfile {
     @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
     private User user;
 
+    @Column(name = "university_id", unique = true)
+    private String universityId;
+
     @Column(name = "degree_type", nullable = false)
     private String degreeType;
 

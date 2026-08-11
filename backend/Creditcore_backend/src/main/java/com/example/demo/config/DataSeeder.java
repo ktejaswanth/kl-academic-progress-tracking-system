@@ -2,6 +2,8 @@ package com.example.demo.config;
 
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
+import com.example.demo.service.Y23AidsCurriculumSeeder;
+import com.example.demo.service.Y23AidsDataMigration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,20 +14,13 @@ import java.time.LocalDate;
 @Component
 public class DataSeeder implements CommandLineRunner {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private StudentProfileRepository studentProfileRepository;
-
-    @Autowired
-    private RequirementRepository requirementRepository;
-
-    @Autowired
-    private CompletedCourseRepository completedCourseRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired private UserRepository userRepository;
+    @Autowired private StudentProfileRepository studentProfileRepository;
+    @Autowired private RequirementRepository requirementRepository;
+    @Autowired private CompletedCourseRepository completedCourseRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private Y23AidsCurriculumSeeder y23AidsCurriculumSeeder;
+    @Autowired private Y23AidsDataMigration y23AidsDataMigration;
 
     @Override
     public void run(String... args) throws Exception {
@@ -54,46 +49,52 @@ public class DataSeeder implements CommandLineRunner {
             student.setFirstName("Rajesh");
             student.setLastName("Kumar");
             student.setRole(UserRole.STUDENT);
-            student.setDepartment("CSE");
+            student.setDepartment("AIDS");
+            student.setSubDepartment("REGULAR");
+            student.setSpecializationType("NONE");
             student.setForcePasswordChange(false);
             student.setIsActive(true);
             userRepository.save(student);
 
             StudentProfile profile = new StudentProfile();
             profile.setUser(student);
+            profile.setUniversityId("2100030001");
             profile.setDegreeType("B.Tech");
-            profile.setSpecialization("CSE");
+            profile.setSpecialization("AIDS");
             profile.setCurrentYear(3);
-            profile.setAdmissionYear(2021);
+            profile.setAdmissionYear(2023);
             studentProfileRepository.save(profile);
 
-            // 3. Seed Requirements
-            Requirement r1 = new Requirement();
-            r1.setDegreeType("B.Tech"); r1.setSpecialization("CSE");
-            r1.setBucketName("MANDATORY"); r1.setCourseCode("CS101"); r1.setCourseName("Data Structures");
-            r1.setCredits(4); r1.setIsMandatory(true);
-            requirementRepository.save(r1);
-
-            Requirement r2 = new Requirement();
-            r2.setDegreeType("B.Tech"); r2.setSpecialization("CSE");
-            r2.setBucketName("MANDATORY"); r2.setCourseCode("CS102"); r2.setCourseName("Algorithms");
-            r2.setCredits(4); r2.setIsMandatory(true);
-            requirementRepository.save(r2);
-
-            Requirement r3 = new Requirement();
-            r3.setDegreeType("B.Tech"); r3.setSpecialization("CSE");
-            r3.setBucketName("ELECTIVE"); r3.setCourseCode("CS201"); r3.setCourseName("Artificial Intelligence");
-            r3.setCredits(3); r3.setIsMandatory(false);
-            requirementRepository.save(r3);
-
-            // 4. Seed Completed Courses
+            // Seed Completed Courses for Test Student
             CompletedCourse c1 = new CompletedCourse();
-            c1.setStudent(student); c1.setCourseCode("CS101"); c1.setCourseName("Data Structures");
+            c1.setStudent(student); c1.setCourseCode("23AD2101"); c1.setCourseName("Introduction to Data Science & AI");
             c1.setCredits(4); c1.setGrade("A"); c1.setSemester("SEM-1");
             c1.setCompletedDate(LocalDate.now());
             completedCourseRepository.save(c1);
 
-            System.out.println("✅ Test Student, Requirements, and Completions seeded.");
+            CompletedCourse c2 = new CompletedCourse();
+            c2.setStudent(student); c2.setCourseCode("23AD2102"); c2.setCourseName("Data Structures & Algorithms in Python");
+            c2.setCredits(4); c2.setGrade("O"); c2.setSemester("SEM-1");
+            c2.setCompletedDate(LocalDate.now());
+            completedCourseRepository.save(c2);
+
+            System.out.println("✅ Test AIDS Student and Completions seeded.");
+        }
+
+        // 3. Seed Y23 AIDS Curriculum Structure
+        try {
+            y23AidsCurriculumSeeder.seedY23AidsCurriculum();
+            System.out.println("✅ Y23 AIDS Curriculum Structure seeded.");
+        } catch (Exception e) {
+            System.err.println("⚠️ Y23 AIDS Curriculum Seeding notice: " + e.getMessage());
+        }
+
+        // 4. Migrate Student Course Data
+        try {
+            y23AidsDataMigration.migrateY23AidsStudentData();
+            System.out.println("✅ Student Course Data Normalization complete.");
+        } catch (Exception e) {
+            System.err.println("⚠️ Student Course Data Migration notice: " + e.getMessage());
         }
     }
 }

@@ -22,7 +22,7 @@ public class PromptBuilder {
             4. Credits (CR) = L + T + (P * 0.5) + (S * 0.25) approximately.
             5. Contact Hours (CH) = L + T + P + S.
             6. Bucket codes follow patterns like: HAS-CORE, BSC-ME-1, PCC-CORE, FCC, HFC-CORE, etc.
-            7. Degree types are: REGULAR, HONORS, HTE, HTI, HTR.
+            7. Degree types are: REGULAR, HONORS, HTE (Honors through Experiential Learning), HTI (Honors through Innovation), HTR (Honors through Research).
             8. Addon types are: NONE, SPECIALIZATION, MINOR, DOUBLE_MAJOR.
             9. Look for "Credit Requirement" and "Design your own Degree" sections for bucket requirements.
             10. Look for "Program Structure" sections for course listings.
