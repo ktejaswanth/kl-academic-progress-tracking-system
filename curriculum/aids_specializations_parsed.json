@@ -1,0 +1,4568 @@
+[
+  {
+    "name": "AGRI-BIOTECHNOLOGY",
+    "code": "AGRI-BIOTECHNOLOGY",
+    "courses": [
+      {
+        "course_code": "23SDBT10A",
+        "bucket": "SDP-4",
+        "title": "MASS SPECTROMETRY BASED"
+      },
+      {
+        "course_code": "23SDBT10E",
+        "bucket": "SDP-4",
+        "title": "MASS SPECTROMETRY BASED"
+      },
+      {
+        "course_code": "23SDBT10R",
+        "bucket": "SDP-4",
+        "title": "MASS SPECTROMETRY BASED"
+      },
+      {
+        "course_code": "23ABT3101A",
+        "bucket": "PE-1",
+        "title": "BIOSENSORS AND BIOELECTRONICS"
+      },
+      {
+        "course_code": "23ABT3101E",
+        "bucket": "PE-1",
+        "title": "BIOSENSORS AND BIOELECTRONICS"
+      },
+      {
+        "course_code": "23ABT3101R",
+        "bucket": "PE-1",
+        "title": "BIOSENSORS AND BIOELECTRONICS"
+      },
+      {
+        "course_code": "23ABT3202A",
+        "bucket": "PE-2",
+        "title": "IOT APPLICATIONS IN PRECISION"
+      },
+      {
+        "course_code": "23ABT3202E",
+        "bucket": "PE-2",
+        "title": "IOT APPLICATIONS IN PRECISION"
+      },
+      {
+        "course_code": "23ABT3202R",
+        "bucket": "PE-2",
+        "title": "IOT APPLICATIONS IN PRECISION"
+      },
+      {
+        "course_code": "23ABT3203A",
+        "bucket": "PE-3",
+        "title": "MACHINE LEARNING FOR PRECISION"
+      },
+      {
+        "course_code": "23ABT3203E",
+        "bucket": "PE-3",
+        "title": "MACHINE LEARNING FOR PRECISION"
+      },
+      {
+        "course_code": "23ABT3203R",
+        "bucket": "PE-3",
+        "title": "MACHINE LEARNING FOR PRECISION"
+      },
+      {
+        "course_code": "23ABT3304A",
+        "bucket": "PE-3",
+        "title": "IMAGE PROCESSING FOR"
+      },
+      {
+        "course_code": "23ABT3304E",
+        "bucket": "PE-4",
+        "title": "IMAGE PROCESSING FOR"
+      },
+      {
+        "course_code": "23ABT3304R",
+        "bucket": "PE-4",
+        "title": "IMAGE PROCESSING FOR"
+      },
+      {
+        "course_code": "23ABT3406M",
+        "bucket": "PE-4",
+        "title": "DATA ACQUISITION AND"
+      },
+      {
+        "course_code": "23ABT3405M",
+        "bucket": "PE-5",
+        "title": "BIOINSTRUMENTATION"
+      },
+      {
+        "course_code": "23ABT3507",
+        "bucket": "PE-5",
+        "title": "MICROFLUIDICS FOR"
+      },
+      {
+        "course_code": "23ABT3508",
+        "bucket": "PE-5",
+        "title": "BIOINFORMATICS FOR"
+      }
+    ]
+  },
+  {
+    "name": "AI AND AUTONOMOUS SYSTEMS",
+    "code": "AI-AND-AUTONOMOUS-SYSTEMS",
+    "courses": [
+      {
+        "course_code": "23SDAD09A",
+        "bucket": "SDP-4",
+        "title": "AUTONOMOUS VEHICLE SYSTEMS"
+      },
+      {
+        "course_code": "23SDAD09E",
+        "bucket": "SDP-4",
+        "title": "AUTONOMOUS VEHICLE SYSTEMS"
+      },
+      {
+        "course_code": "23SDAD09R",
+        "bucket": "SDP-4",
+        "title": "AUTONOMOUS VEHICLE SYSTEMS"
+      },
+      {
+        "course_code": "23ASS3101A",
+        "bucket": "PE-1",
+        "title": "AUTONOMOUS DRIVER ASSISTIVE"
+      },
+      {
+        "course_code": "23ASS3101E",
+        "bucket": "PE-1",
+        "title": "AUTONOMOUS DRIVER ASSISTIVE"
+      },
+      {
+        "course_code": "23ASS3101R",
+        "bucket": "PE-1",
+        "title": "AUTONOMOUS DRIVER ASSISTIVE"
+      },
+      {
+        "course_code": "23ASS3102A",
+        "bucket": "PE-1",
+        "title": "AI AND CONTROLS FOR"
+      },
+      {
+        "course_code": "23ASS3102E",
+        "bucket": "PE-1",
+        "title": "AI AND CONTROLS FOR"
+      },
+      {
+        "course_code": "23ASS3102R",
+        "bucket": "PE-1",
+        "title": "AI AND CONTROLS FOR"
+      },
+      {
+        "course_code": "23ASS3202A",
+        "bucket": "PE-2",
+        "title": "INTRODUCTION TO INTELLIGENT"
+      },
+      {
+        "course_code": "23ASS3202E",
+        "bucket": "PE-2",
+        "title": "INTRODUCTION TO INTELLIGENT"
+      },
+      {
+        "course_code": "23ASS3202R",
+        "bucket": "PE-2",
+        "title": "INTRODUCTION TO INTELLIGENT"
+      },
+      {
+        "course_code": "23ASS3203A",
+        "bucket": "PE-2",
+        "title": "AI AND IOT FOR AUTONOMOUS"
+      },
+      {
+        "course_code": "23ASS3203E",
+        "bucket": "PE-2",
+        "title": "AI AND IOT FOR AUTONOMOUS"
+      },
+      {
+        "course_code": "23ASS3203R",
+        "bucket": "PE-2",
+        "title": "AI AND IOT FOR AUTONOMOUS"
+      },
+      {
+        "course_code": "23ASS3205A",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLE ECU"
+      },
+      {
+        "course_code": "23ASS3205E",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLE ECU"
+      },
+      {
+        "course_code": "23ASS3205R",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLE ECU"
+      },
+      {
+        "course_code": "23ASS3304A",
+        "bucket": "PE-3",
+        "title": "APPLIED DEEP LEARNING FOR"
+      },
+      {
+        "course_code": "23ASS3304E",
+        "bucket": "PE-3",
+        "title": "APPLIED DEEP LEARNING FOR"
+      },
+      {
+        "course_code": "23ASS3304R",
+        "bucket": "PE-3",
+        "title": "APPLIED DEEP LEARNING FOR"
+      },
+      {
+        "course_code": "23ASS3309A",
+        "bucket": "PE-3",
+        "title": "AUTONOMOUS ELECTRIC MOBILITY"
+      },
+      {
+        "course_code": "23ASS3309E",
+        "bucket": "PE-3",
+        "title": "AUTONOMOUS ELECTRIC MOBILITY"
+      },
+      {
+        "course_code": "23ASS3309R",
+        "bucket": "PE-3",
+        "title": "AUTONOMOUS ELECTRIC MOBILITY"
+      },
+      {
+        "course_code": "23ASS3405M",
+        "bucket": "PE-4",
+        "title": "EXPERT SYSTEMS"
+      },
+      {
+        "course_code": "23ASS3406M",
+        "bucket": "PE-4",
+        "title": "SELF-DRIVING CARS"
+      },
+      {
+        "course_code": "23ASS3410M",
+        "bucket": "PE-4",
+        "title": "CYBERSECURITY IN AUTONOMUS"
+      },
+      {
+        "course_code": "23ASS3507",
+        "bucket": "PE-5",
+        "title": "LOCALIZATION & PROGRAMMING"
+      },
+      {
+        "course_code": "23ASS3508",
+        "bucket": "PE-5",
+        "title": "REINFORCEMENT LEARNING FOR"
+      },
+      {
+        "course_code": "23ASS3511",
+        "bucket": "PE-5",
+        "title": "AI DRIVEN ECU DESIGN FOR"
+      }
+    ]
+  },
+  {
+    "name": "AI FOR COMPUTATIONAL INTELLIGENCE",
+    "code": "AI-FOR-COMPUTATIONAL-INTELLIGENCE",
+    "courses": [
+      {
+        "course_code": "23SDCS17A",
+        "bucket": "SDP-4",
+        "title": "GENERATIVE ADVERSARIAL"
+      },
+      {
+        "course_code": "23SDCS17E",
+        "bucket": "SDP-4",
+        "title": "GENERATIVE ADVERSARIAL"
+      },
+      {
+        "course_code": "23SDCS17R",
+        "bucket": "SDP-4",
+        "title": "GENERATIVE ADVERSARIAL"
+      },
+      {
+        "course_code": "23ACI3101A",
+        "bucket": "PE-1",
+        "title": "GENERATIVE ADVERSARIAL"
+      },
+      {
+        "course_code": "23ACI3101E",
+        "bucket": "PE-1",
+        "title": "GENERATIVE ADVERSARIAL"
+      },
+      {
+        "course_code": "23ACI3101R",
+        "bucket": "PE-1",
+        "title": "GENERATIVE ADVERSARIAL"
+      },
+      {
+        "course_code": "23ACI3202A",
+        "bucket": "PE-2",
+        "title": "EXPLAINABLE AI AND"
+      },
+      {
+        "course_code": "23ACI3202E",
+        "bucket": "PE-2",
+        "title": "EXPLAINABLE AI AND"
+      },
+      {
+        "course_code": "23ACI3202R",
+        "bucket": "PE-2",
+        "title": "EXPLAINABLE AI AND"
+      },
+      {
+        "course_code": "23ACI3303A",
+        "bucket": "PE-3",
+        "title": "FUZZY LOGIC WITH SET THEORY"
+      },
+      {
+        "course_code": "23ACI3303E",
+        "bucket": "PE-3",
+        "title": "FUZZY LOGIC WITH SET THEORY"
+      },
+      {
+        "course_code": "23ACI3303R",
+        "bucket": "PE-3",
+        "title": "FUZZY LOGIC WITH SET THEORY"
+      },
+      {
+        "course_code": "23ACI3404M",
+        "bucket": "PE-4",
+        "title": "HEURISTIC ALGORITHMS"
+      },
+      {
+        "course_code": "23ACI3405M",
+        "bucket": "PE-5",
+        "title": "SWARM INTELLIGENCE"
+      },
+      {
+        "course_code": "23ACI3506",
+        "bucket": "PE-5",
+        "title": "DATA MANIPULATION"
+      },
+      {
+        "course_code": "23ACI3507",
+        "bucket": "PE-5",
+        "title": "REINFORCEMENT LEARNING"
+      },
+      {
+        "course_code": "23ACI3508",
+        "bucket": "PE-5",
+        "title": "EVOLUTIONARY COMPUTATION"
+      }
+    ]
+  },
+  {
+    "name": "AI SYSTEMS FOR VISUAL INTELLIGENCE",
+    "code": "AI-SYSTEMS-FOR-VISUAL-INTELLIGENCE",
+    "courses": [
+      {
+        "course_code": "23SDCS19A",
+        "bucket": "SDP-4",
+        "title": "VISUAL RECOGNITION AND SCENE"
+      },
+      {
+        "course_code": "23SDCS19E",
+        "bucket": "SDP-4",
+        "title": "VISUAL RECOGNITION AND SCENE"
+      },
+      {
+        "course_code": "23SDCS19R",
+        "bucket": "SDP-4",
+        "title": "VISUAL RECOGNITION AND SCENE"
+      },
+      {
+        "course_code": "23AVI3101A",
+        "bucket": "PE-1",
+        "title": "DEEP LEARNING"
+      },
+      {
+        "course_code": "23AVI3101E",
+        "bucket": "PE-1",
+        "title": "DEEP LEARNING"
+      },
+      {
+        "course_code": "23AVI3101R",
+        "bucket": "PE-1",
+        "title": "DEEP LEARNING"
+      },
+      {
+        "course_code": "23AVI3202A",
+        "bucket": "PE-2",
+        "title": "COMPUTER VISION"
+      },
+      {
+        "course_code": "23AVI3202E",
+        "bucket": "PE-2",
+        "title": "COMPUTER VISION"
+      },
+      {
+        "course_code": "23AVI3202R",
+        "bucket": "PE-2",
+        "title": "COMPUTER VISION"
+      },
+      {
+        "course_code": "23AVI3303A",
+        "bucket": "PE-3",
+        "title": "OBJECT DETECTION"
+      },
+      {
+        "course_code": "23AVI3303E",
+        "bucket": "PE-3",
+        "title": "OBJECT DETECTION"
+      },
+      {
+        "course_code": "23AVI3303R",
+        "bucket": "PE-3",
+        "title": "OBJECT DETECTION"
+      },
+      {
+        "course_code": "23AVI3404M",
+        "bucket": "PE-4",
+        "title": "VISUAL RECOGNITION AND SCENE"
+      },
+      {
+        "course_code": "23AVI3405M",
+        "bucket": "PE-4",
+        "title": "DEEP REINFORCEMENT LEARNING"
+      },
+      {
+        "course_code": "23AVI3506",
+        "bucket": "PE-5",
+        "title": "HUMAN COMPUTER INTERACTION"
+      },
+      {
+        "course_code": "23AVI3507",
+        "bucket": "PE-5",
+        "title": "OBJECT LOCALIZATION"
+      },
+      {
+        "course_code": "23AVI3508",
+        "bucket": "PE-5",
+        "title": "ADVANCED IMAGE PROCESSING AND"
+      }
+    ]
+  },
+  {
+    "name": "AI-DRIVEN EDGE ARCHITECTURES AND APPLICATIONS",
+    "code": "AI-DRIVEN-EDGE-ARCHITECTURES-AND-APPLICATIONS",
+    "courses": [
+      {
+        "course_code": "23SDCS20A",
+        "bucket": "SDP-4",
+        "title": "SMART IOT AND SENSOR NETWORKS"
+      },
+      {
+        "course_code": "23SDCS20E",
+        "bucket": "SDP-4",
+        "title": "SMART IOT AND SENSOR NETWORKS"
+      },
+      {
+        "course_code": "23SDCS20R",
+        "bucket": "SDP-4",
+        "title": "SMART IOT AND SENSOR NETWORKS"
+      },
+      {
+        "course_code": "23ADE3101A",
+        "bucket": "PE-1",
+        "title": "EDGE COMPUTING FUNDAMENTALS"
+      },
+      {
+        "course_code": "23ADE3101E",
+        "bucket": "PE-1",
+        "title": "EDGE COMPUTING FUNDAMENTALS"
+      },
+      {
+        "course_code": "23ADE3101R",
+        "bucket": "PE-1",
+        "title": "EDGE COMPUTING FUNDAMENTALS"
+      },
+      {
+        "course_code": "23ADE3202A",
+        "bucket": "PE-2",
+        "title": "AI AT THE EDGE"
+      },
+      {
+        "course_code": "23ADE3202E",
+        "bucket": "PE-2",
+        "title": "AI AT THE EDGE"
+      },
+      {
+        "course_code": "23ADE3202R",
+        "bucket": "PE-2",
+        "title": "AI AT THE EDGE"
+      },
+      {
+        "course_code": "23ADE3303A",
+        "bucket": "PE-3",
+        "title": "EDGE AI ARCHITECTURES AND"
+      },
+      {
+        "course_code": "23ADE3303E",
+        "bucket": "PE-3",
+        "title": "EDGE AI ARCHITECTURES AND"
+      },
+      {
+        "course_code": "23ADE3303R",
+        "bucket": "PE-3",
+        "title": "EDGE AI ARCHITECTURES AND"
+      },
+      {
+        "course_code": "23ADE3404M",
+        "bucket": "PE-4",
+        "title": "EDGE AI AND 5G"
+      },
+      {
+        "course_code": "23ADE3405M",
+        "bucket": "PE-4",
+        "title": "EDGE AI SECURITY AND"
+      },
+      {
+        "course_code": "23ADE3506",
+        "bucket": "PE-5",
+        "title": "EDGE AI DEVELOPMENT"
+      },
+      {
+        "course_code": "23ADE3507",
+        "bucket": "PE-5",
+        "title": "EDGE AI ANALYTICS AND DATA"
+      },
+      {
+        "course_code": "23ADE3508",
+        "bucket": "PE-5",
+        "title": "EDGE AI AND SUSTAINABILITY"
+      }
+    ]
+  },
+  {
+    "name": "AI-DRIVEN LANGUAGE TECHNOLOGIES",
+    "code": "AI-DRIVEN-LANGUAGE-TECHNOLOGIES",
+    "courses": [
+      {
+        "course_code": "23SDCS18A",
+        "bucket": "SDP-4",
+        "title": "TEXT ANALYTICS"
+      },
+      {
+        "course_code": "23SDCS18E",
+        "bucket": "SDP-4",
+        "title": "TEXT ANALYTICS"
+      },
+      {
+        "course_code": "23SDCS18R",
+        "bucket": "SDP-4",
+        "title": "TEXT ANALYTICS"
+      },
+      {
+        "course_code": "23ALT3101A",
+        "bucket": "PE-1",
+        "title": "APPLIED MACHINE LEARNING FOR"
+      },
+      {
+        "course_code": "23ALT3101E",
+        "bucket": "PE-1",
+        "title": "APPLIED MACHINE LEARNING FOR"
+      },
+      {
+        "course_code": "23ALT3101R",
+        "bucket": "PE-1",
+        "title": "APPLIED MACHINE LEARNING FOR"
+      },
+      {
+        "course_code": "23ALT3202A",
+        "bucket": "PE-2",
+        "title": "DEEP LEARNING FOR NATURAL"
+      },
+      {
+        "course_code": "23ALT3202E",
+        "bucket": "PE-2",
+        "title": "DEEP LEARNING FOR NATURAL"
+      },
+      {
+        "course_code": "23ALT3202R",
+        "bucket": "PE-2",
+        "title": "DEEP LEARNING FOR NATURAL"
+      },
+      {
+        "course_code": "23ALT3303A",
+        "bucket": "PE-3",
+        "title": "CONVERSATIONAL AI AND CHATBOT"
+      },
+      {
+        "course_code": "23ALT3303E",
+        "bucket": "PE-3",
+        "title": "CONVERSATIONAL AI AND CHATBOT"
+      },
+      {
+        "course_code": "23ALT3303R",
+        "bucket": "PE-3",
+        "title": "CONVERSATIONAL AI AND CHATBOT"
+      },
+      {
+        "course_code": "23ALT3404M",
+        "bucket": "PE-4",
+        "title": "TEXT UNDERSTANDING"
+      },
+      {
+        "course_code": "23ALT3405M",
+        "bucket": "PE-4",
+        "title": "NATURAL LANGUAGE PROCESSING"
+      },
+      {
+        "course_code": "23ALT3506",
+        "bucket": "PE-5",
+        "title": "LANGUAGE UNDERSTANDING WITH"
+      },
+      {
+        "course_code": "23ALT3507",
+        "bucket": "PE-5",
+        "title": "LARGE LANGUAGE MODEL FOR"
+      }
+    ]
+  },
+  {
+    "name": "AUTOMOTIVE ELECTRONICS AND AUTOSAR",
+    "code": "AUTOMOTIVE-ELECTRONICS-AND-AUTOSAR",
+    "courses": [
+      {
+        "course_code": "23AEA3101A",
+        "bucket": "PE-1",
+        "title": "AUTOMOTIVE SENSOR AND"
+      },
+      {
+        "course_code": "23AEA3101E",
+        "bucket": "PE-1",
+        "title": "AUTOMOTIVE SENSOR AND"
+      },
+      {
+        "course_code": "23AEA3101R",
+        "bucket": "PE-1",
+        "title": "AUTOMOTIVE SENSOR AND"
+      },
+      {
+        "course_code": "23AEA3202A",
+        "bucket": "PE-2",
+        "title": "AUTOTRONICS"
+      },
+      {
+        "course_code": "23AEA3202E",
+        "bucket": "PE-2",
+        "title": "AUTOTRONICS"
+      },
+      {
+        "course_code": "23AEA3202R",
+        "bucket": "PE-2",
+        "title": "AUTOTRONICS"
+      },
+      {
+        "course_code": "23AEA3203A",
+        "bucket": "PE-2",
+        "title": "AUTOMOTIVE POLLUTION AND ITS"
+      },
+      {
+        "course_code": "23AEA3203E",
+        "bucket": "PE-2",
+        "title": "AUTOMOTIVE POLLUTION AND ITS"
+      },
+      {
+        "course_code": "23AEA3203R",
+        "bucket": "PE-2",
+        "title": "AUTOMOTIVE POLLUTION AND ITS"
+      },
+      {
+        "course_code": "23AEA3304A",
+        "bucket": "PE-3",
+        "title": "ALTERNATE DRIVES, TRACTION AND"
+      },
+      {
+        "course_code": "23AEA3304E",
+        "bucket": "PE-3",
+        "title": "ALTERNATE DRIVES, TRACTION AND"
+      },
+      {
+        "course_code": "23AEA3304R",
+        "bucket": "PE-3",
+        "title": "ALTERNATE DRIVES, TRACTION AND"
+      },
+      {
+        "course_code": "23AEA3405M",
+        "bucket": "PE-4",
+        "title": "VEHICLE CONTROL SYSTEMS"
+      },
+      {
+        "course_code": "23AEA3406M",
+        "bucket": "PE-4",
+        "title": "AUTOMOTIVE ELECTRICAL AND"
+      },
+      {
+        "course_code": "23AEA3507",
+        "bucket": "PE-5",
+        "title": "SOFT COMPUTING TECHNIQUES"
+      },
+      {
+        "course_code": "23AEA3508",
+        "bucket": "PE-5",
+        "title": "AUTOMOTIVE NETWORKING AND"
+      }
+    ]
+  },
+  {
+    "name": "AUTOMOTIVE ENERGY ENGINEERING",
+    "code": "AUTOMOTIVE-ENERGY-ENGINEERING",
+    "courses": [
+      {
+        "course_code": "23SDME04A",
+        "bucket": "SDP-4",
+        "title": "ANALYSIS OF ENERGY SYSTEMS"
+      },
+      {
+        "course_code": "23SDME04E",
+        "bucket": "SDP-4",
+        "title": "ANALYSIS OF ENERGY SYSTEMS"
+      },
+      {
+        "course_code": "23SDME04R",
+        "bucket": "SDP-4",
+        "title": "ANALYSIS OF ENERGY SYSTEMS"
+      },
+      {
+        "course_code": "23ECF3101A",
+        "bucket": "PE-1",
+        "title": "AUTOMOBILE ENGINEERING"
+      },
+      {
+        "course_code": "23ECF3101E",
+        "bucket": "PE-1",
+        "title": "AUTOMOBILE ENGINEERING"
+      },
+      {
+        "course_code": "23ECF3101R",
+        "bucket": "PE-1",
+        "title": "AUTOMOBILE ENGINEERING"
+      },
+      {
+        "course_code": "23ECF3202A",
+        "bucket": "PE-2",
+        "title": "AUTOTRONICS & SAFETY"
+      },
+      {
+        "course_code": "23ECF3202E",
+        "bucket": "PE-2",
+        "title": "AUTOTRONICS & SAFETY"
+      },
+      {
+        "course_code": "23ECF3202R",
+        "bucket": "PE-2",
+        "title": "AUTOTRONICS & SAFETY"
+      },
+      {
+        "course_code": "23ECF3203A",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLES"
+      },
+      {
+        "course_code": "23ECF3203E",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLES"
+      },
+      {
+        "course_code": "23ECF3203R",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLES"
+      },
+      {
+        "course_code": "23ECF3304A",
+        "bucket": "PE-3",
+        "title": "HYBRID AND ELECTRIC VEHICLE"
+      },
+      {
+        "course_code": "23ECF3304E",
+        "bucket": "PE-3",
+        "title": "HYBRID AND ELECTRIC VEHICLE"
+      },
+      {
+        "course_code": "23ECF3304R",
+        "bucket": "PE-3",
+        "title": "HYBRID AND ELECTRIC VEHICLE"
+      },
+      {
+        "course_code": "23ECF3405M",
+        "bucket": "PE-4",
+        "title": "SPECIAL PURPOSE VEHICLES"
+      },
+      {
+        "course_code": "23ECF3406M",
+        "bucket": "PE-4",
+        "title": "VEHICLE DYNAMICS"
+      },
+      {
+        "course_code": "23ECF3507",
+        "bucket": "PE-5",
+        "title": "THERMAL MANAGEMENT OF"
+      },
+      {
+        "course_code": "23ECF3508",
+        "bucket": "PE-5",
+        "title": "ALTERNATE ENERGY SOURCES FOR"
+      }
+    ]
+  },
+  {
+    "name": "BIOINFORMATICS",
+    "code": "BIOINFORMATICS",
+    "courses": [
+      {
+        "course_code": "23SDBT08A",
+        "bucket": "SDP-4",
+        "title": "DRUG DESIGN: PRINCIPLES AND"
+      },
+      {
+        "course_code": "23SDBT08E",
+        "bucket": "SDP-4",
+        "title": "DRUG DESIGN: PRINCIPLES AND"
+      },
+      {
+        "course_code": "23SDBT08R",
+        "bucket": "SDP-4",
+        "title": "DRUG DESIGN: PRINCIPLES AND"
+      },
+      {
+        "course_code": "23BIS3101A",
+        "bucket": "PE-1",
+        "title": "MOLECULAR MODELLING AND DRUG"
+      },
+      {
+        "course_code": "23BIS3101E",
+        "bucket": "PE-1",
+        "title": "MOLECULAR MODELLING AND DRUG"
+      },
+      {
+        "course_code": "23BIS3101R",
+        "bucket": "PE-1",
+        "title": "MOLECULAR MODELLING AND DRUG"
+      },
+      {
+        "course_code": "23BIS3202A",
+        "bucket": "PE-2",
+        "title": "BIOMEDICAL INFORMATICS"
+      },
+      {
+        "course_code": "23BIS3202E",
+        "bucket": "PE-2",
+        "title": "BIOMEDICAL INFORMATICS"
+      },
+      {
+        "course_code": "23BIS3202R",
+        "bucket": "PE-2",
+        "title": "BIOMEDICAL INFORMATICS"
+      },
+      {
+        "course_code": "23BIS3203A",
+        "bucket": "PE-2",
+        "title": "PYTHON AND R PROGRAMMING A P&RP 5 0 0 0 5 5"
+      },
+      {
+        "course_code": "23BIS3203E",
+        "bucket": "PE-2",
+        "title": "PYTHON AND R PROGRAMMING E P&RP 5 0 0 0 5 5"
+      },
+      {
+        "course_code": "23BIS3203R",
+        "bucket": "PE-2",
+        "title": "PYTHON AND R PROGRAMMING R P&RP 3 0 0 0 3 3"
+      },
+      {
+        "course_code": "23BIS3304A",
+        "bucket": "PE-3",
+        "title": "STRUCTURAL BIOLOGY"
+      },
+      {
+        "course_code": "23BIS3304E",
+        "bucket": "PE-3",
+        "title": "STRUCTURAL BIOLOGY"
+      },
+      {
+        "course_code": "23BIS3304R",
+        "bucket": "PE-3",
+        "title": "STRUCTURAL BIOLOGY"
+      },
+      {
+        "course_code": "23BIS3405M",
+        "bucket": "PE-4",
+        "title": "APPLIED BIOINFORMATICS"
+      },
+      {
+        "course_code": "23BIS3406M",
+        "bucket": "PE-4",
+        "title": "NGS SEQUENCING AND DATA"
+      },
+      {
+        "course_code": "23BIS3507",
+        "bucket": "PE-5",
+        "title": "SYSTEMS BIOLOGY"
+      },
+      {
+        "course_code": "23BIS3508",
+        "bucket": "PE-5",
+        "title": "DATABASE MANAGEMENT SYSTEM"
+      }
+    ]
+  },
+  {
+    "name": "BLOCKCHAIN ENGINEERING FOR WEB3",
+    "code": "BLOCKCHAIN-ENGINEERING-FOR-WEB3",
+    "courses": [
+      {
+        "course_code": "23SDAD08A",
+        "bucket": "SDP-4",
+        "title": "EMERGING BLOCKCHAIN MODELS"
+      },
+      {
+        "course_code": "23SDAD08E",
+        "bucket": "SDP-4",
+        "title": "EMERGING BLOCKCHAIN MODELS"
+      },
+      {
+        "course_code": "23SDAD08R",
+        "bucket": "SDP-4",
+        "title": "EMERGING BLOCKCHAIN MODELS"
+      },
+      {
+        "course_code": "23BEW3101A",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO BLOCKCHAIN"
+      },
+      {
+        "course_code": "23BEW3101E",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO BLOCKCHAIN"
+      },
+      {
+        "course_code": "23BEW3101R",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO BLOCKCHAIN"
+      },
+      {
+        "course_code": "23BEW3202A",
+        "bucket": "PE-2",
+        "title": "SMART CONTRACTS"
+      },
+      {
+        "course_code": "23BEW3202E",
+        "bucket": "PE-2",
+        "title": "SMART CONTRACTS"
+      },
+      {
+        "course_code": "23BEW3202R",
+        "bucket": "PE-2",
+        "title": "SMART CONTRACTS"
+      },
+      {
+        "course_code": "23BEW3303A",
+        "bucket": "PE-3",
+        "title": "DECENTRALIZED APPLICATIONS"
+      },
+      {
+        "course_code": "23BEW3303E",
+        "bucket": "PE-3",
+        "title": "DECENTRALIZED APPLICATIONS"
+      },
+      {
+        "course_code": "23BEW3303R",
+        "bucket": "PE-3",
+        "title": "DECENTRALIZED APPLICATIONS"
+      },
+      {
+        "course_code": "23BEW3404M",
+        "bucket": "PE-4",
+        "title": "BLOCKCHAIN PLATFORMS AND"
+      },
+      {
+        "course_code": "23BEW3405M",
+        "bucket": "PE-4",
+        "title": "BLOCKCHAIN SECURITY"
+      },
+      {
+        "course_code": "23BEW3406M",
+        "bucket": "PE-4",
+        "title": "ORACLES AND DATA FEEDS"
+      },
+      {
+        "course_code": "23BEW3507",
+        "bucket": "PE-5",
+        "title": "BLOCKCHAIN SCALABILITY AND"
+      },
+      {
+        "course_code": "23BEW3508",
+        "bucket": "PE-5",
+        "title": "REGULATORY LANDSCAPE AND"
+      },
+      {
+        "course_code": "23BEW3509",
+        "bucket": "PE-5",
+        "title": "FUTURE TRENDS IN BLOCKCHAIN"
+      }
+    ]
+  },
+  {
+    "name": "CLOUD AND EDGE COMPUTING",
+    "code": "CLOUD-AND-EDGE-COMPUTING",
+    "courses": [
+      {
+        "course_code": "23SDCS04A",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED SOLUTIONS"
+      },
+      {
+        "course_code": "23SDCS04E",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED SOLUTIONS"
+      },
+      {
+        "course_code": "23SDCS04R",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED SOLUTIONS"
+      },
+      {
+        "course_code": "23CEC3101A",
+        "bucket": "PE-1",
+        "title": "CLOUD INFRASTRUCTURE AND"
+      },
+      {
+        "course_code": "23CEC3101E",
+        "bucket": "PE-1",
+        "title": "CLOUD INFRASTRUCTURE AND"
+      },
+      {
+        "course_code": "23CEC3101R",
+        "bucket": "PE-1",
+        "title": "CLOUD INFRASTRUCTURE AND"
+      },
+      {
+        "course_code": "23CEC3202A",
+        "bucket": "PE-2",
+        "title": "ADVANCED OPERATING SYSTEMS"
+      },
+      {
+        "course_code": "23CEC3202E",
+        "bucket": "PE-2",
+        "title": "ADVANCED OPERATING SYSTEMS"
+      },
+      {
+        "course_code": "23CEC3202R",
+        "bucket": "PE-2",
+        "title": "ADVANCED OPERATING SYSTEMS"
+      },
+      {
+        "course_code": "23CEC3203A",
+        "bucket": "PE-2",
+        "title": "FUNCTIONAL & CONCURRENT"
+      },
+      {
+        "course_code": "23CEC3203E",
+        "bucket": "PE-2",
+        "title": "FUNCTIONAL & CONCURRENT"
+      },
+      {
+        "course_code": "23CEC3203R",
+        "bucket": "PE-2",
+        "title": "FUNCTIONAL & CONCURRENT"
+      },
+      {
+        "course_code": "23CEC3204A",
+        "bucket": "PE-2",
+        "title": "CLOUD DEVOPS"
+      },
+      {
+        "course_code": "23CEC3204E",
+        "bucket": "PE-2",
+        "title": "CLOUD DEVOPS"
+      },
+      {
+        "course_code": "23CEC3204R",
+        "bucket": "PE-2",
+        "title": "CLOUD DEVOPS"
+      },
+      {
+        "course_code": "23CEC3305A",
+        "bucket": "PE-3",
+        "title": "CLOUD & SERVERLESS COMPUTING"
+      },
+      {
+        "course_code": "23CEC3305E",
+        "bucket": "PE-3",
+        "title": "CLOUD & SERVERLESS COMPUTING"
+      },
+      {
+        "course_code": "23CEC3305R",
+        "bucket": "PE-3",
+        "title": "CLOUD & SERVERLESS COMPUTING"
+      },
+      {
+        "course_code": "23CEC3406M",
+        "bucket": "PE-4",
+        "title": "ADVANCED COMPUTER"
+      },
+      {
+        "course_code": "23CEC3407M",
+        "bucket": "PE-4",
+        "title": "PARALLEL ALGORITHMS"
+      },
+      {
+        "course_code": "23CEC3408M",
+        "bucket": "PE-4",
+        "title": "CLOUD SECURITY"
+      },
+      {
+        "course_code": "23CEC3409M",
+        "bucket": "PE-4",
+        "title": "ARCHITECTING CLOUD SOLUTIONS*"
+      },
+      {
+        "course_code": "23CEC3510",
+        "bucket": "PE-5",
+        "title": "EDGE COMPUTING"
+      },
+      {
+        "course_code": "23CEC3511",
+        "bucket": "PE-5",
+        "title": "HIGH PERFORMANCE COMPUTING"
+      },
+      {
+        "course_code": "23CEC3512",
+        "bucket": "PE-5",
+        "title": "DESIGN OF DISTRIBUTED"
+      },
+      {
+        "course_code": "23CEC3513",
+        "bucket": "PE-5",
+        "title": "CLOUD NETWORKING"
+      }
+    ]
+  },
+  {
+    "name": "CLOUD INFRASTRUCTURE DESIGN AND ENGINEERING",
+    "code": "CLOUD-INFRASTRUCTURE-DESIGN-AND-ENGINEERING",
+    "courses": [
+      {
+        "course_code": "23SDCS16A",
+        "bucket": "SDP-4",
+        "title": "CLOUD INFRASTRUCTURE DESIGN"
+      },
+      {
+        "course_code": "23SDCS16E",
+        "bucket": "SDP-4",
+        "title": "CLOUD INFRASTRUCTURE DESIGN"
+      },
+      {
+        "course_code": "23SDCS16R",
+        "bucket": "SDP-4",
+        "title": "CLOUD INFRASTRUCTURE DESIGN"
+      },
+      {
+        "course_code": "23CID3101A",
+        "bucket": "PE-1",
+        "title": "CLOUD INFRASTRUCTURE"
+      },
+      {
+        "course_code": "23CID3101E",
+        "bucket": "PE-1",
+        "title": "CLOUD INFRASTRUCTURE"
+      },
+      {
+        "course_code": "23CID3101R",
+        "bucket": "PE-1",
+        "title": "CLOUD INFRASTRUCTURE"
+      },
+      {
+        "course_code": "23CID3202A",
+        "bucket": "PE-2",
+        "title": "ENTERPRISE CLOUD COMPUTING:"
+      },
+      {
+        "course_code": "23CID3202E",
+        "bucket": "PE-2",
+        "title": "ENTERPRISE CLOUD COMPUTING:"
+      },
+      {
+        "course_code": "23CID3202R",
+        "bucket": "PE-2",
+        "title": "ENTERPRISE CLOUD COMPUTING:"
+      },
+      {
+        "course_code": "23CID3203A",
+        "bucket": "PE-2",
+        "title": "ARCHITECTING HIGHLY AVAILABLE"
+      },
+      {
+        "course_code": "23CID3203E",
+        "bucket": "PE-2",
+        "title": "ARCHITECTING HIGHLY AVAILABLE"
+      },
+      {
+        "course_code": "23CID3203R",
+        "bucket": "PE-2",
+        "title": "ARCHITECTING HIGHLY AVAILABLE"
+      },
+      {
+        "course_code": "23CID3304A",
+        "bucket": "PE-3",
+        "title": "CLOUD INFRASTRUCTURE"
+      },
+      {
+        "course_code": "23CID3304E",
+        "bucket": "PE-3",
+        "title": "CLOUD INFRASTRUCTURE"
+      },
+      {
+        "course_code": "23CID3304R",
+        "bucket": "PE-3",
+        "title": "CLOUD INFRASTRUCTURE"
+      },
+      {
+        "course_code": "23CID3405M",
+        "bucket": "PE-4",
+        "title": "RELIABLE CLOUD"
+      },
+      {
+        "course_code": "23CID3406M",
+        "bucket": "PE-4",
+        "title": "HYBRID CLOUD INTEGRATION AND"
+      },
+      {
+        "course_code": "23CID3507",
+        "bucket": "PE-5",
+        "title": "CLOUD ENGINEERING"
+      },
+      {
+        "course_code": "23CID3508",
+        "bucket": "PE-5",
+        "title": "CLOUD DATA MANAGEMENT AND"
+      }
+    ]
+  },
+  {
+    "name": "CLOUD NATIVE SECURITY",
+    "code": "CLOUD-NATIVE-SECURITY",
+    "courses": [
+      {
+        "course_code": "23SDCS05A",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED SECURITY"
+      },
+      {
+        "course_code": "23SDCS05E",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED SECURITY"
+      },
+      {
+        "course_code": "23SDCS05R",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED SECURITY"
+      },
+      {
+        "course_code": "23CNS3101A",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO CLOUD NATIVE"
+      },
+      {
+        "course_code": "23CNS3101E",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO CLOUD NATIVE"
+      },
+      {
+        "course_code": "23CNS3101R",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO CLOUD NATIVE"
+      },
+      {
+        "course_code": "23CNS3202A",
+        "bucket": "PE-2",
+        "title": "FUNDAMENTALS OF CLOUD"
+      },
+      {
+        "course_code": "23CNS3202E",
+        "bucket": "PE-2",
+        "title": "FUNDAMENTALS OF CLOUD"
+      },
+      {
+        "course_code": "23CNS3202R",
+        "bucket": "PE-2",
+        "title": "FUNDAMENTALS OF CLOUD"
+      },
+      {
+        "course_code": "23CNS3303A",
+        "bucket": "PE-3",
+        "title": "CONTAINER SECURITY"
+      },
+      {
+        "course_code": "23CNS3303E",
+        "bucket": "PE-3",
+        "title": "CONTAINER SECURITY"
+      },
+      {
+        "course_code": "23CNS3303R",
+        "bucket": "PE-3",
+        "title": "CONTAINER SECURITY"
+      },
+      {
+        "course_code": "23CNS3404M",
+        "bucket": "PE-4",
+        "title": "MICROSERVICES SECURITY"
+      },
+      {
+        "course_code": "23CNS3405M",
+        "bucket": "PE-4",
+        "title": "INFRASTRUCTURE AS CODE"
+      },
+      {
+        "course_code": "23CNS3406M",
+        "bucket": "PE-4",
+        "title": "IDENTITY AND ACCESS"
+      },
+      {
+        "course_code": "23CNS3407M",
+        "bucket": "PE-4",
+        "title": "NETWORK SECURITY IN CLOUD"
+      },
+      {
+        "course_code": "23CNS3508",
+        "bucket": "PE-5",
+        "title": "MONITORING AND LOGGING FOR"
+      },
+      {
+        "course_code": "23CNS3509",
+        "bucket": "PE-5",
+        "title": "COMPLIANCE AND GOVERNANCE IN"
+      },
+      {
+        "course_code": "23CNS3510",
+        "bucket": "PE-5",
+        "title": "SERVERLESS SECURITY"
+      },
+      {
+        "course_code": "23CNS3511",
+        "bucket": "PE-5",
+        "title": "CLOUD NATIVE SECURITY TOOLS"
+      },
+      {
+        "course_code": "23CNS3512",
+        "bucket": "PE-5",
+        "title": "FUTURE TRENDS IN CLOUD NATIVE"
+      }
+    ]
+  },
+  {
+    "name": "CLOUD NATIVE SOFTWARE ENGINEERING",
+    "code": "CLOUD-NATIVE-SOFTWARE-ENGINEERING",
+    "courses": [
+      {
+        "course_code": "23SDCS15A",
+        "bucket": "SDP-4",
+        "title": "SOFTWARE DESIGN WITH CLOUD"
+      },
+      {
+        "course_code": "23SDCS15E",
+        "bucket": "SDP-4",
+        "title": "SOFTWARE DESIGN WITH CLOUD"
+      },
+      {
+        "course_code": "23SDCS15R",
+        "bucket": "SDP-4",
+        "title": "SOFTWARE DESIGN WITH CLOUD"
+      },
+      {
+        "course_code": "23CNE3101A",
+        "bucket": "PE-1",
+        "title": "FOUNDATIONS OF CLOUD NATIVE"
+      },
+      {
+        "course_code": "23CNE3101E",
+        "bucket": "PE-1",
+        "title": "FOUNDATIONS OF CLOUD NATIVE"
+      },
+      {
+        "course_code": "23CNE3101R",
+        "bucket": "PE-1",
+        "title": "FOUNDATIONS OF CLOUD NATIVE"
+      },
+      {
+        "course_code": "23CNE3202A",
+        "bucket": "PE-2",
+        "title": "CLOUD NATIVE APPLICATION"
+      },
+      {
+        "course_code": "23CNE3202E",
+        "bucket": "PE-2",
+        "title": "CLOUD NATIVE APPLICATION"
+      },
+      {
+        "course_code": "23CNE3202R",
+        "bucket": "PE-2",
+        "title": "CLOUD NATIVE APPLICATION"
+      },
+      {
+        "course_code": "23CNE3203A",
+        "bucket": "PE-2",
+        "title": "CLOUD NATIVE DESIGN PROCESS"
+      },
+      {
+        "course_code": "23CNE3203E",
+        "bucket": "PE-2",
+        "title": "CLOUD NATIVE DESIGN PROCESS"
+      },
+      {
+        "course_code": "23CNE3203R",
+        "bucket": "PE-2",
+        "title": "CLOUD NATIVE DESIGN PROCESS"
+      },
+      {
+        "course_code": "23CNE3304A",
+        "bucket": "PE-3",
+        "title": "SOFTWARE ENGINEERING FOR"
+      },
+      {
+        "course_code": "23CNE3304E",
+        "bucket": "PE-3",
+        "title": "SOFTWARE ENGINEERING FOR"
+      },
+      {
+        "course_code": "23CNE3304R",
+        "bucket": "PE-3",
+        "title": "SOFTWARE ENGINEERING FOR"
+      },
+      {
+        "course_code": "23CNE3405M",
+        "bucket": "PE-4",
+        "title": "SERVERLESS COMPUTING AND"
+      },
+      {
+        "course_code": "23CNE3406M",
+        "bucket": "PE-4",
+        "title": "CLOUD NATIVE SOFTWARE"
+      },
+      {
+        "course_code": "23CNE3507",
+        "bucket": "PE-5",
+        "title": "CLOUD NATIVE NETWORKING AND"
+      },
+      {
+        "course_code": "23CNE3508",
+        "bucket": "PE-5",
+        "title": "CLOUD INFRASTRUCTURE AND"
+      }
+    ]
+  },
+  {
+    "name": "CLOUD-BASED SCIENTIFIC COMPUTING",
+    "code": "CLOUD-BASED-SCIENTIFIC-COMPUTING",
+    "courses": [
+      {
+        "course_code": "23SDCS14A",
+        "bucket": "SDP-4",
+        "title": "CLOUD ARCHITECTURES FOR"
+      },
+      {
+        "course_code": "23SDCS14E",
+        "bucket": "SDP-4",
+        "title": "CLOUD ARCHITECTURES FOR"
+      },
+      {
+        "course_code": "23SDCS14R",
+        "bucket": "SDP-4",
+        "title": "CLOUD ARCHITECTURES FOR"
+      },
+      {
+        "course_code": "23CSC3101A",
+        "bucket": "PE-1",
+        "title": "FUNDAMENTALS OF CLOUD-BASED"
+      },
+      {
+        "course_code": "23CSC3101E",
+        "bucket": "PE-1",
+        "title": "FUNDAMENTALS OF CLOUD-BASED"
+      },
+      {
+        "course_code": "23CSC3101R",
+        "bucket": "PE-1",
+        "title": "FUNDAMENTALS OF CLOUD-BASED"
+      },
+      {
+        "course_code": "23CSC3202A",
+        "bucket": "PE-2",
+        "title": "DEVELOPMENT OF SCIENTIFIC"
+      },
+      {
+        "course_code": "23CSC3202E",
+        "bucket": "PE-2",
+        "title": "DEVELOPMENT OF SCIENTIFIC"
+      },
+      {
+        "course_code": "23CSC3202R",
+        "bucket": "PE-2",
+        "title": "DEVELOPMENT OF SCIENTIFIC"
+      },
+      {
+        "course_code": "23CSC3203A",
+        "bucket": "PE-2",
+        "title": "DISTRIBUTED SCIENTIFIC"
+      },
+      {
+        "course_code": "23CSC3203E",
+        "bucket": "PE-2",
+        "title": "DISTRIBUTED SCIENTIFIC"
+      },
+      {
+        "course_code": "23CSC3203R",
+        "bucket": "PE-2",
+        "title": "DISTRIBUTED SCIENTIFIC"
+      },
+      {
+        "course_code": "23CSC3304A",
+        "bucket": "PE-3",
+        "title": "CLOUD BASED HIGH PERFORMANCE"
+      },
+      {
+        "course_code": "23CSC3304E",
+        "bucket": "PE-3",
+        "title": "CLOUD BASED HIGH PERFORMANCE"
+      },
+      {
+        "course_code": "23CSC3304R",
+        "bucket": "PE-3",
+        "title": "CLOUD BASED HIGH PERFORMANCE"
+      },
+      {
+        "course_code": "23CSC3405M",
+        "bucket": "PE-4",
+        "title": "CLOUD-BASED GRID COMPUTING"
+      },
+      {
+        "course_code": "23CSC3406M",
+        "bucket": "PE-4",
+        "title": "CLOUD COMPUTING FOR SCIENTIFIC"
+      },
+      {
+        "course_code": "23CSC3508",
+        "bucket": "PE-5",
+        "title": "PARALLEL COMPUTING FOR"
+      },
+      {
+        "course_code": "23CSC3507",
+        "bucket": "PE-5",
+        "title": "CLOUD-BASED SCALABLE"
+      }
+    ]
+  },
+  {
+    "name": "COMPUTER COMMUNICATION AND 5G TECHNOLOGY",
+    "code": "COMPUTER-COMMUNICATION-AND-5G-TECHNOLOGY",
+    "courses": [
+      {
+        "course_code": "23SDEC12A",
+        "bucket": "SDP-4",
+        "title": "NETWORK PROGRAMMABILITY AND"
+      },
+      {
+        "course_code": "23SDEC12E",
+        "bucket": "SDP-4",
+        "title": "NETWORK PROGRAMMABILITY AND"
+      },
+      {
+        "course_code": "23SDEC12R",
+        "bucket": "SDP-4",
+        "title": "NETWORK PROGRAMMABILITY AND"
+      },
+      {
+        "course_code": "23CCF3101A",
+        "bucket": "PE-1",
+        "title": "TCP/IP & OTHER PROTOCOL SUITE"
+      },
+      {
+        "course_code": "23CCF3101E",
+        "bucket": "PE-1",
+        "title": "TCP/IP & OTHER PROTOCOL SUITE"
+      },
+      {
+        "course_code": "23CCF3101R",
+        "bucket": "PE-1",
+        "title": "TCP/IP & OTHER PROTOCOL SUITE"
+      },
+      {
+        "course_code": "23CCF3202A",
+        "bucket": "PE-2",
+        "title": "CLOUD COMPUTING AND"
+      },
+      {
+        "course_code": "23CCF3202E",
+        "bucket": "PE-2",
+        "title": "CLOUD COMPUTING AND"
+      },
+      {
+        "course_code": "23CCF3202R",
+        "bucket": "PE-2",
+        "title": "CLOUD COMPUTING AND"
+      },
+      {
+        "course_code": "23CCF3303A",
+        "bucket": "PE-3",
+        "title": "VOIP AND BROADBAND NETWORKS"
+      },
+      {
+        "course_code": "23CCF3303E",
+        "bucket": "PE-3",
+        "title": "VOIP AND BROADBAND NETWORKS"
+      },
+      {
+        "course_code": "23CCF3303R",
+        "bucket": "PE-3",
+        "title": "VOIP AND BROADBAND NETWORKS"
+      },
+      {
+        "course_code": "23CCF3404M",
+        "bucket": "PE-4",
+        "title": "5G MOBILE AND IEEE STANDARDS"
+      },
+      {
+        "course_code": "23CCF3505",
+        "bucket": "PE-5",
+        "title": "IP MULTIMEDIA SUB-SYSTEM &"
+      },
+      {
+        "course_code": "23CCF3506",
+        "bucket": "PE-5",
+        "title": "IT SECURITY: DEFENCE AGAINST"
+      }
+    ]
+  },
+  {
+    "name": "CONSTRUCTION TECHNOLOGY AND MANAGEMENT",
+    "code": "CONSTRUCTION-TECHNOLOGY-AND-MANAGEMENT",
+    "courses": [
+      {
+        "course_code": "23SDCE04A",
+        "bucket": "SDP-4",
+        "title": "PLANNING AND SCHEDULING OF"
+      },
+      {
+        "course_code": "23SDCE04E",
+        "bucket": "SDP-4",
+        "title": "PLANNING AND SCHEDULING OF"
+      },
+      {
+        "course_code": "23SDCE04R",
+        "bucket": "SDP-4",
+        "title": "PLANNING AND SCHEDULING OF"
+      },
+      {
+        "course_code": "23CTM3101A",
+        "bucket": "PE-1",
+        "title": "BUILDING INFORMATION"
+      },
+      {
+        "course_code": "23CTM3101E",
+        "bucket": "PE-1",
+        "title": "BUILDING INFORMATION"
+      },
+      {
+        "course_code": "23CTM3101R",
+        "bucket": "PE-1",
+        "title": "BUILDING INFORMATION"
+      },
+      {
+        "course_code": "23CTM3202A",
+        "bucket": "PE-2",
+        "title": "ADVANCED CONSTRUCTION"
+      },
+      {
+        "course_code": "23CTM3202E",
+        "bucket": "PE-2",
+        "title": "ADVANCED CONSTRUCTION"
+      },
+      {
+        "course_code": "23CTM3202R",
+        "bucket": "PE-2",
+        "title": "ADVANCED CONSTRUCTION"
+      },
+      {
+        "course_code": "23CTM3203A",
+        "bucket": "PE-2",
+        "title": "SUSTAINABLE CONSTRUCTION"
+      },
+      {
+        "course_code": "23CTM3203E",
+        "bucket": "PE-2",
+        "title": "SUSTAINABLE CONSTRUCTION"
+      },
+      {
+        "course_code": "23CTM3203R",
+        "bucket": "PE-2",
+        "title": "SUSTAINABLE CONSTRUCTION"
+      },
+      {
+        "course_code": "23CTM3304A",
+        "bucket": "PE-3",
+        "title": "CONSTRUCTION PLANNING &"
+      },
+      {
+        "course_code": "23CTM3304E",
+        "bucket": "PE-3",
+        "title": "CONSTRUCTION PLANNING &"
+      },
+      {
+        "course_code": "23CTM3304R",
+        "bucket": "PE-3",
+        "title": "CONSTRUCTION PLANNING &"
+      },
+      {
+        "course_code": "23CTM3405M",
+        "bucket": "PE-4",
+        "title": "CONSTRUCTION CONTRACTS"
+      },
+      {
+        "course_code": "23CTM3406M",
+        "bucket": "PE-4",
+        "title": "CONSTRUCTION FORMULATION"
+      },
+      {
+        "course_code": "23CTM3507",
+        "bucket": "PE-5",
+        "title": "QUALITY AND SAFETY IN"
+      },
+      {
+        "course_code": "23CTM3508",
+        "bucket": "PE-5",
+        "title": "GREEN BUILDING"
+      }
+    ]
+  },
+  {
+    "name": "CROSS PLATFORM DEVELOPMENT FRAMEWORKS",
+    "code": "CROSS-PLATFORM-DEVELOPMENT-FRAMEWORKS",
+    "courses": [
+      {
+        "course_code": "23SDCI04A",
+        "bucket": "SDP-4",
+        "title": "ADVANCED ANDROID MOBILE"
+      },
+      {
+        "course_code": "23SDCI04E",
+        "bucket": "SDP-4",
+        "title": "ADVANCED ANDROID MOBILE"
+      },
+      {
+        "course_code": "23SDCI04R",
+        "bucket": "SDP-4",
+        "title": "ADVANCED ANDROID MOBILE"
+      },
+      {
+        "course_code": "23CPD3101A",
+        "bucket": "PE-1",
+        "title": "FUNDAMENTALS OF MOBILE"
+      },
+      {
+        "course_code": "23CPD3101E",
+        "bucket": "PE-1",
+        "title": "FUNDAMENTALS OF MOBILE"
+      },
+      {
+        "course_code": "23CPD3101R",
+        "bucket": "PE-1",
+        "title": "FUNDAMENTALS OF MOBILE"
+      },
+      {
+        "course_code": "23CPD3202A",
+        "bucket": "PE-2",
+        "title": "REACT NATIVE FOR ANDROID AND"
+      },
+      {
+        "course_code": "23CPD3202E",
+        "bucket": "PE-2",
+        "title": "REACT NATIVE FOR ANDROID AND"
+      },
+      {
+        "course_code": "23CPD3202R",
+        "bucket": "PE-2",
+        "title": "REACT NATIVE FOR ANDROID AND"
+      },
+      {
+        "course_code": "23CPD3203A",
+        "bucket": "PE-2",
+        "title": "FRAMEWORK BASED CROSS"
+      },
+      {
+        "course_code": "23CPD3203E",
+        "bucket": "PE-2",
+        "title": "FRAMEWORK BASED CROSS"
+      },
+      {
+        "course_code": "23CPD3203R",
+        "bucket": "PE-2",
+        "title": "FRAMEWORK BASED CROSS"
+      },
+      {
+        "course_code": "23CPD3304A",
+        "bucket": "PE-3",
+        "title": "SECURE MOBILE APPLICATION"
+      },
+      {
+        "course_code": "23CPD3304E",
+        "bucket": "PE-3",
+        "title": "SECURE MOBILE APPLICATION"
+      },
+      {
+        "course_code": "23CPD3304R",
+        "bucket": "PE-3",
+        "title": "SECURE MOBILE APPLICATION"
+      },
+      {
+        "course_code": "23CPD3406M",
+        "bucket": "PE-4",
+        "title": "META REACT NATIVE"
+      },
+      {
+        "course_code": "23CPD3405M",
+        "bucket": "PE-4",
+        "title": "UX DESIGN"
+      },
+      {
+        "course_code": "23CPD3507",
+        "bucket": "PE-5",
+        "title": "ADVANCED MOBILE APPLICATION"
+      },
+      {
+        "course_code": "23CPD3508",
+        "bucket": "PE-5",
+        "title": "CROSS PLATFORM USER INTERFACE"
+      }
+    ]
+  },
+  {
+    "name": "CYBER PHYSICAL SYSTEMS AND IOT",
+    "code": "CYBER-PHYSICAL-SYSTEMS-AND-IOT",
+    "courses": [
+      {
+        "course_code": "23SDIN06A",
+        "bucket": "SDP-4",
+        "title": "EMBEDDED AND IOT ROGRAMMING"
+      },
+      {
+        "course_code": "23SDIN06E",
+        "bucket": "SDP-4",
+        "title": "EMBEDDED AND IOT ROGRAMMING"
+      },
+      {
+        "course_code": "23SDIN06R",
+        "bucket": "SDP-4",
+        "title": "EMBEDDED AND IOT ROGRAMMING"
+      },
+      {
+        "course_code": "23CPS3101A",
+        "bucket": "PE-1",
+        "title": "IOT SENSING AND ACTUATING"
+      },
+      {
+        "course_code": "23CPS3101E",
+        "bucket": "PE-1",
+        "title": "IOT SENSING AND ACTUATING"
+      },
+      {
+        "course_code": "23CPS3101R",
+        "bucket": "PE-1",
+        "title": "IOT SENSING AND ACTUATING"
+      },
+      {
+        "course_code": "23CPS3202A",
+        "bucket": "PE-2",
+        "title": "INTERNET OF THINGS"
+      },
+      {
+        "course_code": "23CPS3202E",
+        "bucket": "PE-2",
+        "title": "INTERNET OF THINGS"
+      },
+      {
+        "course_code": "23CPS3202R",
+        "bucket": "PE-2",
+        "title": "INTERNET OF THINGS"
+      },
+      {
+        "course_code": "23CPS3303A",
+        "bucket": "PE-3",
+        "title": "CYBER PHYSICAL SYSTEMS"
+      },
+      {
+        "course_code": "23CPS3303E",
+        "bucket": "PE-3",
+        "title": "CYBER PHYSICAL SYSTEMS"
+      },
+      {
+        "course_code": "23CPS3303R",
+        "bucket": "PE-3",
+        "title": "CYBER PHYSICAL SYSTEMS"
+      },
+      {
+        "course_code": "23CPS3404M",
+        "bucket": "PE-4",
+        "title": "FOUNDATIONS OF HYBRID AND"
+      },
+      {
+        "course_code": "23CPS3505",
+        "bucket": "PE-5",
+        "title": "CLOUD COMPUTING FOR IOT"
+      },
+      {
+        "course_code": "23CPS3506",
+        "bucket": "PE-5",
+        "title": "WIRELESS SENSOR NETWORKS"
+      },
+      {
+        "course_code": "23CPS3507",
+        "bucket": "PE-5",
+        "title": "EDGE COMPUTING"
+      }
+    ]
+  },
+  {
+    "name": "CYBER SECURITY AND BLOCKCHAIN TECHNOLOGY",
+    "code": "CYBER-SECURITY-AND-BLOCKCHAIN-TECHNOLOGY",
+    "courses": [
+      {
+        "course_code": "23SDCS05A",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED SECURITY"
+      },
+      {
+        "course_code": "23SDCS05E",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED SECURITY"
+      },
+      {
+        "course_code": "23SDCS05R",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED SECURITY"
+      },
+      {
+        "course_code": "23CSB3101A",
+        "bucket": "PE-1",
+        "title": "CRYPT ANALYSIS & CYBER DEFENSE"
+      },
+      {
+        "course_code": "23CSB3101E",
+        "bucket": "PE-1",
+        "title": "CRYPT ANALYSIS & CYBER DEFENSE"
+      },
+      {
+        "course_code": "23CSB3101R",
+        "bucket": "PE-1",
+        "title": "CRYPT ANALYSIS & CYBER DEFENSE"
+      },
+      {
+        "course_code": "23CSB3202A",
+        "bucket": "PE-2",
+        "title": "NETWORK AND INFRASTRUCTURE"
+      },
+      {
+        "course_code": "23CSB3202E",
+        "bucket": "PE-2",
+        "title": "NETWORK AND INFRASTRUCTURE"
+      },
+      {
+        "course_code": "23CSB3202R",
+        "bucket": "PE-2",
+        "title": "NETWORK AND INFRASTRUCTURE"
+      },
+      {
+        "course_code": "23CSB3203A",
+        "bucket": "PE-2",
+        "title": "INTRODUCTION TO BLOCKCHAIN"
+      },
+      {
+        "course_code": "23CSB3203E",
+        "bucket": "PE-2",
+        "title": "INTRODUCTION TO BLOCKCHAIN"
+      },
+      {
+        "course_code": "23CSB3203R",
+        "bucket": "PE-2",
+        "title": "INTRODUCTION TO BLOCKCHAIN"
+      },
+      {
+        "course_code": "23CSB3304A",
+        "bucket": "PE-3",
+        "title": "DIGITAL FORENSICS"
+      },
+      {
+        "course_code": "23CSB3304E",
+        "bucket": "PE-3",
+        "title": "DIGITAL FORENSICS"
+      },
+      {
+        "course_code": "23CSB3304R",
+        "bucket": "PE-3",
+        "title": "DIGITAL FORENSICS"
+      },
+      {
+        "course_code": "23CSB3405M",
+        "bucket": "PE-4",
+        "title": "DATABASE  SYSTEM AND SECURITY"
+      },
+      {
+        "course_code": "23CSB3406M",
+        "bucket": "PE-4",
+        "title": "PROGRAMMING FOR SMART"
+      },
+      {
+        "course_code": "23CSB3407M",
+        "bucket": "PE-4",
+        "title": "CLOUD SECURITY"
+      },
+      {
+        "course_code": "23CSB3508",
+        "bucket": "PE-5",
+        "title": "SECURE SOFTWARE ENGINEERING"
+      },
+      {
+        "course_code": "23CSB3509",
+        "bucket": "PE-5",
+        "title": "WEB SECURITY"
+      },
+      {
+        "course_code": "23CSB3510",
+        "bucket": "PE-5",
+        "title": "SECURITY GOVERNANCE &"
+      }
+    ]
+  },
+  {
+    "name": "DATA COMMUNICATIONS",
+    "code": "DATA-COMMUNICATIONS",
+    "courses": [
+      {
+        "course_code": "23SDEC13A",
+        "bucket": "SDP-4",
+        "title": "5G PRIVATE AND INDUSTRIAL"
+      },
+      {
+        "course_code": "23SDEC13E",
+        "bucket": "SDP-4",
+        "title": "5G PRIVATE AND INDUSTRIAL"
+      },
+      {
+        "course_code": "23SDEC13R",
+        "bucket": "SDP-4",
+        "title": "5G PRIVATE AND INDUSTRIAL"
+      },
+      {
+        "course_code": "23DCS3101A",
+        "bucket": "PE-1",
+        "title": "4G WIRELESS TECHNOLOGIES AND"
+      },
+      {
+        "course_code": "23DCS3101E",
+        "bucket": "PE-1",
+        "title": "4G WIRELESS TECHNOLOGIES AND"
+      },
+      {
+        "course_code": "23DCS3101R",
+        "bucket": "PE-1",
+        "title": "4G WIRELESS TECHNOLOGIES AND"
+      },
+      {
+        "course_code": "23DCS3202A",
+        "bucket": "PE-2",
+        "title": "MODERN SATELLITE"
+      },
+      {
+        "course_code": "23DCS3202E",
+        "bucket": "PE-2",
+        "title": "MODERN SATELLITE"
+      },
+      {
+        "course_code": "23DCS3202R",
+        "bucket": "PE-2",
+        "title": "MODERN SATELLITE"
+      },
+      {
+        "course_code": "23DCS3303A",
+        "bucket": "PE-3",
+        "title": "5G WIRELESS TECHNOLOGIES"
+      },
+      {
+        "course_code": "23DCS3303E",
+        "bucket": "PE-3",
+        "title": "5G WIRELESS TECHNOLOGIES"
+      },
+      {
+        "course_code": "23DCS3303R",
+        "bucket": "PE-3",
+        "title": "5G WIRELESS TECHNOLOGIES"
+      },
+      {
+        "course_code": "23DCS3404M",
+        "bucket": "PE-4",
+        "title": "OPTICAL WIRELESS"
+      },
+      {
+        "course_code": "23DCS3505",
+        "bucket": "PE-5",
+        "title": "MACHINE LEARNING FOR WIRELESS"
+      }
+    ]
+  },
+  {
+    "name": "DATA ENGINEERING FOR AI",
+    "code": "DATA-ENGINEERING-FOR-AI",
+    "courses": [
+      {
+        "course_code": "23SDAD11A",
+        "bucket": "SDP-4",
+        "title": "AI-DRIVEN DATA ENGINEERING"
+      },
+      {
+        "course_code": "23SDAD11E",
+        "bucket": "SDP-4",
+        "title": "AI-DRIVEN DATA ENGINEERING"
+      },
+      {
+        "course_code": "23SDAD11R",
+        "bucket": "SDP-4",
+        "title": "AI-DRIVEN DATA ENGINEERING"
+      },
+      {
+        "course_code": "23DEA3101A",
+        "bucket": "PE-1",
+        "title": "FUNDAMENTALS OF DATA"
+      },
+      {
+        "course_code": "23DEA3101E",
+        "bucket": "PE-1",
+        "title": "FUNDAMENTALS OF DATA"
+      },
+      {
+        "course_code": "23DEA3101R",
+        "bucket": "PE-1",
+        "title": "FUNDAMENTALS OF DATA"
+      },
+      {
+        "course_code": "23DEA3202A",
+        "bucket": "PE-2",
+        "title": "DATA EXPLORATION AND"
+      },
+      {
+        "course_code": "23DEA3202E",
+        "bucket": "PE-2",
+        "title": "DATA EXPLORATION AND"
+      },
+      {
+        "course_code": "23DEA3202R",
+        "bucket": "PE-2",
+        "title": "DATA EXPLORATION AND"
+      },
+      {
+        "course_code": "23DEA3303A",
+        "bucket": "PE-3",
+        "title": "BIG DATA TECHNOLOGIES"
+      },
+      {
+        "course_code": "23DEA3303E",
+        "bucket": "PE-3",
+        "title": "BIG DATA TECHNOLOGIES"
+      },
+      {
+        "course_code": "23DEA3303R",
+        "bucket": "PE-3",
+        "title": "BIG DATA TECHNOLOGIES"
+      },
+      {
+        "course_code": "23DEA3404M",
+        "bucket": "PE-4",
+        "title": "DATA WAREHOUSING AND BUSINESS"
+      },
+      {
+        "course_code": "23DEA3505R",
+        "bucket": "PE-5",
+        "title": "MACHINE LEARNING ENGINEERING"
+      }
+    ]
+  },
+  {
+    "name": "DATA SCIENCE AND BIG DATA ANALYTICS",
+    "code": "DATA-SCIENCE-AND-BIG-DATA-ANALYTICS",
+    "courses": [
+      {
+        "course_code": "23SDCS08A",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED DATA ANALYTICS"
+      },
+      {
+        "course_code": "23SDCS08E",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED DATA ANALYTICS"
+      },
+      {
+        "course_code": "23SDCS08R",
+        "bucket": "SDP-4",
+        "title": "CLOUD BASED DATA ANALYTICS"
+      },
+      {
+        "course_code": "23DSB3101A",
+        "bucket": "PE-1",
+        "title": "DATA ANALYTICS AND"
+      },
+      {
+        "course_code": "23DSB3101E",
+        "bucket": "PE-1",
+        "title": "DATA ANALYTICS AND"
+      },
+      {
+        "course_code": "23DSB3101R",
+        "bucket": "PE-1",
+        "title": "DATA ANALYTICS AND"
+      },
+      {
+        "course_code": "23DSB3202A",
+        "bucket": "PE-2",
+        "title": "DATA WAREHOUSING AND MINING"
+      },
+      {
+        "course_code": "23DSB3202E",
+        "bucket": "PE-2",
+        "title": "DATA WAREHOUSING AND MINING"
+      },
+      {
+        "course_code": "23DSB3202R",
+        "bucket": "PE-2",
+        "title": "DATA WAREHOUSING AND MINING"
+      },
+      {
+        "course_code": "23DSB3303A",
+        "bucket": "PE-3",
+        "title": "BIG DATA ANALYTICS"
+      },
+      {
+        "course_code": "23DSB3303E",
+        "bucket": "PE-3",
+        "title": "BIG DATA ANALYTICS"
+      },
+      {
+        "course_code": "23DSB3303R",
+        "bucket": "PE-3",
+        "title": "BIG DATA ANALYTICS"
+      },
+      {
+        "course_code": "23DSB3404M",
+        "bucket": "PE-4",
+        "title": "BIG DATA OPTIMIZATION"
+      },
+      {
+        "course_code": "23DSB3407M",
+        "bucket": "PE-4",
+        "title": "DATA ANALYTICS ON CLOUD"
+      },
+      {
+        "course_code": "23DSB3408M",
+        "bucket": "PE-4",
+        "title": "DIGITAL MEDIA ANALYTICS"
+      },
+      {
+        "course_code": "23DSB3406M",
+        "bucket": "PE-4",
+        "title": "DIGITAL VIDEO PROCESSING"
+      },
+      {
+        "course_code": "23DSB3509",
+        "bucket": "PE-5",
+        "title": "ADVANCED DATABASES"
+      },
+      {
+        "course_code": "23DSB3510",
+        "bucket": "PE-5",
+        "title": "BUSINESS ANALYTICS"
+      },
+      {
+        "course_code": "23DSB3511",
+        "bucket": "PE-5",
+        "title": "GRAPH & WEB ANALYTICS"
+      },
+      {
+        "course_code": "23DSB3512",
+        "bucket": "PE-5",
+        "title": "DATA GOVERNANCE ON CLOUD"
+      }
+    ]
+  },
+  {
+    "name": "DISTRIBUTED LEDGER ANALYTICS",
+    "code": "DISTRIBUTED-LEDGER-ANALYTICS",
+    "courses": [
+      {
+        "course_code": "23SDAD08A",
+        "bucket": "SDP-4",
+        "title": "EMERGING BLOCKCHAIN MODELS"
+      },
+      {
+        "course_code": "23SDAD08E",
+        "bucket": "SDP-4",
+        "title": "EMERGING BLOCKCHAIN MODELS"
+      },
+      {
+        "course_code": "23SDAD08R",
+        "bucket": "SDP-4",
+        "title": "EMERGING BLOCKCHAIN MODELS"
+      },
+      {
+        "course_code": "23DLA3101A",
+        "bucket": "PE-1",
+        "title": "SYSTEM & NETWORK TRAFFIC"
+      },
+      {
+        "course_code": "23DLA3101E",
+        "bucket": "PE-1",
+        "title": "SYSTEM & NETWORK TRAFFIC"
+      },
+      {
+        "course_code": "23DLA3101R",
+        "bucket": "PE-1",
+        "title": "SYSTEM & NETWORK TRAFFIC"
+      },
+      {
+        "course_code": "23DLA3202A",
+        "bucket": "PE-2",
+        "title": "AUTOMATED NETWORK ANALYSIS"
+      },
+      {
+        "course_code": "23DLA3202E",
+        "bucket": "PE-2",
+        "title": "AUTOMATED NETWORK ANALYSIS"
+      },
+      {
+        "course_code": "23DLA3202R",
+        "bucket": "PE-2",
+        "title": "AUTOMATED NETWORK ANALYSIS"
+      },
+      {
+        "course_code": "23DLA3203A",
+        "bucket": "PE-2",
+        "title": "BLOCKCHAIN TECHNOLOGY FOR"
+      },
+      {
+        "course_code": "23DLA3203E",
+        "bucket": "PE-2",
+        "title": "BLOCKCHAIN TECHNOLOGY FOR"
+      },
+      {
+        "course_code": "23DLA3203R",
+        "bucket": "PE-2",
+        "title": "BLOCKCHAIN TECHNOLOGY FOR"
+      },
+      {
+        "course_code": "23DLA3304A",
+        "bucket": "PE-3",
+        "title": "MULTI AGENT SYSTEMS"
+      },
+      {
+        "course_code": "23DLA3304E",
+        "bucket": "PE-3",
+        "title": "MULTI AGENT SYSTEMS"
+      },
+      {
+        "course_code": "23DLA3304R",
+        "bucket": "PE-3",
+        "title": "MULTI AGENT SYSTEMS"
+      },
+      {
+        "course_code": "23DLA3405M",
+        "bucket": "PE-4",
+        "title": "BLOCKCHAIN ANALYTICS"
+      },
+      {
+        "course_code": "23DLA3406M",
+        "bucket": "PE-4",
+        "title": "CRYPTOCURRENCY AND"
+      },
+      {
+        "course_code": "23DLA3507",
+        "bucket": "PE-5",
+        "title": "DISTRIBUTED LEDGER"
+      },
+      {
+        "course_code": "23DLA3508",
+        "bucket": "PE-5",
+        "title": "PERMISSIONED DISTRIBUTED"
+      }
+    ]
+  },
+  {
+    "name": "EMBEDDED SYSTEMS",
+    "code": "EMBEDDED-SYSTEMS",
+    "courses": [
+      {
+        "course_code": "23SDEC14A",
+        "bucket": "SDP-4",
+        "title": "EMBEDDED PROTOTYPE"
+      },
+      {
+        "course_code": "23SDEC14E",
+        "bucket": "SDP-4",
+        "title": "EMBEDDED PROTOTYPE"
+      },
+      {
+        "course_code": "23SDEC14R",
+        "bucket": "SDP-4",
+        "title": "EMBEDDED PROTOTYPE"
+      },
+      {
+        "course_code": "23EDS3101A",
+        "bucket": "PE-1",
+        "title": "ADVANCED EMBEDDED SYSTEMS"
+      },
+      {
+        "course_code": "23EDS3101E",
+        "bucket": "PE-1",
+        "title": "ADVANCED EMBEDDED SYSTEMS"
+      },
+      {
+        "course_code": "23EDS3101R",
+        "bucket": "PE-1",
+        "title": "ADVANCED EMBEDDED SYSTEMS"
+      },
+      {
+        "course_code": "23EDS3202A",
+        "bucket": "PE-2",
+        "title": "EMBEDDED SYSTEMS FOR IOT"
+      },
+      {
+        "course_code": "23EDS3202E",
+        "bucket": "PE-2",
+        "title": "EMBEDDED SYSTEMS FOR IOT"
+      },
+      {
+        "course_code": "23EDS3202R",
+        "bucket": "PE-2",
+        "title": "EMBEDDED SYSTEMS FOR IOT"
+      },
+      {
+        "course_code": "23EDS3303A",
+        "bucket": "PE-3",
+        "title": "EMBEDDED AND REAL-TIME"
+      },
+      {
+        "course_code": "23EDS3303E",
+        "bucket": "PE-3",
+        "title": "EMBEDDED AND REAL-TIME"
+      },
+      {
+        "course_code": "23EDS3303R",
+        "bucket": "PE-3",
+        "title": "EMBEDDED AND REAL-TIME"
+      },
+      {
+        "course_code": "23EDS3404M",
+        "bucket": "PE-4",
+        "title": "CLOUD ARCHITECTURE IN IOT"
+      },
+      {
+        "course_code": "23EDS3505",
+        "bucket": "PE-5",
+        "title": "EDGE COMPUTING & DATA"
+      }
+    ]
+  },
+  {
+    "name": "E-MOBILITY ENGINEERING",
+    "code": "E-MOBILITY-ENGINEERING",
+    "courses": [
+      {
+        "course_code": "23SDEE06A",
+        "bucket": "SDP-4",
+        "title": "EVT HARDWARE PROTOTYPING"
+      },
+      {
+        "course_code": "23SDEE06E",
+        "bucket": "SDP-4",
+        "title": "EVT HARDWARE PROTOTYPING"
+      },
+      {
+        "course_code": "23SDEE06R",
+        "bucket": "SDP-4",
+        "title": "EVT HARDWARE PROTOTYPING"
+      },
+      {
+        "course_code": "23EME3101A",
+        "bucket": "PE-1",
+        "title": "POWER TRAIN DESIGN FOR"
+      },
+      {
+        "course_code": "23EME3101E",
+        "bucket": "PE-1",
+        "title": "POWER TRAIN DESIGN FOR"
+      },
+      {
+        "course_code": "23EME3101R",
+        "bucket": "PE-1",
+        "title": "POWER TRAIN DESIGN FOR"
+      },
+      {
+        "course_code": "23EME3202A",
+        "bucket": "PE-2",
+        "title": "COMMUNICATION PROTOCOLS &"
+      },
+      {
+        "course_code": "23EME3202E",
+        "bucket": "PE-2",
+        "title": "COMMUNICATION PROTOCOLS &"
+      },
+      {
+        "course_code": "23EME3202R",
+        "bucket": "PE-2",
+        "title": "COMMUNICATION PROTOCOLS &"
+      },
+      {
+        "course_code": "23EME3203A",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLES &"
+      },
+      {
+        "course_code": "23EME3203E",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLES &"
+      },
+      {
+        "course_code": "23EME3203R",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLES &"
+      },
+      {
+        "course_code": "23EME3304A",
+        "bucket": "PE-3",
+        "title": "CHARGING STATIONS FOR ELECTRIC"
+      },
+      {
+        "course_code": "23EME3304E",
+        "bucket": "PE-3",
+        "title": "CHARGING STATIONS FOR ELECTRIC"
+      },
+      {
+        "course_code": "23EME3304R",
+        "bucket": "PE-3",
+        "title": "CHARGING STATIONS FOR ELECTRIC"
+      },
+      {
+        "course_code": "23EME3405M",
+        "bucket": "PE-4",
+        "title": "INTRODUCTION TO BATTERY-"
+      },
+      {
+        "course_code": "23EME3406M",
+        "bucket": "PE-4",
+        "title": "BATTERY STATE ESTIMATION"
+      },
+      {
+        "course_code": "23EME3507",
+        "bucket": "PE-5",
+        "title": "AI AND IOT FOR ELECTRIC VEHICLE"
+      },
+      {
+        "course_code": "23EME3508",
+        "bucket": "PE-5",
+        "title": "EV SYSTEM AND WIRING DESIGN"
+      }
+    ]
+  },
+  {
+    "name": "ENGINEERING DESIGN",
+    "code": "ENGINEERING-DESIGN",
+    "courses": [
+      {
+        "course_code": "23SDME05A",
+        "bucket": "SDP-4",
+        "title": "3D MODELLING AND DIGITAL"
+      },
+      {
+        "course_code": "23SDME05E",
+        "bucket": "SDP-4",
+        "title": "3D MODELLING AND DIGITAL"
+      },
+      {
+        "course_code": "23SDME05R",
+        "bucket": "SDP-4",
+        "title": "3D MODELLING AND DIGITAL"
+      },
+      {
+        "course_code": "23EGD3101A",
+        "bucket": "PE-1",
+        "title": "MODELING ANALYSIS & DESIGN OF"
+      },
+      {
+        "course_code": "23EGD3101E",
+        "bucket": "PE-1",
+        "title": "MODELING ANALYSIS & DESIGN OF"
+      },
+      {
+        "course_code": "23EGD3101R",
+        "bucket": "PE-1",
+        "title": "MODELING ANALYSIS & DESIGN OF"
+      },
+      {
+        "course_code": "23EGD3202A",
+        "bucket": "PE-2",
+        "title": "CREEP, FATIGUE AND FRACTURE"
+      },
+      {
+        "course_code": "23EGD3202E",
+        "bucket": "PE-2",
+        "title": "CREEP, FATIGUE AND FRACTURE"
+      },
+      {
+        "course_code": "23EGD3202R",
+        "bucket": "PE-2",
+        "title": "CREEP, FATIGUE AND FRACTURE"
+      },
+      {
+        "course_code": "23EGD3203A",
+        "bucket": "PE-2",
+        "title": "THEORY OF ELASTICITY AND"
+      },
+      {
+        "course_code": "23EGD3203E",
+        "bucket": "PE-2",
+        "title": "THEORY OF ELASTICITY AND"
+      },
+      {
+        "course_code": "23EGD3203R",
+        "bucket": "PE-2",
+        "title": "THEORY OF ELASTICITY AND"
+      },
+      {
+        "course_code": "23EGD3304A",
+        "bucket": "PE-3",
+        "title": "SUSTAINABLE DESIGN & SOCIAL"
+      },
+      {
+        "course_code": "23EGD3304E",
+        "bucket": "PE-3",
+        "title": "SUSTAINABLE DESIGN & SOCIAL"
+      },
+      {
+        "course_code": "23EGD3304R",
+        "bucket": "PE-3",
+        "title": "SUSTAINABLE DESIGN & SOCIAL"
+      },
+      {
+        "course_code": "23EGD3405M",
+        "bucket": "PE-4",
+        "title": "ADVANCED VIBRATIONS"
+      },
+      {
+        "course_code": "23EGD3406M",
+        "bucket": "PE-4",
+        "title": "MECHANICS OF COMPOSITE"
+      },
+      {
+        "course_code": "23EGD3507",
+        "bucket": "PE-5",
+        "title": "ADVANCED STRENGTH OF"
+      },
+      {
+        "course_code": "23EGD3508",
+        "bucket": "PE-5",
+        "title": "HYBRID AND ELECTRIC VEHICLE"
+      }
+    ]
+  },
+  {
+    "name": "GAME DEVELOPMENT AND UX DESIGN",
+    "code": "GAME-DEVELOPMENT-AND-UX-DESIGN",
+    "courses": [
+      {
+        "course_code": "23SDCS06A",
+        "bucket": "SDP-4",
+        "title": "CERTIFIED GAME DEVELOPER"
+      },
+      {
+        "course_code": "23SDCS06E",
+        "bucket": "SDP-4",
+        "title": "CERTIFIED GAME DEVELOPER"
+      },
+      {
+        "course_code": "23SDCS06R",
+        "bucket": "SDP-4",
+        "title": "CERTIFIED GAME DEVELOPER"
+      },
+      {
+        "course_code": "23GDU3101A",
+        "bucket": "PE-1",
+        "title": "PROGRAMMING FOR GAME"
+      },
+      {
+        "course_code": "23GDU3101E",
+        "bucket": "PE-1",
+        "title": "PROGRAMMING FOR GAME"
+      },
+      {
+        "course_code": "23GDU3101R",
+        "bucket": "PE-1",
+        "title": "PROGRAMMING FOR GAME"
+      },
+      {
+        "course_code": "23GDU3202A",
+        "bucket": "PE-2",
+        "title": "UX DESIGN"
+      },
+      {
+        "course_code": "23GDU3202E",
+        "bucket": "PE-2",
+        "title": "UX DESIGN"
+      },
+      {
+        "course_code": "23GDU3202R",
+        "bucket": "PE-2",
+        "title": "UX DESIGN"
+      },
+      {
+        "course_code": "23GDU3303A",
+        "bucket": "PE-3",
+        "title": "AR & VR APPLICATION"
+      },
+      {
+        "course_code": "23GDU3303E",
+        "bucket": "PE-3",
+        "title": "AR & VR APPLICATION"
+      },
+      {
+        "course_code": "23GDU3303R",
+        "bucket": "PE-3",
+        "title": "AR & VR APPLICATION"
+      },
+      {
+        "course_code": "23GDU3404M",
+        "bucket": "PE-4",
+        "title": "COMPUTER GRAPHICS"
+      },
+      {
+        "course_code": "23GDU3405M",
+        "bucket": "PE-4",
+        "title": "3D MODELLING & ANIMATION"
+      },
+      {
+        "course_code": "23GDU3506",
+        "bucket": "PE-5",
+        "title": "PRINCIPLES OF GAME DESIGN"
+      },
+      {
+        "course_code": "23GDU3507",
+        "bucket": "PE-5",
+        "title": "BUSINESS OF GAMES &"
+      }
+    ]
+  },
+  {
+    "name": "GEOTECHNICAL AND TRANSPORTATION ENGINEERING",
+    "code": "GEOTECHNICAL-AND-TRANSPORTATION-ENGINEERING",
+    "courses": [
+      {
+        "course_code": "23SDCE05A",
+        "bucket": "SDP-4",
+        "title": "DESIGN OF THE PAVEMENT BY"
+      },
+      {
+        "course_code": "23SDCE05E",
+        "bucket": "SDP-4",
+        "title": "DESIGN OF THE PAVEMENT BY"
+      },
+      {
+        "course_code": "23SDCE05R",
+        "bucket": "SDP-4",
+        "title": "DESIGN OF THE PAVEMENT BY"
+      },
+      {
+        "course_code": "23GTE3101A",
+        "bucket": "PE-1",
+        "title": "ADVANCED FOUNDATION"
+      },
+      {
+        "course_code": "23GTE3101E",
+        "bucket": "PE-1",
+        "title": "ADVANCED FOUNDATION"
+      },
+      {
+        "course_code": "23GTE3101R",
+        "bucket": "PE-1",
+        "title": "ADVANCED FOUNDATION"
+      },
+      {
+        "course_code": "23GTE3202A",
+        "bucket": "PE-2",
+        "title": "INTELLIGENT TRANSPORTATION"
+      },
+      {
+        "course_code": "23GTE3202E",
+        "bucket": "PE-2",
+        "title": "INTELLIGENT TRANSPORTATION"
+      },
+      {
+        "course_code": "23GTE3202R",
+        "bucket": "PE-2",
+        "title": "INTELLIGENT TRANSPORTATION"
+      },
+      {
+        "course_code": "23GTE3203A",
+        "bucket": "PE-2",
+        "title": "GROUND IMPROVEMENT"
+      },
+      {
+        "course_code": "23GTE3203E",
+        "bucket": "PE-2",
+        "title": "GROUND IMPROVEMENT"
+      },
+      {
+        "course_code": "23GTE3203R",
+        "bucket": "PE-2",
+        "title": "GROUND IMPROVEMENT"
+      },
+      {
+        "course_code": "23GTE3304A",
+        "bucket": "PE-3",
+        "title": "PAVEMENT MATERIALS &DESIGN"
+      },
+      {
+        "course_code": "23GTE3304E",
+        "bucket": "PE-3",
+        "title": "PAVEMENT MATERIALS &DESIGN"
+      },
+      {
+        "course_code": "23GTE3304R",
+        "bucket": "PE-3",
+        "title": "PAVEMENT MATERIALS &DESIGN"
+      },
+      {
+        "course_code": "23GTE3405M",
+        "bucket": "PE-4",
+        "title": "URBAN TRANSPORTATION SYSTEMS"
+      },
+      {
+        "course_code": "23GTE3406M",
+        "bucket": "PE-4",
+        "title": "GEOTECHNICAL EARTHQUAKE"
+      },
+      {
+        "course_code": "23GTE3507",
+        "bucket": "PE-5",
+        "title": "TRAFFIC ENGINEERING AND"
+      },
+      {
+        "course_code": "23GTE3508",
+        "bucket": "PE-5",
+        "title": "DESIGN OF EARTH RETAINING"
+      }
+    ]
+  },
+  {
+    "name": "GREEN ENERGY TECHNOLOGIES",
+    "code": "GREEN-ENERGY-TECHNOLOGIES",
+    "courses": [
+      {
+        "course_code": "23SDEE05A",
+        "bucket": "SDP-4",
+        "title": "MODELING AND SIMULATION OF"
+      },
+      {
+        "course_code": "23SDEE05E",
+        "bucket": "SDP-4",
+        "title": "MODELING AND SIMULATION OF"
+      },
+      {
+        "course_code": "23SDEE05R",
+        "bucket": "SDP-4",
+        "title": "MODELING AND SIMULATION OF"
+      },
+      {
+        "course_code": "23GET3101A",
+        "bucket": "PE-1",
+        "title": "SOLAR PV AND MICRO ENERGY"
+      },
+      {
+        "course_code": "23GET3101E",
+        "bucket": "PE-1",
+        "title": "SOLAR PV AND MICRO ENERGY"
+      },
+      {
+        "course_code": "23GET3101R",
+        "bucket": "PE-1",
+        "title": "SOLAR PV AND MICRO ENERGY"
+      },
+      {
+        "course_code": "23GET3202A",
+        "bucket": "PE-2",
+        "title": "WIND AND ENERGY STORAGE"
+      },
+      {
+        "course_code": "23GET3202E",
+        "bucket": "PE-2",
+        "title": "WIND AND ENERGY STORAGE"
+      },
+      {
+        "course_code": "23GET3202R",
+        "bucket": "PE-2",
+        "title": "WIND AND ENERGY STORAGE"
+      },
+      {
+        "course_code": "23GET3203A",
+        "bucket": "PE-2",
+        "title": "ENERGY ECONOMICS AND POLICY"
+      },
+      {
+        "course_code": "23GET3203E",
+        "bucket": "PE-2",
+        "title": "ENERGY ECONOMICS AND POLICY"
+      },
+      {
+        "course_code": "23GET3203R",
+        "bucket": "PE-2",
+        "title": "ENERGY ECONOMICS AND POLICY"
+      },
+      {
+        "course_code": "23GET3304A",
+        "bucket": "PE-3",
+        "title": "GRID INTEGRATION OF RENEWABLE"
+      },
+      {
+        "course_code": "23GET3304E",
+        "bucket": "PE-3",
+        "title": "GRID INTEGRATION OF RENEWABLE"
+      },
+      {
+        "course_code": "23GET3304R",
+        "bucket": "PE-3",
+        "title": "GRID INTEGRATION OF RENEWABLE"
+      },
+      {
+        "course_code": "23GET3405M",
+        "bucket": "PE-4",
+        "title": "ENERGY MANAGEMENT AND GREEN"
+      },
+      {
+        "course_code": "23GET3406M",
+        "bucket": "PE-4",
+        "title": "HYDROGEN FUEL CELL"
+      },
+      {
+        "course_code": "23GET3507",
+        "bucket": "PE-5",
+        "title": "AI AND IOT FOR GREEN ENERGY"
+      },
+      {
+        "course_code": "23GET3508",
+        "bucket": "PE-5",
+        "title": "POWER ELECTRONICS FOR"
+      }
+    ]
+  },
+  {
+    "name": "HARDWARE-SOFTWARE CO-DESIGN FOR SECURITY",
+    "code": "HARDWARE-SOFTWARE-CO-DESIGN-FOR-SECURITY",
+    "courses": [
+      {
+        "course_code": "23SDCS21A",
+        "bucket": "SDP-4",
+        "title": "HARDWARE SOFTWARE CODESIGN"
+      },
+      {
+        "course_code": "23SDCS21E",
+        "bucket": "SDP-4",
+        "title": "HARDWARE SOFTWARE CODESIGN"
+      },
+      {
+        "course_code": "23SDCS21R",
+        "bucket": "SDP-4",
+        "title": "HARDWARE SOFTWARE CODESIGN"
+      },
+      {
+        "course_code": "23HSS3101A",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO HARDWARE-"
+      },
+      {
+        "course_code": "23HSS3101E",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO HARDWARE-"
+      },
+      {
+        "course_code": "23HSS3101R",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO HARDWARE-"
+      },
+      {
+        "course_code": "23HSS3202A",
+        "bucket": "PE-2",
+        "title": "FUNDAMENTALS OF COMPUTER"
+      },
+      {
+        "course_code": "23HSS3202E",
+        "bucket": "PE-2",
+        "title": "FUNDAMENTALS OF COMPUTER"
+      },
+      {
+        "course_code": "23HSS3202R",
+        "bucket": "PE-2",
+        "title": "FUNDAMENTALS OF COMPUTER"
+      },
+      {
+        "course_code": "23HSS3303A",
+        "bucket": "PE-3",
+        "title": "HARDWARE SECURITY MECHANISMS"
+      },
+      {
+        "course_code": "23HSS3303E",
+        "bucket": "PE-3",
+        "title": "HARDWARE SECURITY MECHANISMS"
+      },
+      {
+        "course_code": "23HSS3303R",
+        "bucket": "PE-3",
+        "title": "HARDWARE SECURITY MECHANISMS"
+      },
+      {
+        "course_code": "23HSS3404M",
+        "bucket": "PE-4",
+        "title": "SOFTWARE SECURITY PRINCIPLES"
+      },
+      {
+        "course_code": "23HSS3405M",
+        "bucket": "PE-4",
+        "title": "SECURE CO-DESIGN"
+      },
+      {
+        "course_code": "23HSS3406M",
+        "bucket": "PE-4",
+        "title": "HARDWARE TROJAN DETECTION"
+      },
+      {
+        "course_code": "23HSS3507",
+        "bucket": "PE-5",
+        "title": "SIDE-CHANNEL ATTACKS AND"
+      },
+      {
+        "course_code": "23HSS3508",
+        "bucket": "PE-5",
+        "title": "FORMAL METHODS FOR HARDWARE-"
+      },
+      {
+        "course_code": "23HSS3509",
+        "bucket": "PE-5",
+        "title": "TRUSTED PLATFORM MODULES AND"
+      },
+      {
+        "course_code": "23HSS3510",
+        "bucket": "PE-5",
+        "title": "SECURE COMMUNICATION"
+      },
+      {
+        "course_code": "23HSS3511",
+        "bucket": "PE-5",
+        "title": "HARDWARE-SOFTWARE CO-DESIGN"
+      },
+      {
+        "course_code": "23HSS3512",
+        "bucket": "PE-5",
+        "title": "FUTURE TRENDS IN HARDWARE-"
+      }
+    ]
+  },
+  {
+    "name": "HEALTHCARE DATA ANALYTICS",
+    "code": "HEALTHCARE-DATA-ANALYTICS",
+    "courses": [
+      {
+        "course_code": "23SDBT08A",
+        "bucket": "SDP-4",
+        "title": "DRUG DESIGN: PRINCIPLES AND"
+      },
+      {
+        "course_code": "23SDBT08E",
+        "bucket": "SDP-4",
+        "title": "DRUG DESIGN: PRINCIPLES AND"
+      },
+      {
+        "course_code": "23SDBT08R",
+        "bucket": "SDP-4",
+        "title": "DRUG DESIGN: PRINCIPLES AND"
+      },
+      {
+        "course_code": "23HDA3101A",
+        "bucket": "PE-1",
+        "title": "INTELLIGENT SYSTEMS FOR DISEASE"
+      },
+      {
+        "course_code": "23HDA3101E",
+        "bucket": "PE-1",
+        "title": "INTELLIGENT SYSTEMS FOR DISEASE"
+      },
+      {
+        "course_code": "23HDA3101R",
+        "bucket": "PE-1",
+        "title": "INTELLIGENT SYSTEMS FOR DISEASE"
+      },
+      {
+        "course_code": "23HDA3202A",
+        "bucket": "PE-2",
+        "title": "BIO MEDICAL INFORMATICS"
+      },
+      {
+        "course_code": "23HDA3202E",
+        "bucket": "PE-2",
+        "title": "BIO MEDICAL INFORMATICS"
+      },
+      {
+        "course_code": "23HDA3202R",
+        "bucket": "PE-2",
+        "title": "BIO MEDICAL INFORMATICS"
+      },
+      {
+        "course_code": "23HDA3203A",
+        "bucket": "PE-2",
+        "title": "GENETIC PROGRAMMING"
+      },
+      {
+        "course_code": "23HDA3203E",
+        "bucket": "PE-2",
+        "title": "GENETIC PROGRAMMING"
+      },
+      {
+        "course_code": "23HDA3203R",
+        "bucket": "PE-2",
+        "title": "GENETIC PROGRAMMING"
+      },
+      {
+        "course_code": "23HDA3204A",
+        "bucket": "PE-2",
+        "title": "PYTHON FOR GENOMIC DATA"
+      },
+      {
+        "course_code": "23HDA3204E",
+        "bucket": "PE-2",
+        "title": "PYTHON FOR GENOMIC DATA"
+      },
+      {
+        "course_code": "23HDA3204R",
+        "bucket": "PE-2",
+        "title": "PYTHON FOR GENOMIC DATA"
+      },
+      {
+        "course_code": "23HDA3305A",
+        "bucket": "PE-3",
+        "title": "COMPUTATIONAL NEUROSCIENCE"
+      },
+      {
+        "course_code": "23HDA3305E",
+        "bucket": "PE-3",
+        "title": "COMPUTATIONAL NEUROSCIENCE"
+      },
+      {
+        "course_code": "23HDA3305R",
+        "bucket": "PE-3",
+        "title": "COMPUTATIONAL NEUROSCIENCE"
+      },
+      {
+        "course_code": "23HDA3407M",
+        "bucket": "PE-4",
+        "title": "INTRODUCTION TO GENOMIC"
+      },
+      {
+        "course_code": "23HDA3406M",
+        "bucket": "PE-4",
+        "title": "NGS SEQUENCING AND DATA"
+      },
+      {
+        "course_code": "23HDA3511",
+        "bucket": "PE-5",
+        "title": "EPI GENETIC CONTROL OF GENE"
+      },
+      {
+        "course_code": "23HDA3509",
+        "bucket": "PE-5",
+        "title": "MOLECULAR MODELING AND DRUG"
+      },
+      {
+        "course_code": "23HDA3510",
+        "bucket": "PE-5",
+        "title": "GENOMIC DATA SCIENCE &"
+      }
+    ]
+  },
+  {
+    "name": "INDUSTRIAL AUTOMATION",
+    "code": "INDUSTRIAL-AUTOMATION",
+    "courses": [
+      {
+        "course_code": "23SDEE07A",
+        "bucket": "SDP-4",
+        "title": "IA HARDWARE PROTOTYPING"
+      },
+      {
+        "course_code": "23SDEE07E",
+        "bucket": "SDP-4",
+        "title": "IA HARDWARE PROTOTYPING"
+      },
+      {
+        "course_code": "23SDEE07R",
+        "bucket": "SDP-4",
+        "title": "IA HARDWARE PROTOTYPING"
+      },
+      {
+        "course_code": "23ILA3101A",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO INDUSTRIAL"
+      },
+      {
+        "course_code": "23ILA3101E",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO INDUSTRIAL"
+      },
+      {
+        "course_code": "23ILA3101R",
+        "bucket": "PE-1",
+        "title": "INTRODUCTION TO INDUSTRIAL"
+      },
+      {
+        "course_code": "23ILA3202A",
+        "bucket": "PE-2",
+        "title": "INDUSTRIAL AUTOMATION AND"
+      },
+      {
+        "course_code": "23ILA3202E",
+        "bucket": "PE-2",
+        "title": "INDUSTRIAL AUTOMATION AND"
+      },
+      {
+        "course_code": "23ILA3202R",
+        "bucket": "PE-2",
+        "title": "INDUSTRIAL AUTOMATION AND"
+      },
+      {
+        "course_code": "23ILA3203A",
+        "bucket": "PE-2",
+        "title": "EDGE COMPUTING FOR INDUSTRY"
+      },
+      {
+        "course_code": "23ILA3203E",
+        "bucket": "PE-2",
+        "title": "EDGE COMPUTING FOR INDUSTRY"
+      },
+      {
+        "course_code": "23ILA3203R",
+        "bucket": "PE-2",
+        "title": "EDGE COMPUTING FOR INDUSTRY"
+      },
+      {
+        "course_code": "23ILA3304A",
+        "bucket": "PE-3",
+        "title": "INDUSTRIAL DRIVES AND CONTROL A ID&C 4 0 4 4 7 12"
+      },
+      {
+        "course_code": "23ILA3304E",
+        "bucket": "PE-3",
+        "title": "INDUSTRIAL DRIVES AND CONTROL E ID&C 4 0 4 4 7 12"
+      },
+      {
+        "course_code": "23ILA3304R",
+        "bucket": "PE-3",
+        "title": "INDUSTRIAL DRIVES AND CONTROL R ID&C 3 0 2 4 5 9"
+      },
+      {
+        "course_code": "23ILA3405M",
+        "bucket": "PE-4",
+        "title": "INDUSTRIAL COMMUNICATION"
+      },
+      {
+        "course_code": "23ILA3406M",
+        "bucket": "PE-4",
+        "title": "DIGITAL MANUFACTURING AND"
+      },
+      {
+        "course_code": "23ILA3508",
+        "bucket": "PE-5",
+        "title": "PLC PROGRAMMING & CONTROL"
+      },
+      {
+        "course_code": "23ILA3507",
+        "bucket": "PE-5",
+        "title": "SMART SENSORS AND SENSOR"
+      }
+    ]
+  },
+  {
+    "name": "INDUSTRIAL BIOTECHNOLOGY",
+    "code": "INDUSTRIAL-BIOTECHNOLOGY",
+    "courses": [
+      {
+        "course_code": "23SDBT07A",
+        "bucket": "SDP-4",
+        "title": "ASPECTS OF BIOCHEMICAL"
+      },
+      {
+        "course_code": "23SDBT07E",
+        "bucket": "SDP-4",
+        "title": "ASPECTS OF BIOCHEMICAL"
+      },
+      {
+        "course_code": "23SDBT07R",
+        "bucket": "SDP-4",
+        "title": "ASPECTS OF BIOCHEMICAL"
+      },
+      {
+        "course_code": "23IBT3101A",
+        "bucket": "PE-1",
+        "title": "PHARMACEUTICAL"
+      },
+      {
+        "course_code": "23IBT3101E",
+        "bucket": "PE-1",
+        "title": "PHARMACEUTICAL"
+      },
+      {
+        "course_code": "23IBT3101R",
+        "bucket": "PE-1",
+        "title": "PHARMACEUTICAL"
+      },
+      {
+        "course_code": "23IBT3202A",
+        "bucket": "PE-2",
+        "title": "PHARMACOVIGILANCE AND SAFETY"
+      },
+      {
+        "course_code": "23IBT3202E",
+        "bucket": "PE-2",
+        "title": "PHARMACOVIGILANCE AND SAFETY"
+      },
+      {
+        "course_code": "23IBT3202R",
+        "bucket": "PE-2",
+        "title": "PHARMACOVIGILANCE AND SAFETY"
+      },
+      {
+        "course_code": "23IBT3203A",
+        "bucket": "PE-3",
+        "title": "BIOPROCESS ECONOMICS AND"
+      },
+      {
+        "course_code": "23IBT3203E",
+        "bucket": "PE-3",
+        "title": "BIOPROCESS ECONOMICS AND"
+      },
+      {
+        "course_code": "23IBT3203R",
+        "bucket": "PE-3",
+        "title": "BIOPROCESS ECONOMICS AND"
+      },
+      {
+        "course_code": "23IBT3304A",
+        "bucket": "PE-4",
+        "title": "ENZYME ENGINEERING"
+      },
+      {
+        "course_code": "23IBT3304E",
+        "bucket": "PE-4",
+        "title": "ENZYME ENGINEERING"
+      },
+      {
+        "course_code": "23IBT3304R",
+        "bucket": "PE-4",
+        "title": "ENZYME ENGINEERING"
+      },
+      {
+        "course_code": "23IBT3406M",
+        "bucket": "PE-4",
+        "title": "FOOD TECHNOLOGY"
+      },
+      {
+        "course_code": "23IBT3405M",
+        "bucket": "PE-5",
+        "title": "BIOPROCESS VALIDATION AND"
+      },
+      {
+        "course_code": "23IBT3507",
+        "bucket": "PE-5",
+        "title": "MICROBIAL TECHNOLOGY"
+      },
+      {
+        "course_code": "23IBT3508",
+        "bucket": "PE-5",
+        "title": "METABOLIC ENGINEERING"
+      }
+    ]
+  },
+  {
+    "name": "INTELLIGENT MULTIMEDIA PROCESSING",
+    "code": "INTELLIGENT-MULTIMEDIA-PROCESSING",
+    "courses": [
+      {
+        "course_code": "23SDEC15A",
+        "bucket": "SDP-4",
+        "title": "NATURAL LANGUAGE PROCESSING"
+      },
+      {
+        "course_code": "23SDEC15E",
+        "bucket": "SDP-4",
+        "title": "NATURAL LANGUAGE PROCESSING"
+      },
+      {
+        "course_code": "23SDEC15R",
+        "bucket": "SDP-4",
+        "title": "NATURAL LANGUAGE PROCESSING"
+      },
+      {
+        "course_code": "23IMP3101A",
+        "bucket": "PE-1",
+        "title": "NATURAL LANGUAGE PROCESSING"
+      },
+      {
+        "course_code": "23IMP3101E",
+        "bucket": "PE-1",
+        "title": "NATURAL LANGUAGE PROCESSING"
+      },
+      {
+        "course_code": "23IMP3101R",
+        "bucket": "PE-1",
+        "title": "NATURAL LANGUAGE PROCESSING"
+      },
+      {
+        "course_code": "23IMP3202A",
+        "bucket": "PE-2",
+        "title": "DATA ENGINEERING"
+      },
+      {
+        "course_code": "23IMP3202E",
+        "bucket": "PE-2",
+        "title": "DATA ENGINEERING"
+      },
+      {
+        "course_code": "23IMP3202R",
+        "bucket": "PE-2",
+        "title": "DATA ENGINEERING"
+      },
+      {
+        "course_code": "23IMP3303A",
+        "bucket": "PE-3",
+        "title": "BIO MEDICAL SIGNAL  AND IMAGE"
+      },
+      {
+        "course_code": "23IMP3303E",
+        "bucket": "PE-3",
+        "title": "BIO MEDICAL SIGNAL  AND IMAGE"
+      },
+      {
+        "course_code": "23IMP3303R",
+        "bucket": "PE-3",
+        "title": "BIO MEDICAL SIGNAL  AND IMAGE"
+      },
+      {
+        "course_code": "23IMP3404M",
+        "bucket": "PE-4",
+        "title": "DATA VISUALIZATION"
+      },
+      {
+        "course_code": "23IMP3505",
+        "bucket": "PE-5",
+        "title": "MULTI MEDIA PROCESSING"
+      },
+      {
+        "course_code": "23IMP3506",
+        "bucket": "PE-5",
+        "title": "INTRODUCTION TO QUANTUM"
+      }
+    ]
+  },
+  {
+    "name": "IOT ANALYTICS",
+    "code": "IOT-ANALYTICS",
+    "courses": [
+      {
+        "course_code": "23SDIN05A",
+        "bucket": "SDP-4",
+        "title": "IOT ANALYTICS FOR THE CLOUD"
+      },
+      {
+        "course_code": "23SDIN05E",
+        "bucket": "SDP-4",
+        "title": "IOT ANALYTICS FOR THE CLOUD"
+      },
+      {
+        "course_code": "23SDIN05R",
+        "bucket": "SDP-4",
+        "title": "IOT ANALYTICS FOR THE CLOUD"
+      },
+      {
+        "course_code": "23IOT3101A",
+        "bucket": "PE-1",
+        "title": "INDUSTRIAL INTERNET OF THINGS"
+      },
+      {
+        "course_code": "23IOT3101E",
+        "bucket": "PE-1",
+        "title": "INDUSTRIAL INTERNET OF THINGS"
+      },
+      {
+        "course_code": "23IOT3101R",
+        "bucket": "PE-1",
+        "title": "INDUSTRIAL INTERNET OF THINGS"
+      },
+      {
+        "course_code": "23IOT3202A",
+        "bucket": "PE-2",
+        "title": "EDGE COMPUTING"
+      },
+      {
+        "course_code": "23IOT3202E",
+        "bucket": "PE-2",
+        "title": "EDGE COMPUTING"
+      },
+      {
+        "course_code": "23IOT3202R",
+        "bucket": "PE-2",
+        "title": "EDGE COMPUTING"
+      },
+      {
+        "course_code": "23IOT3203A",
+        "bucket": "PE-2",
+        "title": "PRECISION AGRICULTURE"
+      },
+      {
+        "course_code": "23IOT3203E",
+        "bucket": "PE-2",
+        "title": "PRECISION AGRICULTURE"
+      },
+      {
+        "course_code": "23IOT3203R",
+        "bucket": "PE-2",
+        "title": "PRECISION AGRICULTURE"
+      },
+      {
+        "course_code": "23IOT3204A",
+        "bucket": "PE-2",
+        "title": "SMART FARMING"
+      },
+      {
+        "course_code": "23IOT3204E",
+        "bucket": "PE-2",
+        "title": "SMART FARMING"
+      },
+      {
+        "course_code": "23IOT3204R",
+        "bucket": "PE-2",
+        "title": "SMART FARMING"
+      },
+      {
+        "course_code": "23IOT3305A",
+        "bucket": "PE-3",
+        "title": "DEEP LEARNING"
+      },
+      {
+        "course_code": "23IOT3305E",
+        "bucket": "PE-3",
+        "title": "DEEP LEARNING"
+      },
+      {
+        "course_code": "23IOT3305R",
+        "bucket": "PE-3",
+        "title": "DEEP LEARNING"
+      },
+      {
+        "course_code": "23IOT3406M",
+        "bucket": "PE-4",
+        "title": "DATA VISUALIZATION TECHNIQUES"
+      },
+      {
+        "course_code": "23IOT3407M",
+        "bucket": "PE-4",
+        "title": "APPLIED MACHINE LEARNING FOR"
+      },
+      {
+        "course_code": "23IOT3508",
+        "bucket": "PE-5",
+        "title": "BIG DATA ANALYTICS"
+      }
+    ]
+  },
+  {
+    "name": "MEDICAL BIOTECHNOLOGY",
+    "code": "MEDICAL-BIOTECHNOLOGY",
+    "courses": [
+      {
+        "course_code": "23SDBT09A",
+        "bucket": "SDP-4",
+        "title": "CELL CULTURE TECHNOLOGIES"
+      },
+      {
+        "course_code": "23SDBT09E",
+        "bucket": "SDP-4",
+        "title": "CELL CULTURE TECHNOLOGIES"
+      },
+      {
+        "course_code": "23SDBT09R",
+        "bucket": "SDP-4",
+        "title": "CELL CULTURE TECHNOLOGIES"
+      },
+      {
+        "course_code": "23MBT3101A",
+        "bucket": "PE-1",
+        "title": "STEM CELL TECHNOLOGY"
+      },
+      {
+        "course_code": "23MBT3101E",
+        "bucket": "PE-1",
+        "title": "STEM CELL TECHNOLOGY"
+      },
+      {
+        "course_code": "23MBT3101R",
+        "bucket": "PE-1",
+        "title": "STEM CELL TECHNOLOGY"
+      },
+      {
+        "course_code": "23MBT3202A",
+        "bucket": "PE-2",
+        "title": "VIROLOGY"
+      },
+      {
+        "course_code": "23MBT3202E",
+        "bucket": "PE-2",
+        "title": "VIROLOGY"
+      },
+      {
+        "course_code": "23MBT3202R",
+        "bucket": "PE-2",
+        "title": "VIROLOGY"
+      },
+      {
+        "course_code": "23MBT3203A",
+        "bucket": "PE-2",
+        "title": "NANOBIOTECHNOLOGY"
+      },
+      {
+        "course_code": "23MBT3203E",
+        "bucket": "PE-2",
+        "title": "NANOBIOTECHNOLOGY"
+      },
+      {
+        "course_code": "23MBT3203R",
+        "bucket": "PE-2",
+        "title": "NANOBIOTECHNOLOGY"
+      },
+      {
+        "course_code": "23MBT3304A",
+        "bucket": "PE-3",
+        "title": "HEALTHCARE BIOTECHNOLOGY"
+      },
+      {
+        "course_code": "23MBT3304E",
+        "bucket": "PE-3",
+        "title": "HEALTHCARE BIOTECHNOLOGY"
+      },
+      {
+        "course_code": "23MBT3304R",
+        "bucket": "PE-3",
+        "title": "HEALTHCARE BIOTECHNOLOGY"
+      },
+      {
+        "course_code": "23MBT3405M",
+        "bucket": "PE-4",
+        "title": "CANCER BIOLOGY"
+      },
+      {
+        "course_code": "23MBT3406M",
+        "bucket": "PE-4",
+        "title": "NEUROBIOLOGY"
+      },
+      {
+        "course_code": "23MBT3507",
+        "bucket": "PE-5",
+        "title": "BIOELECTRONICS & BIOSENSORS"
+      },
+      {
+        "course_code": "23MBT3508",
+        "bucket": "PE-5",
+        "title": "TISSUE ENGINEERING"
+      }
+    ]
+  },
+  {
+    "name": "ROBOTICS AND AUTOMATION",
+    "code": "ROBOTICS-AND-AUTOMATION",
+    "courses": [
+      {
+        "course_code": "23SDEC17A",
+        "bucket": "SDP-4",
+        "title": "ROBOT DESIGN AND ANALYSIS"
+      },
+      {
+        "course_code": "23SDEC17E",
+        "bucket": "SDP-4",
+        "title": "ROBOT DESIGN AND ANALYSIS"
+      },
+      {
+        "course_code": "23SDEC17R",
+        "bucket": "SDP-4",
+        "title": "ROBOT DESIGN AND ANALYSIS"
+      },
+      {
+        "course_code": "23RAN3101A",
+        "bucket": "PE-1",
+        "title": "ROBOT MOTION PLANNING,"
+      },
+      {
+        "course_code": "23RAN3101E",
+        "bucket": "PE-1",
+        "title": "ROBOT MOTION PLANNING,"
+      },
+      {
+        "course_code": "23RAN3101R",
+        "bucket": "PE-1",
+        "title": "ROBOT MOTION PLANNING,"
+      },
+      {
+        "course_code": "23RAN3102A",
+        "bucket": "PE-1",
+        "title": "AUTONOMOUS MOBILE ROBOT"
+      },
+      {
+        "course_code": "23RAN3102E",
+        "bucket": "PE-1",
+        "title": "AUTONOMOUS MOBILE ROBOT"
+      },
+      {
+        "course_code": "23RAN3102R",
+        "bucket": "PE-1",
+        "title": "AUTONOMOUS MOBILE ROBOT"
+      },
+      {
+        "course_code": "23RAN3202A",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLES &"
+      },
+      {
+        "course_code": "23RAN3202E",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLES &"
+      },
+      {
+        "course_code": "23RAN3202R",
+        "bucket": "PE-2",
+        "title": "AUTONOMOUS VEHICLES &"
+      },
+      {
+        "course_code": "23RAN3203A",
+        "bucket": "PE-2",
+        "title": "ROBOT MANIPULATION AND"
+      },
+      {
+        "course_code": "23RAN3203E",
+        "bucket": "PE-2",
+        "title": "ROBOT MANIPULATION AND"
+      },
+      {
+        "course_code": "23RAN3203R",
+        "bucket": "PE-2",
+        "title": "ROBOT MANIPULATION AND"
+      },
+      {
+        "course_code": "23RAN3304A",
+        "bucket": "PE-3",
+        "title": "ADVANCED ROBOTICS"
+      },
+      {
+        "course_code": "23RAN3304E",
+        "bucket": "PE-3",
+        "title": "ADVANCED ROBOTICS"
+      },
+      {
+        "course_code": "23RAN3304R",
+        "bucket": "PE-3",
+        "title": "ADVANCED ROBOTICS"
+      },
+      {
+        "course_code": "23RAN3405M",
+        "bucket": "PE-4",
+        "title": "ARTIFICIAL INTELLIGENCE FOR"
+      },
+      {
+        "course_code": "23RAN3406M",
+        "bucket": "PE-4",
+        "title": "HUMAN MACHINE INTERFACE &"
+      },
+      {
+        "course_code": "23RAN3507",
+        "bucket": "PE-5",
+        "title": "COMPUTER VISION & APPLICATIONS"
+      }
+    ]
+  },
+  {
+    "name": "SMART GRID TECHNOLOGIES",
+    "code": "SMART-GRID-TECHNOLOGIES",
+    "courses": [
+      {
+        "course_code": "23SDEE04A",
+        "bucket": "SDP-4",
+        "title": "AI & ML FOR SMART GRIDS"
+      },
+      {
+        "course_code": "23SDEE04E",
+        "bucket": "SDP-4",
+        "title": "AI & ML FOR SMART GRIDS"
+      },
+      {
+        "course_code": "23SDEE04R",
+        "bucket": "SDP-4",
+        "title": "AI & ML FOR SMART GRIDS"
+      },
+      {
+        "course_code": "23SGT3101A",
+        "bucket": "PE-1",
+        "title": "DISTRIBUTED ENERGY RESOURCES"
+      },
+      {
+        "course_code": "23SGT3101E",
+        "bucket": "PE-1",
+        "title": "DISTRIBUTED ENERGY RESOURCES"
+      },
+      {
+        "course_code": "23SGT3101R",
+        "bucket": "PE-1",
+        "title": "DISTRIBUTED ENERGY RESOURCES"
+      },
+      {
+        "course_code": "23SGT3202A",
+        "bucket": "PE-2",
+        "title": "DISTRIBUTION SYSTEM PRACTICES"
+      },
+      {
+        "course_code": "23SGT3202E",
+        "bucket": "PE-2",
+        "title": "DISTRIBUTION SYSTEM PRACTICES"
+      },
+      {
+        "course_code": "23SGT3202R",
+        "bucket": "PE-2",
+        "title": "DISTRIBUTION SYSTEM PRACTICES"
+      },
+      {
+        "course_code": "23SGT3203A",
+        "bucket": "PE-2",
+        "title": "MICROGRID DYNAMICS AND"
+      },
+      {
+        "course_code": "23SGT3203E",
+        "bucket": "PE-2",
+        "title": "MICROGRID DYNAMICS AND"
+      },
+      {
+        "course_code": "23SGT3203R",
+        "bucket": "PE-2",
+        "title": "MICROGRID DYNAMICS AND"
+      },
+      {
+        "course_code": "23SGT3304A",
+        "bucket": "PE-3",
+        "title": "ENERGY MANAGEMENT SYSTEMS"
+      },
+      {
+        "course_code": "23SGT3304E",
+        "bucket": "PE-3",
+        "title": "ENERGY MANAGEMENT SYSTEMS"
+      },
+      {
+        "course_code": "23SGT3304R",
+        "bucket": "PE-3",
+        "title": "ENERGY MANAGEMENT SYSTEMS"
+      },
+      {
+        "course_code": "23SGT3405M",
+        "bucket": "PE-4",
+        "title": "SMART GRID COMMUNICATION AND"
+      },
+      {
+        "course_code": "23SGT3406M",
+        "bucket": "PE-4",
+        "title": "SMART METERS AND SMART CITIES"
+      },
+      {
+        "course_code": "23SGT3507",
+        "bucket": "PE-5",
+        "title": "INTERNET OF THINGS AND SMART"
+      },
+      {
+        "course_code": "23SGT3508",
+        "bucket": "PE-5",
+        "title": "SMART GRID PROTECTION"
+      }
+    ]
+  },
+  {
+    "name": "SMART MANUFACTURING",
+    "code": "SMART-MANUFACTURING",
+    "courses": [
+      {
+        "course_code": "23SDME06A",
+        "bucket": "SDP-4",
+        "title": "GEOMETRIC DIMENSIONING AND"
+      },
+      {
+        "course_code": "23SDME06E",
+        "bucket": "SDP-4",
+        "title": "GEOMETRIC DIMENSIONING AND"
+      },
+      {
+        "course_code": "23SDME06R",
+        "bucket": "SDP-4",
+        "title": "GEOMETRIC DIMENSIONING AND"
+      },
+      {
+        "course_code": "23SMF3101A",
+        "bucket": "PE-1",
+        "title": "REVERSE ENGINEERING & RAPID"
+      },
+      {
+        "course_code": "23SMF3101E",
+        "bucket": "PE-1",
+        "title": "REVERSE ENGINEERING & RAPID"
+      },
+      {
+        "course_code": "23SMF3101R",
+        "bucket": "PE-1",
+        "title": "REVERSE ENGINEERING & RAPID"
+      },
+      {
+        "course_code": "23SMF3202A",
+        "bucket": "PE-2",
+        "title": "ADVANCED MATERIALS"
+      },
+      {
+        "course_code": "23SMF3202E",
+        "bucket": "PE-2",
+        "title": "ADVANCED MATERIALS"
+      },
+      {
+        "course_code": "23SMF3202R",
+        "bucket": "PE-2",
+        "title": "ADVANCED MATERIALS"
+      },
+      {
+        "course_code": "23SMF3203A",
+        "bucket": "PE-2",
+        "title": "MODERN MANUFACTURING"
+      },
+      {
+        "course_code": "23SMF3203E",
+        "bucket": "PE-2",
+        "title": "MODERN MANUFACTURING"
+      },
+      {
+        "course_code": "23SMF3203R",
+        "bucket": "PE-2",
+        "title": "MODERN MANUFACTURING"
+      },
+      {
+        "course_code": "23SMF3304A",
+        "bucket": "PE-3",
+        "title": "SUSTAINABLE DESIGN & SOCIAL"
+      },
+      {
+        "course_code": "23SMF3304E",
+        "bucket": "PE-3",
+        "title": "SUSTAINABLE DESIGN & SOCIAL"
+      },
+      {
+        "course_code": "23SMF3304R",
+        "bucket": "PE-3",
+        "title": "SUSTAINABLE DESIGN & SOCIAL"
+      },
+      {
+        "course_code": "23SMF3405M",
+        "bucket": "PE-4",
+        "title": "ROBOTICS & INDUSTRIAL"
+      },
+      {
+        "course_code": "23SMF3406M",
+        "bucket": "PE-4",
+        "title": "MECHANICAL MEASUREMENTS AND"
+      },
+      {
+        "course_code": "23SMF3507",
+        "bucket": "PE-5",
+        "title": "MACHINE TO MACHINE"
+      },
+      {
+        "course_code": "23SMF3508",
+        "bucket": "PE-5",
+        "title": "FLEXIBLE MANUFACTURING"
+      }
+    ]
+  },
+  {
+    "name": "SOCIAL AND DIGITAL MEDIA ANALYTICS",
+    "code": "SOCIAL-AND-DIGITAL-MEDIA-ANALYTICS",
+    "courses": [
+      {
+        "course_code": "23SDAD06A",
+        "bucket": "SDP-4",
+        "title": "ANALYSIS OF DIGITAL MARKETING"
+      },
+      {
+        "course_code": "23SDAD06E",
+        "bucket": "SDP-4",
+        "title": "ANALYSIS OF DIGITAL MARKETING"
+      },
+      {
+        "course_code": "23SDAD06R",
+        "bucket": "SDP-4",
+        "title": "ANALYSIS OF DIGITAL MARKETING"
+      },
+      {
+        "course_code": "23SDM3101A",
+        "bucket": "PE-1",
+        "title": "SENTIMENT ANALYSIS"
+      },
+      {
+        "course_code": "23SDM3101E",
+        "bucket": "PE-1",
+        "title": "SENTIMENT ANALYSIS"
+      },
+      {
+        "course_code": "23SDM3101R",
+        "bucket": "PE-1",
+        "title": "SENTIMENT ANALYSIS"
+      },
+      {
+        "course_code": "23SDM3202A",
+        "bucket": "PE-2",
+        "title": "OPINION MINING & RECOMMENDER"
+      },
+      {
+        "course_code": "23SDM3202E",
+        "bucket": "PE-2",
+        "title": "OPINION MINING & RECOMMENDER"
+      },
+      {
+        "course_code": "23SDM3202R",
+        "bucket": "PE-2",
+        "title": "OPINION MINING & RECOMMENDER"
+      },
+      {
+        "course_code": "23SDM3203A",
+        "bucket": "PE-2",
+        "title": "META SOCIAL MEDIA ANALYTICS"
+      },
+      {
+        "course_code": "23SDM3203E",
+        "bucket": "PE-2",
+        "title": "META SOCIAL MEDIA ANALYTICS"
+      },
+      {
+        "course_code": "23SDM3203R",
+        "bucket": "PE-2",
+        "title": "META SOCIAL MEDIA ANALYTICS"
+      },
+      {
+        "course_code": "23SDM3304A",
+        "bucket": "PE-3",
+        "title": "SOCIAL MEDIA MARKETING"
+      },
+      {
+        "course_code": "23SDM3304E",
+        "bucket": "PE-3",
+        "title": "SOCIAL MEDIA MARKETING"
+      },
+      {
+        "course_code": "23SDM3304R",
+        "bucket": "PE-3",
+        "title": "SOCIAL MEDIA MARKETING"
+      },
+      {
+        "course_code": "23SDM3405M",
+        "bucket": "PE-4",
+        "title": "DIGITAL MEDIA ANALYTICS"
+      },
+      {
+        "course_code": "23SDM3406M",
+        "bucket": "PE-4",
+        "title": "ETHICAL SOCIAL MEDIA"
+      },
+      {
+        "course_code": "23SDM3508",
+        "bucket": "PE-5",
+        "title": "SEARCH ENGINE OPTIMIZATION"
+      },
+      {
+        "course_code": "23SDM3507",
+        "bucket": "PE-5",
+        "title": "INTELLIGENT SOCIAL MEDIA"
+      }
+    ]
+  },
+  {
+    "name": "SOFTWARE MODELLING AND DEVOPS",
+    "code": "SOFTWARE-MODELLING-AND-DEVOPS",
+    "courses": [
+      {
+        "course_code": "23SDCI05A",
+        "bucket": "SDP-4",
+        "title": "CLOUD DEVOPS"
+      },
+      {
+        "course_code": "23SDCI05E",
+        "bucket": "SDP-4",
+        "title": "CLOUD DEVOPS"
+      },
+      {
+        "course_code": "23SDCI05R",
+        "bucket": "SDP-4",
+        "title": "CLOUD DEVOPS"
+      },
+      {
+        "course_code": "23SMD3101A",
+        "bucket": "PE-1",
+        "title": "SOFTWARE VERIFICATION &"
+      },
+      {
+        "course_code": "23SMD3101E",
+        "bucket": "PE-1",
+        "title": "SOFTWARE VERIFICATION &"
+      },
+      {
+        "course_code": "23SMD3101R",
+        "bucket": "PE-1",
+        "title": "SOFTWARE VERIFICATION &"
+      },
+      {
+        "course_code": "23SMD3202A",
+        "bucket": "PE-2",
+        "title": "DESIGN PATTERNS & CLEAN"
+      },
+      {
+        "course_code": "23SMD3202E",
+        "bucket": "PE-2",
+        "title": "DESIGN PATTERNS & CLEAN"
+      },
+      {
+        "course_code": "23SMD3202R",
+        "bucket": "PE-2",
+        "title": "DESIGN PATTERNS & CLEAN"
+      },
+      {
+        "course_code": "23SMD3303A",
+        "bucket": "PE-3",
+        "title": "CONTINUOUS DELIVERY & DEVOPS"
+      },
+      {
+        "course_code": "23SMD3303E",
+        "bucket": "PE-3",
+        "title": "CONTINUOUS DELIVERY & DEVOPS"
+      },
+      {
+        "course_code": "23SMD3303R",
+        "bucket": "PE-3",
+        "title": "CONTINUOUS DELIVERY & DEVOPS"
+      },
+      {
+        "course_code": "23SMD3404M",
+        "bucket": "PE-4",
+        "title": "SOFTWARE PROJECT MANAGEMENT"
+      },
+      {
+        "course_code": "23SMD3405M",
+        "bucket": "PE-4",
+        "title": "SOFTWARE ARCHITECTURE &"
+      },
+      {
+        "course_code": "23SMD3506",
+        "bucket": "PE-5",
+        "title": "SOFTWARE RELIABILITY"
+      },
+      {
+        "course_code": "23SMD3507",
+        "bucket": "PE-5",
+        "title": "CROSS-PLATFORM USER INTERFACE"
+      }
+    ]
+  },
+  {
+    "name": "SPATIAL COMPUTING AND IMMERSIVE TECHNOLOGIES",
+    "code": "SPATIAL-COMPUTING-AND-IMMERSIVE-TECHNOLOGIES",
+    "courses": [
+      {
+        "course_code": "23SDCS06A",
+        "bucket": "SDP-4",
+        "title": "CERTIFIED GAME DEVELOPER"
+      },
+      {
+        "course_code": "23SDCS06E",
+        "bucket": "SDP-4",
+        "title": "CERTIFIED GAME DEVELOPER"
+      },
+      {
+        "course_code": "23SDCS06R",
+        "bucket": "SDP-4",
+        "title": "CERTIFIED GAME DEVELOPER"
+      },
+      {
+        "course_code": "23SCI3101A",
+        "bucket": "PE-1",
+        "title": "SPATIAL DATA VISUALIZATION"
+      },
+      {
+        "course_code": "23SCI3101E",
+        "bucket": "PE-1",
+        "title": "SPATIAL DATA VISUALIZATION"
+      },
+      {
+        "course_code": "23SCI3101R",
+        "bucket": "PE-1",
+        "title": "SPATIAL DATA VISUALIZATION"
+      },
+      {
+        "course_code": "23SCI3202A",
+        "bucket": "PE-2",
+        "title": "SPATIAL COMPUTING FOR"
+      },
+      {
+        "course_code": "23SCI3202E",
+        "bucket": "PE-2",
+        "title": "SPATIAL COMPUTING FOR"
+      },
+      {
+        "course_code": "23SCI3202R",
+        "bucket": "PE-2",
+        "title": "SPATIAL COMPUTING FOR"
+      },
+      {
+        "course_code": "23SCI3303A",
+        "bucket": "PE-3",
+        "title": "SPATIAL COMPUTING PLATFORMS"
+      },
+      {
+        "course_code": "23SCI3303E",
+        "bucket": "PE-3",
+        "title": "SPATIAL COMPUTING PLATFORMS"
+      },
+      {
+        "course_code": "23SCI3303R",
+        "bucket": "PE-3",
+        "title": "SPATIAL COMPUTING PLATFORMS"
+      },
+      {
+        "course_code": "23SCI3404M",
+        "bucket": "PE-4",
+        "title": "SPATIAL AND SOCIAL IMPLICATIONS"
+      },
+      {
+        "course_code": "23SCI3405M",
+        "bucket": "PE-4",
+        "title": "SPATIAL AUDIO DESIGN FOR GAMES"
+      },
+      {
+        "course_code": "23SCI3506",
+        "bucket": "PE-5",
+        "title": "SPATIAL USER INTERFACE DESIGN"
+      },
+      {
+        "course_code": "23SCI3507",
+        "bucket": "PE-5",
+        "title": "INTRODUCTION TO SPATIAL"
+      }
+    ]
+  },
+  {
+    "name": "STRUCTURAL ENGINEERING",
+    "code": "STRUCTURAL-ENGINEERING",
+    "courses": [
+      {
+        "course_code": "23SDCE06A",
+        "bucket": "SDP-4",
+        "title": "DESIGN & ANALYSIS OF DIFFERENT"
+      },
+      {
+        "course_code": "23SDCE06E",
+        "bucket": "SDP-4",
+        "title": "DESIGN & ANALYSIS OF DIFFERENT"
+      },
+      {
+        "course_code": "23SDCE06R",
+        "bucket": "SDP-4",
+        "title": "DESIGN & ANALYSIS OF DIFFERENT"
+      },
+      {
+        "course_code": "23STE3101A",
+        "bucket": "PE-1",
+        "title": "ADVANCED CONCRETE"
+      },
+      {
+        "course_code": "23STE3101E",
+        "bucket": "PE-1",
+        "title": "ADVANCED CONCRETE"
+      },
+      {
+        "course_code": "23STE3101R",
+        "bucket": "PE-1",
+        "title": "ADVANCED CONCRETE"
+      },
+      {
+        "course_code": "23STE3202A",
+        "bucket": "PE-2",
+        "title": "ADVANCED STRUCTURAL ANALYSIS"
+      },
+      {
+        "course_code": "23STE3202E",
+        "bucket": "PE-2",
+        "title": "ADVANCED STRUCTURAL ANALYSIS"
+      },
+      {
+        "course_code": "23STE3202R",
+        "bucket": "PE-2",
+        "title": "ADVANCED STRUCTURAL ANALYSIS"
+      },
+      {
+        "course_code": "23STE3203A",
+        "bucket": "PE-2",
+        "title": "ADVANCED DESIGN OF STEEL"
+      },
+      {
+        "course_code": "23STE3203E",
+        "bucket": "PE-2",
+        "title": "ADVANCED DESIGN OF STEEL"
+      },
+      {
+        "course_code": "23STE3203R",
+        "bucket": "PE-2",
+        "title": "ADVANCED DESIGN OF STEEL"
+      },
+      {
+        "course_code": "23STE3304A",
+        "bucket": "PE-3",
+        "title": "BRIDGE ENGINEERING"
+      },
+      {
+        "course_code": "23STE3304E",
+        "bucket": "PE-3",
+        "title": "BRIDGE ENGINEERING"
+      },
+      {
+        "course_code": "23STE3304R",
+        "bucket": "PE-3",
+        "title": "BRIDGE ENGINEERING"
+      },
+      {
+        "course_code": "23STE3405M",
+        "bucket": "PE-4",
+        "title": "PRESTRESSED CONCRETE"
+      },
+      {
+        "course_code": "23STE3406M",
+        "bucket": "PE-4",
+        "title": "PRECAST AND PREFABRICATED"
+      },
+      {
+        "course_code": "23STE3507",
+        "bucket": "PE-5",
+        "title": "PRE ENGINEERING STRUCTURES"
+      },
+      {
+        "course_code": "23STE3508",
+        "bucket": "PE-5",
+        "title": "ADVANCED DESIGN OF REINFORCED"
+      }
+    ]
+  },
+  {
+    "name": "VERY LARGE-SCALE INTEGRATION",
+    "code": "VERY-LARGE-SCALE-INTEGRATION",
+    "courses": [
+      {
+        "course_code": "23SDEC18A",
+        "bucket": "SDP-4",
+        "title": "VLSI SUBMICRON DESIGN AND"
+      },
+      {
+        "course_code": "23SDEC18E",
+        "bucket": "SDP-4",
+        "title": "VLSI SUBMICRON DESIGN AND"
+      },
+      {
+        "course_code": "23SDEC18R",
+        "bucket": "SDP-4",
+        "title": "VLSI SUBMICRON DESIGN AND"
+      },
+      {
+        "course_code": "23VLS3101A",
+        "bucket": "PE-1",
+        "title": "ANALOG VLSI DESIGN"
+      },
+      {
+        "course_code": "23VLS3101E",
+        "bucket": "PE-1",
+        "title": "ANALOG VLSI DESIGN"
+      },
+      {
+        "course_code": "23VLS3101R",
+        "bucket": "PE-1",
+        "title": "ANALOG VLSI DESIGN"
+      },
+      {
+        "course_code": "23VLS3202A",
+        "bucket": "PE-2",
+        "title": "TESTING AND VERIFICATION OF"
+      },
+      {
+        "course_code": "23VLS3202E",
+        "bucket": "PE-2",
+        "title": "TESTING AND VERIFICATION OF"
+      },
+      {
+        "course_code": "23VLS3202R",
+        "bucket": "PE-2",
+        "title": "TESTING AND VERIFICATION OF"
+      },
+      {
+        "course_code": "23VLS3303A",
+        "bucket": "PE-3",
+        "title": "VLSI PHYSICAL DESIGN"
+      },
+      {
+        "course_code": "23VLS3303E",
+        "bucket": "PE-3",
+        "title": "VLSI PHYSICAL DESIGN"
+      },
+      {
+        "course_code": "23VLS3303R",
+        "bucket": "PE-3",
+        "title": "VLSI PHYSICAL DESIGN"
+      },
+      {
+        "course_code": "23VLS3404M",
+        "bucket": "PE-4",
+        "title": "SYSTEM-ON-CHIP"
+      },
+      {
+        "course_code": "23VLS3505",
+        "bucket": "PE-5",
+        "title": "MIXED SIGNAL IC DESIGN"
+      }
+    ]
+  },
+  {
+    "name": "WATER RESOURCE AND ENVIRONMENTAL ENGINEERING",
+    "code": "WATER-RESOURCE-AND-ENVIRONMENTAL-ENGINEERING",
+    "courses": [
+      {
+        "course_code": "23SDCE07A",
+        "bucket": "SDP-4",
+        "title": "ARC-GIS (PRO)"
+      },
+      {
+        "course_code": "23SDCE07E",
+        "bucket": "SDP-4",
+        "title": "ARC-GIS (PRO)"
+      },
+      {
+        "course_code": "23SDCE07R",
+        "bucket": "SDP-4",
+        "title": "ARC-GIS (PRO)"
+      },
+      {
+        "course_code": "23WRE3101A",
+        "bucket": "PE-1",
+        "title": "RIVER ENGINEERING"
+      },
+      {
+        "course_code": "23WRE3101E",
+        "bucket": "PE-1",
+        "title": "RIVER ENGINEERING"
+      },
+      {
+        "course_code": "23WRE3101R",
+        "bucket": "PE-1",
+        "title": "RIVER ENGINEERING"
+      },
+      {
+        "course_code": "23WRE3202A",
+        "bucket": "PE-2",
+        "title": "SOLID WASTE MANAGEMENT AND"
+      },
+      {
+        "course_code": "23WRE3202E",
+        "bucket": "PE-2",
+        "title": "SOLID WASTE MANAGEMENT AND"
+      },
+      {
+        "course_code": "23WRE3202R",
+        "bucket": "PE-2",
+        "title": "SOLID WASTE MANAGEMENT AND"
+      },
+      {
+        "course_code": "23WRE3203A",
+        "bucket": "PE-2",
+        "title": "DESIGN OF HYDRAULIC"
+      },
+      {
+        "course_code": "23WRE3203E",
+        "bucket": "PE-2",
+        "title": "DESIGN OF HYDRAULIC"
+      },
+      {
+        "course_code": "23WRE3203R",
+        "bucket": "PE-2",
+        "title": "DESIGN OF HYDRAULIC"
+      },
+      {
+        "course_code": "23WRE3304A",
+        "bucket": "PE-3",
+        "title": "WATER RESOURCES FIELD METHODS"
+      },
+      {
+        "course_code": "23WRE3304E",
+        "bucket": "PE-3",
+        "title": "WATER RESOURCES FIELD METHODS"
+      },
+      {
+        "course_code": "23WRE3304R",
+        "bucket": "PE-3",
+        "title": "WATER RESOURCES FIELD METHODS"
+      },
+      {
+        "course_code": "23WRE3405M",
+        "bucket": "PE-4",
+        "title": "URBAN WATER HYDROLOGY AND"
+      },
+      {
+        "course_code": "23WRE3406M",
+        "bucket": "PE-4",
+        "title": "ENVIRONMENTAL IMPACT"
+      },
+      {
+        "course_code": "23WRE3507",
+        "bucket": "PE-5",
+        "title": "PHYSICO-CHEMICAL PROCESSES"
+      },
+      {
+        "course_code": "23WRE3508",
+        "bucket": "PE-5",
+        "title": "SUSTAINABLE ENGINEERING AND"
+      },
+      {
+        "course_code": "23IE4053A",
+        "bucket": "PE",
+        "title": "CAPSTONE PROJECT - 1"
+      },
+      {
+        "course_code": "23IE4053R",
+        "bucket": "PE",
+        "title": "CAPSTONE PROJECT - 1"
+      },
+      {
+        "course_code": "23IE4054A",
+        "bucket": "PE",
+        "title": "CAPSTONE PROJECT - 2"
+      },
+      {
+        "course_code": "23IE4054R",
+        "bucket": "PE",
+        "title": "CAPSTONE PROJECT - 2"
+      }
+    ]
+  }
+]
