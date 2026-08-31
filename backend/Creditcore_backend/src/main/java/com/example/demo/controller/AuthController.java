@@ -28,9 +28,15 @@ public class AuthController {
 
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        String newPassword = request.get("newPassword");
+        String username = SecurityContextHolder.getContext().getAuthentication() != null
+                ? SecurityContextHolder.getContext().getAuthentication().getName()
+                : null;
         
+        if (username == null || username.equals("anonymousUser") || username.trim().isEmpty()) {
+            return ResponseEntity.status(401).body("Unauthorized: You must be logged in to change your password.");
+        }
+
+        String newPassword = request.get("newPassword");
         if (newPassword == null || newPassword.length() < 6) {
             return ResponseEntity.badRequest().body("Password must be at least 6 characters long");
         }

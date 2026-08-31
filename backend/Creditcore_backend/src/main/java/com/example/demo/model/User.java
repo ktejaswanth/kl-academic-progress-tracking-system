@@ -27,10 +27,12 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @Column(name = "first_name", nullable = false)
@@ -54,6 +56,7 @@ public class User {
     @Column(name = "specialization_name")
     private String specializationName;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @Column(name = "raw_password")
     private String rawPassword;
 

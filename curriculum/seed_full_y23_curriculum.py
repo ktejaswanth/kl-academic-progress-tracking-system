@@ -1,11 +1,7 @@
 import re
-import socket
-import ssl
-import pg8000
 import pandas as pd
 import json
-
-db_url = "postgresql://postgres.xbhkyjgjunfzcxgnobss:UYKTSd$dc5Pe8/Q@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres"
+from db_config import get_db_connection
 
 cse_txt_path = r"c:\Users\kteja\OneDrive\Desktop\Capstone\kl-academic-progress-tracking-system\curriculum\Y23_BTech_CSE_text.txt"
 aids_txt_path = r"c:\Users\kteja\OneDrive\Desktop\Capstone\kl-academic-progress-tracking-system\curriculum\Y23_BTech_AIDS_text.txt"
@@ -239,27 +235,6 @@ def parse_curriculum_text(txt_path, dept_code, req_start, req_end, struct_start,
     print(f"  - Mappings: {len(mappings_rows)}")
     
     return paths_data, requirements_rows, courses_rows, mappings_rows
-
-def get_db_connection():
-    pattern = re.compile(r"postgresql://(?P<user>[^:]+):(?P<password>[^@]+)@(?P<host>[^:]+):(?P<port>\d+)/(?P<database>.+)")
-    m = pattern.match(db_url)
-    params = m.groupdict()
-    host = params['host']
-    dns_host = host if host.endswith('.') else host + '.'
-    resolved_ip = socket.gethostbyname(dns_host)
-    
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-    
-    return pg8000.connect(
-        user=params['user'],
-        password=params['password'],
-        host=resolved_ip,
-        port=int(params['port']),
-        database=params['database'],
-        ssl_context=ssl_context
-    )
 
 def seed_database():
     cse_paths, cse_reqs, cse_courses, cse_maps = parse_curriculum_text(

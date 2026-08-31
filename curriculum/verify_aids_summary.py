@@ -1,31 +1,7 @@
-import pg8000
-import socket
-import ssl
-
-db_url = r"postgresql://postgres.xbhkyjgjunfzcxgnobss:UYKTSd$dc5Pe8/Q@aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres"
+from db_config import get_db_connection
 
 def main():
-    part1, part2 = db_url.split("@")
-    user_pass = part1.replace("postgresql://", "")
-    user, password = user_pass.split(":", 1)
-    host_port, database = part2.split("/")
-    host, port = host_port.split(":")
-
-    host_dns = host if host.endswith('.') else host + '.'
-    resolved_ip = socket.gethostbyname(host_dns)
-    
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
-
-    conn = pg8000.connect(
-        user=user,
-        password=password,
-        host=resolved_ip,
-        port=int(port),
-        database=database,
-        ssl_context=ssl_context
-    )
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     print("=== SUMMARY METRICS FOR Y23 AIDS ===")
