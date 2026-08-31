@@ -30,6 +30,15 @@ public class AddCourseService {
     private UserRepository userRepository;
 
     @Autowired
+    private StudentCourseRepository studentCourseRepository;
+
+    @Autowired
+    private StudentCourseAttemptRepository studentCourseAttemptRepository;
+
+    @Autowired
+    private CurriculumCourseRepository curriculumCourseRepository;
+
+    @Autowired
     private StudentDegreePathRepository studentDegreePathRepository;
 
     @Autowired
@@ -95,6 +104,10 @@ public class AddCourseService {
         completed.setVerifiedBy(verifiedBy);
 
         CompletedCourse saved = completedCourseRepository.save(completed);
+
+        // Dual-write into normalized student_courses and student_course_attempts table
+        syncStudentCourse(student, catalog, saved.getCourseName(), saved.getCredits() != null ? saved.getCredits().doubleValue() : 0.0,
+                saved.getGrade(), saved.getSemester(), saved.getRegisterDate(), saved.getAcademicYear());
 
         // Try evaluating eligibility if a degree path is assigned
         Optional<StudentDegreePath> sdpOpt = studentDegreePathRepository.findByStudentId(student.getId());
@@ -267,7 +280,12 @@ public class AddCourseService {
                 completed.setBranch(pc.branch);
                 completed.setVerifiedBy(verifiedBy);
 
-                completedCourseRepository.save(completed);
+                CompletedCourse saved = completedCourseRepository.save(completed);
+
+                // Dual-write into normalized student_courses and student_course_attempts table
+                syncStudentCourse(student, catalog, finalCourseName, finalCredits.doubleValue(),
+                        saved.getGrade(), saved.getSemester(), saved.getRegisterDate(), saved.getAcademicYear());
+
                 affectedStudentIds.add(student.getId());
                 added++;
             } catch (Exception e) {
@@ -300,13 +318,59 @@ public class AddCourseService {
         CompletedCourse completed = completedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Completed course entry not found"));
         Long studentId = completed.getStudent().getId();
+        String courseCode = completed.getCourseCode();
+
         completedCourseRepository.delete(completed);
+
+        // Also delete from normalized student_courses if present
+        List<StudentCourse> scList = studentCourseRepository.findByStudentId(studentId);
+        for (StudentCourse sc : scList) {
+            if (courseCode.equalsIgnoreCase(sc.getCourseCode())) {
+                studentCourseRepository.delete(sc);
+            }
+        }
 
         // Re-evaluate eligibility
         try {
             degreeEligibilityEngine.evaluateEligibility(studentId);
         } catch (Exception e) {
             // Ignore if path not assigned
+        }
+    }
+
+    private void syncStudentCourse(User student, CourseCatalog catalog, String courseName, Double credits,
+                                   String grade, String semester, LocalDate completedDate, String academicYear) {
+        if (student == null || catalog == null) return;
+
+        boolean exists = studentCourseRepository.findByStudentId(student.getId()).stream()
+                .anyMatch(sc -> sc.getCourseCode().equalsIgnoreCase(catalog.getCourseCode()));
+
+        if (!exists) {
+            StudentCourse sc = new StudentCourse();
+            sc.setStudent(student);
+            sc.setUniversityId(student.getUsername());
+            sc.setCourse(catalog);
+            sc.setCourseCode(catalog.getCourseCode());
+            sc.setCourseName(courseName != null ? courseName : catalog.getCourseName());
+            sc.setCredits(credits != null ? credits : (catalog.getCredits() != null ? catalog.getCredits().doubleValue() : 0.0));
+            sc.setGrade(grade);
+            sc.setStatus("COMPLETED");
+            sc.setSemester(semester != null ? semester : "ODD");
+            sc.setAcademicYear(academicYear);
+            sc.setCompletedDate(completedDate != null ? completedDate : LocalDate.now());
+            studentCourseRepository.save(sc);
+
+            StudentCourseAttempt sca = new StudentCourseAttempt();
+            sca.setStudent(student);
+            sca.setUniversityId(student.getUsername());
+            sca.setCourseCode(catalog.getCourseCode());
+            sca.setAttemptNumber(1);
+            sca.setGrade(grade);
+            sca.setStatus("COMPLETED");
+            sca.setSemester(semester != null ? semester : "ODD");
+            sca.setAcademicYear(academicYear);
+            sca.setIsQualifying(true);
+            studentCourseAttemptRepository.save(sca);
         }
     }
 

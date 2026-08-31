@@ -36,6 +36,13 @@ public class CurriculumImport {
     @Column(nullable = false)
     private String status = "UPLOADED";
 
+    @Column(name = "source_hash")
+    private String sourceHash;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "curriculum_version_id")
+    private CurriculumVersion curriculumVersion;
+
     @Column(name = "extracted_text", columnDefinition = "text")
     private String extractedText;
 

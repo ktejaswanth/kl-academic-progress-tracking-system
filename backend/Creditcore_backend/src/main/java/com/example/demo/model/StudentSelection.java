@@ -38,11 +38,12 @@ public class StudentSelection {
     @JoinColumn(name = "specialization_id")
     private Specialization specialization;
 
-    // Arrays mapped as simple Long[]; may require Hibernate array support
-    @Column(name = "minor_program_ids", columnDefinition = "bigint[]")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.ARRAY)
+    @Column(name = "minor_program_ids")
     private Long[] minorProgramIds;
 
-    @Column(name = "double_major_ids", columnDefinition = "bigint[]")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.ARRAY)
+    @Column(name = "double_major_ids")
     private Long[] doubleMajorIds;
 
     @Column(name = "extension_type")

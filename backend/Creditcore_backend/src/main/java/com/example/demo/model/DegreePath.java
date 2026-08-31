@@ -9,7 +9,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "degree_paths")
+@Table(name = "degree_paths",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"curriculum_version_id", "path_code"}))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,7 +19,7 @@ public class DegreePath {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "path_code", unique = true, nullable = false)
+    @Column(name = "path_code", nullable = false)
     private String pathCode;
 
     @ManyToOne(fetch = FetchType.EAGER)

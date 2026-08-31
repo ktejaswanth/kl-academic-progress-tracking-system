@@ -10,67 +10,99 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Bucket Mapping Engine
+ * Bucket Mapping Engine (Curriculum-Aware & Version-Isolated)
  *
- * Maps a student's completed courses to DYOD buckets and calculates earned credits per bucket.
+ * Maps a student's completed courses to DYOD buckets strictly within the student's assigned curriculum version.
  *
  * Algorithm:
- *   For each CompletedCourse:
- *     1. Find course in course_catalog by course_code
- *     2. Find course_bucket_mapping entries (path-specific or universal)
- *     3. Group credits by bucket_id
- *     4. Return Map<BucketId, BucketCreditsInfo>
+ *   1. Resolve student's assigned DegreePath and CurriculumVersion.
+ *   2. Fetch student's completed courses from StudentCourseRepository (or CompletedCourseRepository fallback).
+ *   3. For each completed course, lookup mappings in curriculum_course_mapping for (curriculumVersionId, courseCode, degreePathId).
+ *   4. If no curriculum-version mapping exists, the course does NOT satisfy any bucket for this degree path.
+ *   5. Group and aggregate earned credits per bucket.
  */
 @Service
 @Transactional(readOnly = true)
 public class BucketMappingEngine {
 
     @Autowired
+    private StudentCourseRepository studentCourseRepository;
+    @Autowired
     private CompletedCourseRepository completedCourseRepository;
     @Autowired
-    private CourseBucketMappingRepository courseBucketMappingRepository;
+    private CurriculumCourseMappingRepository curriculumCourseMappingRepository;
+    @Autowired
+    private DegreePathRepository degreePathRepository;
     @Autowired
     private CourseCatalogRepository courseCatalogRepository;
     @Autowired
     private BucketMasterRepository bucketMasterRepository;
 
     /**
-     * Map all completed courses for a student to their respective buckets.
-     * Returns a map of bucketId -> {earnedCredits, courseCount, courseList}.
+     * Map all completed courses for a student to their respective buckets under their assigned degree path.
+     * Returns a map of bucketId -> BucketCreditsInfo.
      */
     public Map<Long, BucketCreditsInfo> mapStudentCoursesToBuckets(Long studentId, Long degreePathId) {
-        List<CompletedCourse> completedCourses = completedCourseRepository.findByStudentId(studentId);
+        DegreePath degreePath = degreePathRepository.findById(degreePathId).orElse(null);
+        Long curriculumVersionId = (degreePath != null && degreePath.getCurriculumVersion() != null)
+                ? degreePath.getCurriculumVersion().getId()
+                : null;
+
+        // Fetch completed courses from StudentCourse table
+        List<StudentCourse> studentCourses = studentCourseRepository.findByStudentIdAndStatus(studentId, "COMPLETED");
+        
+        // Also fetch legacy CompletedCourse if studentCourses is empty
+        Map<String, CourseCompletionInfo> courseCompletions = new LinkedHashMap<>();
+        for (StudentCourse sc : studentCourses) {
+            courseCompletions.put(sc.getCourseCode(), new CourseCompletionInfo(
+                    sc.getCourseCode(),
+                    sc.getCourseName(),
+                    sc.getCredits() != null ? sc.getCredits().intValue() : 0,
+                    sc.getGrade()
+            ));
+        }
+
+        if (courseCompletions.isEmpty()) {
+            List<CompletedCourse> rawCompleted = completedCourseRepository.findByStudentId(studentId);
+            for (CompletedCourse cc : rawCompleted) {
+                if (cc.getStatus() == null || !cc.getStatus().equalsIgnoreCase("On-Progress")) {
+                    courseCompletions.put(cc.getCourseCode(), new CourseCompletionInfo(
+                            cc.getCourseCode(),
+                            cc.getCourseName(),
+                            cc.getCredits(),
+                            cc.getGrade()
+                    ));
+                }
+            }
+        }
+
         Map<Long, BucketCreditsInfo> bucketCredits = new HashMap<>();
 
-        for (CompletedCourse completed : completedCourses) {
-            // Find the course in the catalog
-            Optional<CourseCatalog> catalogOpt = courseCatalogRepository.findByCourseCode(completed.getCourseCode());
-
-            if (catalogOpt.isEmpty()) {
-                // Course not in catalog — skip (or log warning)
-                continue;
+        for (CourseCompletionInfo completed : courseCompletions.values()) {
+            List<CurriculumCourseMapping> mappings;
+            if (curriculumVersionId != null) {
+                mappings = curriculumCourseMappingRepository
+                        .findByVersionAndCourseCodeAndPathOrUniversal(curriculumVersionId, completed.getCourseCode(), degreePathId);
+            } else {
+                mappings = curriculumCourseMappingRepository
+                        .findByCourseCodeAndPathOrUniversal(completed.getCourseCode(), degreePathId);
             }
-
-            CourseCatalog catalog = catalogOpt.get();
-
-            // Find bucket mapping for this course (path-specific or universal)
-            List<CourseBucketMapping> mappings = courseBucketMappingRepository
-                    .findByCourseCodeAndPathOrUniversal(completed.getCourseCode(), degreePathId);
 
             if (mappings.isEmpty()) {
-                // No bucket mapping — this course doesn't contribute to any bucket
+                // Cross-curriculum isolation: course not mapped to this curriculum version -> skipped
                 continue;
             }
 
-            // A course can map to multiple buckets (rare but possible)
-            // We take the first path-specific mapping, or fall back to universal
-            CourseBucketMapping bestMapping = mappings.stream()
+            // Prefer degree path-specific mapping over universal version mapping
+            CurriculumCourseMapping bestMapping = mappings.stream()
                     .filter(m -> m.getDegreePath() != null && m.getDegreePath().getId().equals(degreePathId))
                     .findFirst()
                     .orElse(mappings.get(0));
 
             Long bucketId = bestMapping.getBucket().getId();
-            int credits = catalog.getCredits();
+            int credits = completed.getCredits() > 0 ? completed.getCredits() : 
+                    (bestMapping.getCurriculumCourse() != null && bestMapping.getCurriculumCourse().getCredits() != null 
+                            ? bestMapping.getCurriculumCourse().getCredits().intValue() : 0);
 
             bucketCredits.computeIfAbsent(bucketId, k -> new BucketCreditsInfo(
                     bucketId,
@@ -90,15 +122,27 @@ public class BucketMappingEngine {
      * Get all courses mapped to a specific bucket for a degree path.
      */
     public List<Map<String, Object>> getCoursesForBucket(Long bucketId, Long degreePathId) {
-        List<CourseBucketMapping> mappings = courseBucketMappingRepository
-                .findByBucketIdAndPathOrUniversal(bucketId, degreePathId);
+        DegreePath degreePath = degreePathRepository.findById(degreePathId).orElse(null);
+        Long curriculumVersionId = (degreePath != null && degreePath.getCurriculumVersion() != null)
+                ? degreePath.getCurriculumVersion().getId()
+                : null;
+
+        List<CurriculumCourseMapping> mappings;
+        if (curriculumVersionId != null) {
+            mappings = curriculumCourseMappingRepository
+                    .findByVersionAndBucketAndPath(curriculumVersionId, bucketId, degreePathId);
+        } else {
+            mappings = Collections.emptyList();
+        }
 
         return mappings.stream().map(m -> {
             Map<String, Object> courseInfo = new LinkedHashMap<>();
-            courseInfo.put("courseId", m.getCourse().getId());
-            courseInfo.put("courseCode", m.getCourse().getCourseCode());
-            courseInfo.put("courseName", m.getCourse().getCourseName());
-            courseInfo.put("credits", m.getCourse().getCredits());
+            courseInfo.put("courseId", m.getCurriculumCourse().getCourse().getId());
+            courseInfo.put("courseCode", m.getCurriculumCourse().getCourse().getCourseCode());
+            courseInfo.put("courseName", m.getCurriculumCourse().getCourseName() != null 
+                    ? m.getCurriculumCourse().getCourseName() 
+                    : m.getCurriculumCourse().getCourse().getCourseName());
+            courseInfo.put("credits", m.getCurriculumCourse().getCredits());
             courseInfo.put("isMandatory", m.getIsMandatory());
             courseInfo.put("semesterOffered", m.getSemesterOffered());
             return courseInfo;
@@ -109,15 +153,25 @@ public class BucketMappingEngine {
      * Resolve which bucket a specific course code maps to for a given degree path.
      */
     public Optional<BucketMaster> resolveBucket(String courseCode, Long degreePathId) {
-        List<CourseBucketMapping> mappings = courseBucketMappingRepository
-                .findByCourseCodeAndPathOrUniversal(courseCode, degreePathId);
+        DegreePath degreePath = degreePathRepository.findById(degreePathId).orElse(null);
+        Long curriculumVersionId = (degreePath != null && degreePath.getCurriculumVersion() != null)
+                ? degreePath.getCurriculumVersion().getId()
+                : null;
+
+        List<CurriculumCourseMapping> mappings;
+        if (curriculumVersionId != null) {
+            mappings = curriculumCourseMappingRepository
+                    .findByVersionAndCourseCodeAndPathOrUniversal(curriculumVersionId, courseCode, degreePathId);
+        } else {
+            mappings = curriculumCourseMappingRepository
+                    .findByCourseCodeAndPathOrUniversal(courseCode, degreePathId);
+        }
 
         if (mappings.isEmpty()) {
             return Optional.empty();
         }
 
-        // Prefer path-specific mapping
-        CourseBucketMapping best = mappings.stream()
+        CurriculumCourseMapping best = mappings.stream()
                 .filter(m -> m.getDegreePath() != null && m.getDegreePath().getId().equals(degreePathId))
                 .findFirst()
                 .orElse(mappings.get(0));
@@ -125,7 +179,26 @@ public class BucketMappingEngine {
         return Optional.of(best.getBucket());
     }
 
-    // ==================== Inner class for bucket credits ====================
+    // ==================== Inner classes ====================
+
+    private static class CourseCompletionInfo {
+        private final String courseCode;
+        private final String courseName;
+        private final int credits;
+        private final String grade;
+
+        public CourseCompletionInfo(String courseCode, String courseName, int credits, String grade) {
+            this.courseCode = courseCode;
+            this.courseName = courseName;
+            this.credits = credits;
+            this.grade = grade;
+        }
+
+        public String getCourseCode() { return courseCode; }
+        public String getCourseName() { return courseName; }
+        public int getCredits() { return credits; }
+        public String getGrade() { return grade; }
+    }
 
     public static class BucketCreditsInfo {
         private Long bucketId;

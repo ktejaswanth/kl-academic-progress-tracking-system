@@ -24,19 +24,24 @@ public class Y23AidsCurriculumSeeder {
     @Autowired private AddonTypeMasterRepository addonTypeRepo;
     @Autowired private CurriculumVersionRepository curriculumVersionRepo;
     @Autowired private BucketMasterRepository bucketRepo;
-    @Autowired private CurriculumBucketRepository curriculumBucketRepo;
     @Autowired private CourseCatalogRepository courseCatalogRepo;
     @Autowired private CurriculumCourseRepository curriculumCourseRepo;
     @Autowired private CurriculumCourseMappingRepository curriculumMappingRepo;
     @Autowired private DegreePathRepository degreePathRepo;
     @Autowired private PathBucketRequirementRepository pathReqRepo;
-    @Autowired private SpecializationRepository specializationRepo;
-    @Autowired private SpecializationCourseRepository specializationCourseRepo;
 
     public Map<String, Object> seedY23AidsCurriculum() {
-        log.info("Starting Y23 AIDS curriculum seeding/verification...");
+        log.info("Starting Y23 curriculum seeding (CSE + AIDS)...");
 
-        // 1. Department
+        // 1. Departments
+        DepartmentMaster cseDept = departmentRepo.findByDeptCode("CSE")
+                .orElseGet(() -> {
+                    DepartmentMaster d = new DepartmentMaster();
+                    d.setDeptCode("CSE");
+                    d.setDeptName("Computer Science and Engineering");
+                    return departmentRepo.save(d);
+                });
+
         DepartmentMaster aidsDept = departmentRepo.findByDeptCode("AIDS")
                 .orElseGet(() -> {
                     DepartmentMaster d = new DepartmentMaster();
@@ -55,7 +60,23 @@ public class Y23AidsCurriculumSeeder {
                     return regulationRepo.save(r);
                 });
 
-        // 3. Curriculum Version
+        // 3. Curriculum Versions
+        CurriculumVersion y23CseVer = curriculumVersionRepo.findByCurriculumCode("Y23-CSE")
+                .orElseGet(() -> {
+                    CurriculumVersion cv = new CurriculumVersion();
+                    cv.setCurriculumCode("Y23-CSE");
+                    cv.setVersionName("Y23 B.Tech. CSE Curriculum");
+                    cv.setProgramName("B.Tech. - Computer Science and Engineering");
+                    cv.setDepartment(cseDept);
+                    cv.setRegulationMaster(y23Reg);
+                    cv.setRegulation("Y23");
+                    cv.setStatus("ACTIVE");
+                    cv.setAcademicYear("2023-2024");
+                    cv.setEffectiveFrom(LocalDate.of(2023, 7, 1));
+                    cv.setPublishedAt(LocalDateTime.now());
+                    return curriculumVersionRepo.save(cv);
+                });
+
         CurriculumVersion y23AidsVer = curriculumVersionRepo.findByCurriculumCode("Y23-AIDS")
                 .orElseGet(() -> {
                     CurriculumVersion cv = new CurriculumVersion();
@@ -65,7 +86,7 @@ public class Y23AidsCurriculumSeeder {
                     cv.setDepartment(aidsDept);
                     cv.setRegulationMaster(y23Reg);
                     cv.setRegulation("Y23");
-                    cv.setStatus("PUBLISHED");
+                    cv.setStatus("ACTIVE");
                     cv.setAcademicYear("2023-2024");
                     cv.setEffectiveFrom(LocalDate.of(2023, 7, 1));
                     cv.setPublishedAt(LocalDateTime.now());
@@ -87,45 +108,267 @@ public class Y23AidsCurriculumSeeder {
         addonTypes.put("MINOR", upsertAddonType("MINOR", "Minor"));
         addonTypes.put("DOUBLE_MAJOR", upsertAddonType("DOUBLE_MAJOR", "Double Major"));
 
-        // 6. Degree Paths for Y23 AIDS
-        Map<String, DegreePath> paths = new HashMap<>();
-        paths.put("AIDS-REGULAR", upsertDegreePath(y23AidsVer, aidsDept, degreeTypes.get("REGULAR"), addonTypes.get("NONE"), y23Reg, "AIDS-REGULAR", null, 163));
-        paths.put("AIDS-HONORS", upsertDegreePath(y23AidsVer, aidsDept, degreeTypes.get("HONORS"), addonTypes.get("NONE"), y23Reg, "AIDS-HONORS", null, 183));
-        paths.put("AIDS-HTE", upsertDegreePath(y23AidsVer, aidsDept, degreeTypes.get("HTE"), addonTypes.get("NONE"), y23Reg, "AIDS-HTE", null, 183));
-        paths.put("AIDS-HTI", upsertDegreePath(y23AidsVer, aidsDept, degreeTypes.get("HTI"), addonTypes.get("NONE"), y23Reg, "AIDS-HTI", null, 183));
-        paths.put("AIDS-HTR", upsertDegreePath(y23AidsVer, aidsDept, degreeTypes.get("HTR"), addonTypes.get("NONE"), y23Reg, "AIDS-HTR", null, 183));
-        paths.put("AIDS-REGULAR-SPECIALIZATION", upsertDegreePath(y23AidsVer, aidsDept, degreeTypes.get("REGULAR"), addonTypes.get("SPECIALIZATION"), y23Reg, "AIDS-REGULAR-SPECIALIZATION", "Data Science", 163));
-        paths.put("AIDS-REGULAR-MINOR", upsertDegreePath(y23AidsVer, aidsDept, degreeTypes.get("REGULAR"), addonTypes.get("MINOR"), y23Reg, "AIDS-REGULAR-MINOR", "CSE Minor", 181));
-        paths.put("AIDS-REGULAR-DOUBLE_MAJOR", upsertDegreePath(y23AidsVer, aidsDept, degreeTypes.get("REGULAR"), addonTypes.get("DOUBLE_MAJOR"), y23Reg, "AIDS-REGULAR-DOUBLE_MAJOR", "CSE Double Major", 203));
+        // 6. Seed all 20 CSE Degree Paths
+        seedCseDegreePaths(y23CseVer, cseDept, degreeTypes, addonTypes, y23Reg);
 
-        // 7. Buckets & Path Requirements
-        Map<String, BucketMaster> buckets = seedBucketsAndRequirements(paths);
+        // 7. Seed all 20 AIDS Degree Paths
+        seedAidsDegreePaths(y23AidsVer, aidsDept, degreeTypes, addonTypes, y23Reg);
 
-        // 8. Core AIDS Courses
-        int coursesCreated = seedAidsCourses(y23AidsVer, buckets);
+        // 8. Seed Essential Catalog and Curriculum Courses
+        seedEssentialCourses(y23CseVer, y23AidsVer);
 
-        // 9. Specializations
-        int specCoursesCreated = seedAidsSpecializations(y23AidsVer, aidsDept);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("success", true);
+        result.put("cseVersion", "Y23-CSE");
+        result.put("aidsVersion", "Y23-AIDS");
+        result.put("totalPaths", 40);
+        return result;
+    }
 
-        Map<String, Object> report = new LinkedHashMap<>();
-        report.put("curriculumCode", y23AidsVer.getCurriculumCode());
-        report.put("department", aidsDept.getDeptCode());
-        report.put("regulation", y23Reg.getRegCode());
-        report.put("status", "PUBLISHED");
-        report.put("pathsCreated", paths.size());
-        report.put("bucketsMapped", buckets.size());
-        report.put("coursesImported", coursesCreated);
-        report.put("specializationCoursesImported", specCoursesCreated);
-        report.put("success", true);
+    private void seedCseDegreePaths(CurriculumVersion ver, DepartmentMaster dept,
+                                    Map<String, DegreeTypeMaster> dt, Map<String, AddonTypeMaster> at,
+                                    RegulationMaster reg) {
+        Map<String, Integer> cseTotals = Map.ofEntries(
+                Map.entry("CSE-HTE-MINOR", 203),
+                Map.entry("CSE-HTE-DOUBLE_MAJOR", 208),
+                Map.entry("CSE-HTE-SPECIALIZATION", 193),
+                Map.entry("CSE-HTE", 183),
+                Map.entry("CSE-HTI-MINOR", 201),
+                Map.entry("CSE-HTI-DOUBLE_MAJOR", 208),
+                Map.entry("CSE-HTI-SPECIALIZATION", 193),
+                Map.entry("CSE-HTI", 183),
+                Map.entry("CSE-HTR-MINOR", 201),
+                Map.entry("CSE-HTR-DOUBLE_MAJOR", 208),
+                Map.entry("CSE-HTR-SPECIALIZATION", 193),
+                Map.entry("CSE-HTR", 183),
+                Map.entry("CSE-HONORS-MINOR", 201),
+                Map.entry("CSE-HONORS-DOUBLE_MAJOR", 208),
+                Map.entry("CSE-HONORS-SPECIALIZATION", 193),
+                Map.entry("CSE-HONORS", 183),
+                Map.entry("CSE-REGULAR-MINOR", 183),
+                Map.entry("CSE-REGULAR-DOUBLE_MAJOR", 188),
+                Map.entry("CSE-REGULAR-SPECIALIZATION", 168),
+                Map.entry("CSE-REGULAR", 163)
+        );
 
-        log.info("Y23 AIDS curriculum seeding complete: {}", report);
-        return report;
+        for (Map.Entry<String, Integer> e : cseTotals.entrySet()) {
+            String pathCode = e.getKey();
+            int credits = e.getValue();
+            String[] parts = pathCode.split("-");
+            String typeCode = parts[1];
+            String addonCode = parts.length > 2 ? parts[2] : "NONE";
+
+            upsertDegreePath(ver, dept, dt.get(typeCode), at.get(addonCode), reg, pathCode, credits);
+        }
+    }
+
+    private void seedAidsDegreePaths(CurriculumVersion ver, DepartmentMaster dept,
+                                     Map<String, DegreeTypeMaster> dt, Map<String, AddonTypeMaster> at,
+                                     RegulationMaster reg) {
+        Map<String, Integer> aidsTotals = Map.ofEntries(
+                Map.entry("AIDS-HTE-MINOR", 206),
+                Map.entry("AIDS-HTE-DOUBLE_MAJOR", 211),
+                Map.entry("AIDS-HTE-SPECIALIZATION", 196),
+                Map.entry("AIDS-HTE", 186),
+                Map.entry("AIDS-HTI-MINOR", 206),
+                Map.entry("AIDS-HTI-DOUBLE_MAJOR", 211),
+                Map.entry("AIDS-HTI-SPECIALIZATION", 196),
+                Map.entry("AIDS-HTI", 186),
+                Map.entry("AIDS-HTR-MINOR", 206),
+                Map.entry("AIDS-HTR-DOUBLE_MAJOR", 211),
+                Map.entry("AIDS-HTR-SPECIALIZATION", 196),
+                Map.entry("AIDS-HTR", 186),
+                Map.entry("AIDS-HONORS-MINOR", 206),
+                Map.entry("AIDS-HONORS-DOUBLE_MAJOR", 211),
+                Map.entry("AIDS-HONORS-SPECIALIZATION", 196),
+                Map.entry("AIDS-HONORS", 186),
+                Map.entry("AIDS-REGULAR-MINOR", 186),
+                Map.entry("AIDS-REGULAR-DOUBLE_MAJOR", 191),
+                Map.entry("AIDS-REGULAR-SPECIALIZATION", 171),
+                Map.entry("AIDS-REGULAR", 166)
+        );
+
+        for (Map.Entry<String, Integer> e : aidsTotals.entrySet()) {
+            String pathCode = e.getKey();
+            int credits = e.getValue();
+            String[] parts = pathCode.split("-");
+            String typeCode = parts[1];
+            String addonCode = parts.length > 2 ? parts[2] : "NONE";
+
+            upsertDegreePath(ver, dept, dt.get(typeCode), at.get(addonCode), reg, pathCode, credits);
+        }
+    }
+
+    private void seedEssentialCourses(CurriculumVersion cseVer, CurriculumVersion aidsVer) {
+        BucketMaster pcc = bucketRepo.findByBucketCode("PCC-CORE").orElseGet(() -> {
+            BucketMaster b = new BucketMaster();
+            b.setBucketCode("PCC-CORE");
+            b.setBucketName("Professional Core Courses");
+            b.setBucketCategory("Professional Core");
+            return bucketRepo.save(b);
+        });
+
+        // CSE Course
+        CourseCatalog cseCourse = courseCatalogRepo.findByCourseCode("23CS2101").orElseGet(() -> {
+            CourseCatalog c = new CourseCatalog();
+            c.setCourseCode("23CS2101");
+            c.setCourseName("Design and Analysis of Algorithms");
+            c.setCredits(4);
+            c.setCategory("PCC");
+            return courseCatalogRepo.save(c);
+        });
+
+        CurriculumCourse cseCc = curriculumCourseRepo.findByCurriculumVersionIdAndCourseId(cseVer.getId(), cseCourse.getId())
+                .orElseGet(() -> {
+                    CurriculumCourse cc = new CurriculumCourse();
+                    cc.setCurriculumVersion(cseVer);
+                    cc.setCourse(cseCourse);
+                    cc.setCourseName(cseCourse.getCourseName());
+                    cc.setCredits(4.0);
+                    cc.setCategory("PCC");
+                    cc.setSubcategory("PCC-CORE");
+                    return curriculumCourseRepo.save(cc);
+                });
+
+        // AIDS Course
+        CourseCatalog aidsCourse = courseCatalogRepo.findByCourseCode("23AD2101").orElseGet(() -> {
+            CourseCatalog c = new CourseCatalog();
+            c.setCourseCode("23AD2101");
+            c.setCourseName("Introduction to Data Science & AI");
+            c.setCredits(4);
+            c.setCategory("PCC");
+            return courseCatalogRepo.save(c);
+        });
+
+        CurriculumCourse aidsCc = curriculumCourseRepo.findByCurriculumVersionIdAndCourseId(aidsVer.getId(), aidsCourse.getId())
+                .orElseGet(() -> {
+                    CurriculumCourse cc = new CurriculumCourse();
+                    cc.setCurriculumVersion(aidsVer);
+                    cc.setCourse(aidsCourse);
+                    cc.setCourseName(aidsCourse.getCourseName());
+                    cc.setCredits(4.0);
+                    cc.setCategory("PCC");
+                    cc.setSubcategory("PCC-CORE");
+                    return curriculumCourseRepo.save(cc);
+                });
+
+        // Create authoritative mappings
+        if (curriculumMappingRepo.findByCurriculumVersionIdAndBucketId(cseVer.getId(), pcc.getId()).isEmpty()) {
+            CurriculumCourseMapping ccm = new CurriculumCourseMapping();
+            ccm.setCurriculumVersion(cseVer);
+            ccm.setCurriculumCourse(cseCc);
+            ccm.setBucket(pcc);
+            ccm.setMappingSource("OFFICIAL_PDF");
+            ccm.setMappingConfidence(1.0);
+            curriculumMappingRepo.save(ccm);
+        }
+
+        if (curriculumMappingRepo.findByCurriculumVersionIdAndBucketId(aidsVer.getId(), pcc.getId()).isEmpty()) {
+            CurriculumCourseMapping ccm = new CurriculumCourseMapping();
+            ccm.setCurriculumVersion(aidsVer);
+            ccm.setCurriculumCourse(aidsCc);
+            ccm.setBucket(pcc);
+            ccm.setMappingSource("OFFICIAL_PDF");
+            ccm.setMappingConfidence(1.0);
+            curriculumMappingRepo.save(ccm);
+        }
+
+        // Seed Full Per-Bucket Path Requirements from JSON
+        seedFullPerBucketRequirements();
+    }
+
+    private void seedFullPerBucketRequirements() {
+        try (var inputStream = getClass().getClassLoader().getResourceAsStream("curriculum/y23_path_bucket_requirements.json")) {
+            if (inputStream == null) {
+                log.warn("y23_path_bucket_requirements.json not found on classpath, skipping JSON seeding");
+                seedFallbackPathRequirements();
+                return;
+            }
+
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            List<Map<String, Object>> reqsList = mapper.readValue(inputStream, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {});
+            log.info("Loading {} path bucket requirements from JSON...", reqsList.size());
+
+            Map<String, DegreePath> pathMap = new HashMap<>();
+            degreePathRepo.findAll().forEach(p -> pathMap.put(p.getPathCode(), p));
+
+            Map<String, BucketMaster> bucketMap = new HashMap<>();
+            bucketRepo.findAll().forEach(b -> bucketMap.put(b.getBucketCode(), b));
+
+            int seeded = 0;
+            for (Map<String, Object> r : reqsList) {
+                String pathCode = (String) r.get("path_code");
+                String bucketCode = (String) r.get("bucket_code");
+                DegreePath path = pathMap.get(pathCode);
+
+                if (path == null) {
+                    continue;
+                }
+
+                BucketMaster bucket = bucketMap.computeIfAbsent(bucketCode, code -> {
+                    return bucketRepo.findByBucketCode(code).orElseGet(() -> {
+                        BucketMaster b = new BucketMaster();
+                        b.setBucketCode(code);
+                        b.setBucketName(code);
+                        b.setBucketCategory((String) r.getOrDefault("category", "General"));
+                        return bucketRepo.save(b);
+                    });
+                });
+
+                int minCr = ((Number) r.getOrDefault("min_credits", 0)).intValue();
+                int maxCr = ((Number) r.getOrDefault("max_credits", minCr)).intValue();
+                int minCo = ((Number) r.getOrDefault("min_courses", 0)).intValue();
+                int maxCo = ((Number) r.getOrDefault("max_courses", minCo)).intValue();
+                String grouping = (String) r.get("grouping");
+                int reqCr = (minCr == 0 && maxCr > 0) ? maxCr : minCr;
+
+                PathBucketRequirement pbr = pathReqRepo.findByDegreePathIdAndBucketId(path.getId(), bucket.getId())
+                        .orElse(new PathBucketRequirement());
+
+                pbr.setDegreePath(path);
+                pbr.setBucket(bucket);
+                pbr.setRequiredCredits(reqCr);
+                pbr.setMinCredits(minCr);
+                pbr.setMaxCredits(maxCr);
+                pbr.setMinCourses(minCo);
+                pbr.setMaxCourses(maxCo);
+                pbr.setGroupingCode(grouping);
+                pbr.setIsMandatory(true);
+
+                pathReqRepo.save(pbr);
+                seeded++;
+            }
+            log.info("Successfully seeded/updated {} PathBucketRequirements.", seeded);
+        } catch (Exception e) {
+            log.error("Error seeding path bucket requirements from JSON: {}", e.getMessage(), e);
+            seedFallbackPathRequirements();
+        }
+    }
+
+    private void seedFallbackPathRequirements() {
+        BucketMaster pcc = bucketRepo.findByBucketCode("PCC-CORE").orElse(null);
+        if (pcc == null) return;
+        List<DegreePath> allPaths = degreePathRepo.findAll();
+        for (DegreePath path : allPaths) {
+            if (pathReqRepo.findByDegreePathId(path.getId()).isEmpty()) {
+                PathBucketRequirement pbr = new PathBucketRequirement();
+                pbr.setDegreePath(path);
+                pbr.setBucket(pcc);
+                pbr.setRequiredCredits(path.getTotalCredits());
+                pbr.setMinCredits(path.getTotalCredits());
+                pbr.setIsMandatory(true);
+                pathReqRepo.save(pbr);
+            }
+        }
     }
 
     private DegreeTypeMaster upsertDegreeType(String code, String name, String desc) {
-        return degreeTypeRepo.findAll().stream()
-                .filter(d -> d.getTypeCode().equalsIgnoreCase(code))
-                .findFirst()
+        return degreeTypeRepo.findByTypeCode(code)
+                .map(dt -> {
+                    dt.setTypeName(name);
+                    dt.setDescription(desc);
+                    return degreeTypeRepo.save(dt);
+                })
                 .orElseGet(() -> {
                     DegreeTypeMaster dt = new DegreeTypeMaster();
                     dt.setTypeCode(code);
@@ -136,9 +379,11 @@ public class Y23AidsCurriculumSeeder {
     }
 
     private AddonTypeMaster upsertAddonType(String code, String name) {
-        return addonTypeRepo.findAll().stream()
-                .filter(a -> a.getAddonCode().equalsIgnoreCase(code))
-                .findFirst()
+        return addonTypeRepo.findByAddonCode(code)
+                .map(a -> {
+                    a.setAddonName(name);
+                    return addonTypeRepo.save(a);
+                })
                 .orElseGet(() -> {
                     AddonTypeMaster a = new AddonTypeMaster();
                     a.setAddonCode(code);
@@ -147,10 +392,22 @@ public class Y23AidsCurriculumSeeder {
                 });
     }
 
-    private DegreePath upsertDegreePath(CurriculumVersion ver, DepartmentMaster dept, DegreeTypeMaster dt, AddonTypeMaster at, RegulationMaster reg, String pathCode, String addonName, int totalCredits) {
+    private DegreePath upsertDegreePath(CurriculumVersion ver, DepartmentMaster dept,
+                                        DegreeTypeMaster dt, AddonTypeMaster at,
+                                        RegulationMaster reg, String pathCode, int totalCredits) {
         return degreePathRepo.findAll().stream()
-                .filter(p -> p.getPathCode().equalsIgnoreCase(pathCode))
+                .filter(p -> pathCode.equals(p.getPathCode()) && p.getCurriculumVersion() != null && ver.getId().equals(p.getCurriculumVersion().getId()))
                 .findFirst()
+                .map(p -> {
+                    p.setTotalCredits(totalCredits);
+                    p.setCurriculumVersion(ver);
+                    p.setDepartment(dept);
+                    p.setDegreeType(dt);
+                    p.setAddonType(at);
+                    p.setRegulation(reg);
+                    p.setIsActive(true);
+                    return degreePathRepo.save(p);
+                })
                 .orElseGet(() -> {
                     DegreePath p = new DegreePath();
                     p.setPathCode(pathCode);
@@ -159,179 +416,9 @@ public class Y23AidsCurriculumSeeder {
                     p.setDegreeType(dt);
                     p.setAddonType(at);
                     p.setRegulation(reg);
-                    p.setAddonName(addonName);
                     p.setTotalCredits(totalCredits);
                     p.setIsActive(true);
                     return degreePathRepo.save(p);
                 });
-    }
-
-    private Map<String, BucketMaster> seedBucketsAndRequirements(Map<String, DegreePath> paths) {
-        Map<String, BucketMaster> map = new HashMap<>();
-
-        Map<String, Integer> regularReqs = new LinkedHashMap<>();
-        regularReqs.put("HAS-CORE", 12);
-        regularReqs.put("BSC-CORE", 24);
-        regularReqs.put("ESC-CORE", 16);
-        regularReqs.put("PCC-CORE", 56);
-        regularReqs.put("SDC-CORE", 12);
-        regularReqs.put("PE-CORE", 15);
-        regularReqs.put("PRI-CORE", 12);
-        regularReqs.put("OE-CORE", 9);
-        regularReqs.put("VAC-CORE", 4);
-        regularReqs.put("AUC-CORE", 0);
-        regularReqs.put("SIL-CORE", 3);
-
-        for (Map.Entry<String, Integer> entry : regularReqs.entrySet()) {
-            BucketMaster b = bucketRepo.findByBucketCode(entry.getKey()).orElseGet(() -> {
-                BucketMaster newB = new BucketMaster();
-                newB.setBucketCode(entry.getKey());
-                newB.setBucketName(entry.getKey());
-                newB.setBucketCategory("Core");
-                return bucketRepo.save(newB);
-            });
-            map.put(entry.getKey(), b);
-
-            for (DegreePath p : paths.values()) {
-                upsertPathReq(p, b, entry.getValue());
-            }
-        }
-
-        // Add 20 extra credits for HTE, HTI, HTR, HONORS
-        BucketMaster honorsBucket = bucketRepo.findByBucketCode("HONORS-EXTRA").orElseGet(() -> {
-            BucketMaster newB = new BucketMaster();
-            newB.setBucketCode("HONORS-EXTRA");
-            newB.setBucketName("Honors / HTE / HTI / HTR Extra Courses");
-            newB.setBucketCategory("Honors");
-            return bucketRepo.save(newB);
-        });
-        map.put("HONORS-EXTRA", honorsBucket);
-
-        for (String key : List.of("AIDS-HONORS", "AIDS-HTE", "AIDS-HTI", "AIDS-HTR")) {
-            DegreePath p = paths.get(key);
-            if (p != null) {
-                upsertPathReq(p, honorsBucket, 20);
-            }
-        }
-
-        return map;
-    }
-
-    private void upsertPathReq(DegreePath p, BucketMaster b, int credits) {
-        boolean exists = pathReqRepo.findAll().stream()
-                .anyMatch(r -> r.getDegreePath().getId().equals(p.getId()) && r.getBucket().getId().equals(b.getId()));
-        if (!exists) {
-            PathBucketRequirement pbr = new PathBucketRequirement();
-            pbr.setDegreePath(p);
-            pbr.setBucket(b);
-            pbr.setRequiredCredits(credits);
-            pbr.setMinCredits(credits);
-            pbr.setIsMandatory(true);
-            pbr.setSelectionRule("CREDIT_MINIMUM");
-            pathReqRepo.save(pbr);
-        }
-    }
-
-    private int seedAidsCourses(CurriculumVersion ver, Map<String, BucketMaster> buckets) {
-        List<Object[]> courseData = List.of(
-            new Object[]{"23AD2101", "Introduction to Data Science & AI", 4.0, "PCC-CORE", true, "3-0-2-0"},
-            new Object[]{"23AD2102", "Data Structures & Algorithms in Python", 4.0, "PCC-CORE", true, "3-0-2-0"},
-            new Object[]{"23AD2103", "Database Management Systems", 4.0, "PCC-CORE", true, "3-0-2-0"},
-            new Object[]{"23AD2104", "Machine Learning Fundamentals", 4.0, "PCC-CORE", true, "3-0-2-0"},
-            new Object[]{"23AD2205", "Deep Learning & Neural Networks", 4.0, "PCC-CORE", true, "3-0-2-0"},
-            new Object[]{"23AD2206", "Big Data Analytics & Spark", 4.0, "PCC-CORE", true, "3-0-2-0"},
-            new Object[]{"23AD2207", "Natural Language Processing", 4.0, "PCC-CORE", true, "3-0-2-0"},
-            new Object[]{"23AD2208", "Computer Vision & Image Processing", 4.0, "PCC-CORE", true, "3-0-2-0"},
-            new Object[]{"23AD3109", "Reinforcement Learning & AI Agents", 3.0, "PE-CORE", false, "3-0-0-0"},
-            new Object[]{"23AD3110", "AI Ethics, Governance & Safety", 3.0, "PE-CORE", false, "3-0-0-0"},
-            new Object[]{"23AD3111", "Generative AI & LLM Applications", 3.0, "PE-CORE", false, "3-0-0-0"},
-            new Object[]{"23MT1101", "Linear Algebra & Probability for Data Science", 4.0, "BSC-CORE", true, "3-1-0-0"},
-            new Object[]{"23MT1102", "Discrete Mathematics & Optimization", 4.0, "BSC-CORE", true, "3-1-0-0"},
-            new Object[]{"23CS1101", "Programming for Problem Solving", 4.0, "ESC-CORE", true, "3-0-2-0"},
-            new Object[]{"23UC1101", "Technical Communication & Soft Skills", 3.0, "HAS-CORE", true, "2-1-0-0"}
-        );
-
-        int count = 0;
-        for (Object[] c : courseData) {
-            String code = (String) c[0];
-            String name = (String) c[1];
-            double credits = (Double) c[2];
-            String bucketCode = (String) c[3];
-            boolean isMandatory = (Boolean) c[4];
-            String ltps = (String) c[5];
-
-            CourseCatalog course = courseCatalogRepo.findByCourseCode(code).orElseGet(() -> {
-                CourseCatalog newC = new CourseCatalog();
-                newC.setCourseCode(code);
-                newC.setCourseName(name);
-                newC.setCredits((int) credits);
-                newC.setCategory("AIDS");
-                return courseCatalogRepo.save(newC);
-            });
-
-            boolean ccExists = curriculumCourseRepo.findByCurriculumVersionId(ver.getId()).stream()
-                    .anyMatch(cc -> cc.getCourse().getCourseCode().equalsIgnoreCase(code));
-
-            if (!ccExists) {
-                CurriculumCourse cc = new CurriculumCourse();
-                cc.setCurriculumVersion(ver);
-                cc.setCourse(course);
-                cc.setCourseName(name);
-                cc.setCredits(credits);
-                cc.setBucketName(bucketCode);
-                cc.setLtps(ltps);
-                cc.setIsMandatory(isMandatory);
-                curriculumCourseRepo.save(cc);
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private int seedAidsSpecializations(CurriculumVersion ver, DepartmentMaster dept) {
-        Specialization dsSpec = specializationRepo.findAll().stream()
-                .filter(s -> s.getCode().equalsIgnoreCase("DATA-SCIENCE"))
-                .findFirst()
-                .orElseGet(() -> {
-                    Specialization s = new Specialization();
-                    s.setCode("DATA-SCIENCE");
-                    s.setName("Data Science & Business Analytics");
-                    s.setDescription("Specialization track in Data Science");
-                    s.setCurriculumVersion(ver);
-                    s.setDepartment(dept);
-                    s.setIsActive(true);
-                    return specializationRepo.save(s);
-                });
-
-        List<Object[]> specCourses = List.of(
-            new Object[]{"23AD3109", "PE-1"},
-            new Object[]{"23AD3110", "PE-2"},
-            new Object[]{"23AD3111", "PE-3"}
-        );
-
-        int count = 0;
-        for (Object[] scData : specCourses) {
-            String code = (String) scData[0];
-            String role = (String) scData[1];
-
-            Optional<CourseCatalog> cOpt = courseCatalogRepo.findByCourseCode(code);
-            if (cOpt.isPresent()) {
-                CourseCatalog c = cOpt.get();
-                boolean exists = specializationCourseRepo.findBySpecializationId(dsSpec.getId()).stream()
-                        .anyMatch(sc -> sc.getCourse().getCourseCode().equalsIgnoreCase(code));
-                if (!exists) {
-                    SpecializationCourse sc = new SpecializationCourse();
-                    sc.setSpecialization(dsSpec);
-                    sc.setCurriculumVersion(ver);
-                    sc.setCourse(c);
-                    sc.setRole(role);
-                    sc.setSequenceNo(count + 1);
-                    sc.setRequired(true);
-                    specializationCourseRepo.save(sc);
-                    count++;
-                }
-            }
-        }
-        return count;
     }
 }

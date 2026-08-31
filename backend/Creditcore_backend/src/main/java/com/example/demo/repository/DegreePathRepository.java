@@ -23,6 +23,9 @@ public interface DegreePathRepository extends JpaRepository<DegreePath, Long> {
 
     List<DegreePath> findByIsActiveTrue();
 
+    List<DegreePath> findByCurriculumVersionId(Long curriculumVersionId);
+    Optional<DegreePath> findByCurriculumVersionIdAndPathCode(Long curriculumVersionId, String pathCode);
+
     @Query("SELECT dp FROM DegreePath dp WHERE dp.department.deptCode = :deptCode AND dp.degreeType.typeCode = :typeCode AND dp.addonType.addonCode = :addonCode AND (:addonName IS NULL OR dp.addonName = :addonName) AND dp.isActive = true")
     Optional<DegreePath> findByCodesAndAddonName(@Param("deptCode") String deptCode, @Param("typeCode") String typeCode, @Param("addonCode") String addonCode, @Param("addonName") String addonName);
 }

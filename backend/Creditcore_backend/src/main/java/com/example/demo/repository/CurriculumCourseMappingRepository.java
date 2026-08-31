@@ -12,7 +12,14 @@ import java.util.List;
 public interface CurriculumCourseMappingRepository extends JpaRepository<CurriculumCourseMapping, Long> {
     List<CurriculumCourseMapping> findByCurriculumVersionId(Long curriculumVersionId);
     List<CurriculumCourseMapping> findByCurriculumVersionIdAndBucketId(Long curriculumVersionId, Long bucketId);
+    List<CurriculumCourseMapping> findByDegreePathId(Long degreePathId);
     
-    @Query("SELECT ccm FROM CurriculumCourseMapping ccm WHERE ccm.curriculumVersion.id = :versionId AND ccm.bucket.id = :bucketId AND (ccm.degreePath IS NULL OR ccm.degreePath.id = :pathId)")
+    @Query("SELECT ccm FROM CurriculumCourseMapping ccm JOIN FETCH ccm.curriculumCourse cc JOIN FETCH cc.course JOIN FETCH ccm.bucket WHERE ccm.curriculumVersion.id = :versionId AND ccm.bucket.id = :bucketId AND (ccm.degreePath IS NULL OR ccm.degreePath.id = :pathId)")
     List<CurriculumCourseMapping> findByVersionAndBucketAndPath(@Param("versionId") Long versionId, @Param("bucketId") Long bucketId, @Param("pathId") Long pathId);
+
+    @Query("SELECT ccm FROM CurriculumCourseMapping ccm JOIN FETCH ccm.curriculumCourse cc JOIN FETCH cc.course JOIN FETCH ccm.bucket WHERE ccm.curriculumVersion.id = :versionId AND cc.course.courseCode = :courseCode AND (ccm.degreePath.id = :pathId OR ccm.degreePath IS NULL)")
+    List<CurriculumCourseMapping> findByVersionAndCourseCodeAndPathOrUniversal(@Param("versionId") Long versionId, @Param("courseCode") String courseCode, @Param("pathId") Long pathId);
+
+    @Query("SELECT ccm FROM CurriculumCourseMapping ccm JOIN FETCH ccm.curriculumCourse cc JOIN FETCH cc.course JOIN FETCH ccm.bucket WHERE cc.course.courseCode = :courseCode AND (ccm.degreePath.id = :pathId OR ccm.degreePath IS NULL)")
+    List<CurriculumCourseMapping> findByCourseCodeAndPathOrUniversal(@Param("courseCode") String courseCode, @Param("pathId") Long pathId);
 }

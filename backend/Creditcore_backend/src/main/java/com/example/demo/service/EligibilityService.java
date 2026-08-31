@@ -27,17 +27,82 @@ public class EligibilityService {
     private EligibilityResultRepository eligibilityResultRepository;
 
     @Autowired
+    private DegreeEligibilityEngine degreeEligibilityEngine;
+
+    @Autowired
+    private BucketSatisfactionEngine bucketSatisfactionEngine;
+
+    @Autowired
+    private StudentDegreePathRepository studentDegreePathRepository;
+
+    @Autowired
+    private DegreePathEngine degreePathEngine;
+
+    @Autowired
     private CourseCatalogRepository courseCatalogRepository;
 
     @Autowired
     private CurriculumCourseRepository curriculumCourseRepository;
 
     public Map<String, Object> calculateEligibility(Long studentId) {
-        StudentSelection selection = studentSelectionRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new RuntimeException("Student selection not found"));
+        // 1. Prefer modern DYOD DegreeEligibilityEngine if degree path exists or can be resolved
+        try {
+            Optional<StudentDegreePath> sdpOpt = studentDegreePathRepository.findByStudentId(studentId);
+            if (sdpOpt.isEmpty()) {
+                try {
+                    degreePathEngine.resolveAndAssignPath(studentId);
+                    sdpOpt = studentDegreePathRepository.findByStudentId(studentId);
+                } catch (Exception ignored) {}
+            }
 
+            if (sdpOpt.isPresent()) {
+                StudentDegreeStatus degreeStatus = degreeEligibilityEngine.evaluateEligibility(studentId);
+                List<Map<String, Object>> bucketDetails = bucketSatisfactionEngine.getDetailedBucketProgress(studentId);
+
+                Map<String, Object> result = new LinkedHashMap<>();
+                result.put("degreeEligible", degreeStatus.getIsDegreeEligible());
+                result.put("status", degreeStatus.getStatus());
+                result.put("completionPercentage", degreeStatus.getCompletionPercentage());
+                result.put("totalRequiredCredits", degreeStatus.getTotalRequiredCredits());
+                result.put("totalEarnedCredits", degreeStatus.getTotalEarnedCredits());
+                result.put("bucketsCompleted", degreeStatus.getBucketsCompleted());
+                result.put("bucketsTotal", degreeStatus.getBucketsTotal());
+                result.put("degreePathCode", degreeStatus.getDegreePath() != null ? degreeStatus.getDegreePath().getPathCode() : "N/A");
+                result.put("bucketDetails", bucketDetails);
+
+                // Backward compatible boolean flags
+                String typeCode = degreeStatus.getDegreePath() != null && degreeStatus.getDegreePath().getDegreeType() != null 
+                        ? degreeStatus.getDegreePath().getDegreeType().getTypeCode() : "REGULAR";
+                String addonCode = degreeStatus.getDegreePath() != null && degreeStatus.getDegreePath().getAddonType() != null 
+                        ? degreeStatus.getDegreePath().getAddonType().getAddonCode() : "NONE";
+
+                result.put("honorsEligible", !"REGULAR".equalsIgnoreCase(typeCode) && degreeStatus.getIsDegreeEligible());
+                result.put("specializationEligible", "SPECIALIZATION".equalsIgnoreCase(addonCode) && degreeStatus.getIsDegreeEligible());
+                result.put("minorEligible", "MINOR".equalsIgnoreCase(addonCode) && degreeStatus.getIsDegreeEligible());
+                result.put("doubleMajorEligible", "DOUBLE_MAJOR".equalsIgnoreCase(addonCode) && degreeStatus.getIsDegreeEligible());
+                result.put("completed", degreeStatus.getIsDegreeEligible());
+
+                return result;
+            }
+        } catch (Exception e) {
+            // Fallback to legacy calculation below
+        }
+
+        // 2. Legacy fallback calculation
+        Optional<StudentSelection> selectionOpt = studentSelectionRepository.findByStudentId(studentId);
+        if (selectionOpt.isEmpty()) {
+            Map<String, Object> emptyResult = new LinkedHashMap<>();
+            emptyResult.put("degreeEligible", false);
+            emptyResult.put("status", "NOT_ASSIGNED");
+            emptyResult.put("message", "No degree path assigned for student.");
+            return emptyResult;
+        }
+
+        StudentSelection selection = selectionOpt.get();
         List<CompletedCourse> completed = completedCourseRepository.findByStudentId(studentId);
-        List<ProgramRequirement> requirements = programRequirementRepository.findByCurriculumVersionId(selection.getCurriculumVersion().getId());
+        List<ProgramRequirement> requirements = selection.getCurriculumVersion() != null 
+                ? programRequirementRepository.findByCurriculumVersionId(selection.getCurriculumVersion().getId())
+                : Collections.emptyList();
 
         Map<String, Object> result = new HashMap<>();
         int totalRequiredCredits = requirements.stream().mapToInt(ProgramRequirement::getRequiredCredits).sum();
@@ -110,7 +175,7 @@ public class EligibilityService {
         details.put("missingHonors", missingHonors);
         details.put("creditsEnough", creditsEnough);
 
-        List<Map<String, Object>> missingCourseList = buildCourseList(missingCoreCourses, "Core") ;
+        List<Map<String, Object>> missingCourseList = buildCourseList(missingCoreCourses, "Core");
         missingCourseList.addAll(buildCourseList(missingFlexiCoreCourses, "Flexi Core"));
         missingCourseList.addAll(buildCourseList(missingElectives, "Elective"));
         missingCourseList.addAll(buildCourseList(missingHonors, "Honors"));

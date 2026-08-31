@@ -12,4 +12,5 @@ public interface CurriculumImportRepository extends JpaRepository<CurriculumImpo
     List<CurriculumImport> findByStatus(String status);
     List<CurriculumImport> findByDepartmentAndRegulation(String department, String regulation);
     List<CurriculumImport> findAllByOrderByCreatedAtDesc();
+    Optional<CurriculumImport> findBySourceHash(String sourceHash);
 }

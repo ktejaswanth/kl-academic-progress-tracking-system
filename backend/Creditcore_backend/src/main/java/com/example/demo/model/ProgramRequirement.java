@@ -28,11 +28,12 @@ public class ProgramRequirement {
     @Column(name = "required_credits", nullable = false)
     private Integer requiredCredits;
 
-    // Stored as text[] in DB; map as String containing JSON or CSV for simplicity
-    @Column(name = "mandatory_course_codes", columnDefinition = "text[]")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.ARRAY)
+    @Column(name = "mandatory_course_codes")
     private String[] mandatoryCourseCodes;
 
-    @Column(name = "allowed_electives", columnDefinition = "text[]")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.ARRAY)
+    @Column(name = "allowed_electives")
     private String[] allowedElectives;
 
     @CreationTimestamp
