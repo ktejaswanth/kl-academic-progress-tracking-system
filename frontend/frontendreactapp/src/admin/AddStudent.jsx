@@ -1,25 +1,29 @@
 import api from '../api';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function AddStudent() {
+    const navigate = useNavigate();
     const [formdata, setFormData] = useState({
-        username: "",
+        studentId: "",
+        academicYear: "Y23",
         firstName: "",
         lastName: "",
         email: "",
-        department: "",
+        department: "CSE",
         subDepartment: "REGULAR",
         specializationType: "NONE",
         specializationName: "",
-        password: ""
+        password: "",
+        isActive: true
     });
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formdata, [name]: value });
+        const { name, value, type, checked } = e.target;
+        setFormData({ ...formdata, [name]: type === 'checkbox' ? checked : value });
     };
 
     const handleSubmit = async (e) => {
@@ -31,24 +35,16 @@ export default function AddStudent() {
         try {
             await api.post("/admin/students", {
                 ...formdata,
+                username: formdata.studentId,
                 role: 'STUDENT'
             });
             
-            setMessage("Student account created successfully!");
-            setFormData({
-                username: "",
-                firstName: "",
-                lastName: "",
-                email: "",
-                department: "",
-                subDepartment: "REGULAR",
-                specializationType: "NONE",
-                specializationName: "",
-                password: ""
-            });
+            setMessage("Student account created successfully! Redirecting to student directory...");
+            setTimeout(() => {
+                navigate("/super_admin/viewallstudents");
+            }, 1200);
         } catch (err) {
             setError(err.response?.data || "Failed to create student. Please check the details.");
-        } finally {
             setLoading(false);
         }
     };
@@ -56,27 +52,52 @@ export default function AddStudent() {
     return (
         <div className="admin-page-container">
             <header className="page-header">
-                <h1>Manual Student Registration</h1>
-                <p>Create a single student account manually.</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <h1>Manual Student Registration</h1>
+                        <p>Create a single student record with academic and specialization details.</p>
+                    </div>
+                    <button 
+                        type="button" 
+                        onClick={() => navigate('/super_admin/viewallstudents')} 
+                        className="btn-outline"
+                    >
+                        👥 View All Students
+                    </button>
+                </div>
             </header>
 
             <div className="upload-card">
                 <form className="modern-form" onSubmit={handleSubmit}>
                     <div className="form-grid">
                         <div className="form-group">
-                            <label>Student ID (Username)</label>
+                            <label>Student ID (Username) *</label>
                             <input 
                                 type="text" 
-                                name="username" 
-                                value={formdata.username} 
+                                name="studentId" 
+                                value={formdata.studentId} 
                                 className="input-field"
                                 required 
                                 onChange={handleChange}
-                                placeholder="e.g. 2100030001"
+                                placeholder="e.g. 2300030001"
                             />
                         </div>
                         <div className="form-group">
-                            <label>First Name</label>
+                            <label>Academic Year *</label>
+                            <select 
+                                name="academicYear" 
+                                className="input-field" 
+                                value={formdata.academicYear} 
+                                onChange={handleChange}
+                            >
+                                <option value="Y23">Y23</option>
+                                <option value="Y24">Y24</option>
+                                <option value="Y25">Y25</option>
+                                <option value="Y26">Y26</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>First Name *</label>
                             <input 
                                 type="text" 
                                 name="firstName" 
@@ -88,7 +109,7 @@ export default function AddStudent() {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Last Name</label>
+                            <label>Last Name *</label>
                             <input 
                                 type="text" 
                                 name="lastName" 
@@ -100,7 +121,7 @@ export default function AddStudent() {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Email Address</label>
+                            <label>Student Email Address *</label>
                             <input 
                                 type="email" 
                                 name="email" 
@@ -108,25 +129,29 @@ export default function AddStudent() {
                                 className="input-field"
                                 required 
                                 onChange={handleChange}
-                                placeholder="student@university.edu"
+                                placeholder="student@kluniversity.in"
                             />
                         </div>
                         <div className="form-group">
-                            <label>Department</label>
-                            <input 
-                                type="text" 
+                            <label>Department *</label>
+                            <select 
                                 name="department" 
+                                className="input-field" 
                                 value={formdata.department} 
-                                className="input-field"
-                                required 
                                 onChange={handleChange}
-                                placeholder="e.g. CSE, AIDS"
-                            />
+                            >
+                                <option value="CSE">Computer Science (CSE)</option>
+                                <option value="AIDS">AI & Data Science (AIDS)</option>
+                                <option value="ECE">Electronics (ECE)</option>
+                                <option value="EEE">Electrical (EEE)</option>
+                                <option value="MECH">Mechanical (MECH)</option>
+                                <option value="CIVIL">Civil (CIVIL)</option>
+                            </select>
                         </div>
                         <div className="form-group">
-                            <label>Sub-Department</label>
+                            <label>Add-on</label>
                             <select name="subDepartment" className="input-field" value={formdata.subDepartment} onChange={handleChange}>
-                                <option value="REGULAR">Regular</option>
+                                <option value="REGULAR">Regular (None)</option>
                                 <option value="HONOR">Honors</option>
                                 <option value="HTE">HTE</option>
                                 <option value="HTR">HTR</option>
@@ -150,11 +175,23 @@ export default function AddStudent() {
                                 value={formdata.specializationName} 
                                 className="input-field"
                                 onChange={handleChange}
-                                placeholder="e.g. Data Science"
+                                placeholder="e.g. Artificial Intelligence"
                             />
                         </div>
+                        <div className="form-group">
+                            <label>Account Status</label>
+                            <select 
+                                name="isActive" 
+                                className="input-field" 
+                                value={formdata.isActive} 
+                                onChange={(e) => setFormData({...formdata, isActive: e.target.value === 'true'})}
+                            >
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
                         <div className="form-group full-width">
-                            <label>Initial Password</label>
+                            <label>Initial Security Password *</label>
                             <div className="password-input-wrapper">
                                 <input 
                                     type="text" 
@@ -176,12 +213,12 @@ export default function AddStudent() {
                         </div>
                     </div>
 
-                    {message && <div className="alert success">{message}</div>}
-                    {error && <div className="alert error">{error}</div>}
+                    {message && <div className="alert success"><span>✅</span> {message}</div>}
+                    {error && <div className="alert error"><span>⚠️</span> {error}</div>}
 
                     <div className="form-actions">
                         <button type="submit" className="btn-primary" disabled={loading}>
-                            {loading ? "⚡ Creating Profile..." : "✅ Create Student Account"}
+                            {loading ? "⚡ Creating Student..." : "✅ Register Student Account"}
                         </button>
                     </div>
                 </form>
@@ -237,6 +274,21 @@ export default function AddStudent() {
                     transform: scale(1.02);
                 }
 
+                .btn-outline {
+                    background: white;
+                    color: #0F172A;
+                    border: 1.5px solid #CBD5E1;
+                    padding: 0.6rem 1.2rem;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .btn-outline:hover {
+                    background: #F1F5F9;
+                    border-color: #94A3B8;
+                }
+
                 .form-actions {
                     margin-top: 3rem;
                     display: flex;
@@ -251,10 +303,13 @@ export default function AddStudent() {
                 }
 
                 .alert {
-                    padding: 1rem;
+                    padding: 1rem 1.25rem;
                     border-radius: 12px;
                     margin-bottom: 1.5rem;
-                    font-weight: 500;
+                    font-weight: 600;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
                 }
                 .alert.success { background: #DCFCE7; color: #15803D; border: 1px solid #BBF7D0; }
                 .alert.error { background: #FEE2E2; color: #B91C1C; border: 1px solid #FECACA; }

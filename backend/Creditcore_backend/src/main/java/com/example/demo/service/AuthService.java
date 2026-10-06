@@ -3,9 +3,15 @@ package com.example.demo.service;
 import com.example.demo.config.JwtUtil;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.LoginResponse;
+import com.example.demo.model.Admin;
+import com.example.demo.model.Faculty;
 import com.example.demo.model.PasswordResetToken;
+import com.example.demo.model.Student;
 import com.example.demo.model.User;
+import com.example.demo.repository.AdminRepository;
+import com.example.demo.repository.FacultyRepository;
 import com.example.demo.repository.PasswordResetTokenRepository;
+import com.example.demo.repository.StudentRepository;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +20,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -32,6 +40,15 @@ public class AuthService {
     private UserRepository userRepository;
 
     @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
+    private FacultyRepository facultyRepository;
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     public LoginResponse login(LoginRequest request) {
@@ -47,18 +64,68 @@ public class AuthService {
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
-        User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
-        
-        String jwt = jwtUtil.generateToken(userDetails, user.getRole().name());
 
-        return new LoginResponse(
-                jwt,
-                user.getUsername(),
-                user.getRole().name(),
-                user.getForcePasswordChange(),
-                user.getFirstName(),
-                user.getLastName()
-        );
+        // 1. Check Admin table
+        Optional<Admin> adminOpt = adminRepository.findByUsername(request.getUsername());
+        if (adminOpt.isPresent()) {
+            Admin a = adminOpt.get();
+            String jwt = jwtUtil.generateToken(userDetails, "SUPER_ADMIN");
+            return new LoginResponse(
+                    jwt,
+                    a.getUsername(),
+                    "SUPER_ADMIN",
+                    false,
+                    a.getFirstName(),
+                    a.getLastName()
+            );
+        }
+
+        // 2. Check Faculty table
+        Optional<Faculty> facultyOpt = facultyRepository.findByUsername(request.getUsername());
+        if (facultyOpt.isPresent()) {
+            Faculty f = facultyOpt.get();
+            String jwt = jwtUtil.generateToken(userDetails, "FACULTY");
+            return new LoginResponse(
+                    jwt,
+                    f.getUsername(),
+                    "FACULTY",
+                    !Boolean.TRUE.equals(f.getFirstLoginCompleted()),
+                    f.getFirstName(),
+                    f.getLastName()
+            );
+        }
+
+        // 3. Check Student table
+        Optional<Student> studentOpt = studentRepository.findByStudentId(request.getUsername());
+        if (studentOpt.isPresent()) {
+            Student s = studentOpt.get();
+            String jwt = jwtUtil.generateToken(userDetails, "STUDENT");
+            return new LoginResponse(
+                    jwt,
+                    s.getStudentId(),
+                    "STUDENT",
+                    !Boolean.TRUE.equals(s.getFirstLoginCompleted()),
+                    s.getFirstName(),
+                    s.getLastName()
+            );
+        }
+
+        // 4. Fallback for legacy user
+        Optional<User> legacyOpt = userRepository.findByUsername(request.getUsername());
+        if (legacyOpt.isPresent()) {
+            User user = legacyOpt.get();
+            String jwt = jwtUtil.generateToken(userDetails, user.getRole().name());
+            return new LoginResponse(
+                    jwt,
+                    user.getUsername(),
+                    user.getRole().name(),
+                    user.getForcePasswordChange(),
+                    user.getFirstName(),
+                    user.getLastName()
+            );
+        }
+
+        throw new RuntimeException("User record not found in system.");
     }
 
     @Autowired
@@ -68,31 +135,22 @@ public class AuthService {
     private EmailService emailService;
 
     public String initiatePasswordReset(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("No user found with this email address."));
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user != null) {
+            tokenRepository.deleteByUser(user);
+            tokenRepository.flush();
 
-        // Use findByUser or similar if exists, but we can also just find it manually
-        // For simplicity and to avoid adding more methods to repo, let's fetch it via a query if needed
-        // But better yet, let's just make the delete explicit and flush it
-        
-        // Actually, let's add findByUser to the repository for a cleaner fix
-        tokenRepository.deleteByUser(user);
-        tokenRepository.flush(); // Force the delete to happen NOW
+            PasswordResetToken token = new PasswordResetToken(user);
+            tokenRepository.save(token);
 
-        PasswordResetToken token = new PasswordResetToken(user);
-        tokenRepository.save(token);
-
-        // Send real email via SMTP
-        String resetLink = "http://localhost:3086/reset-password?token=" + token.getToken();
-        try {
-            emailService.sendResetPasswordEmail(email, resetLink);
-            System.out.println("✅ REAL PASSWORD RESET EMAIL SENT to: " + email);
-        } catch (Exception e) {
-            System.err.println("❌ FAILED TO SEND EMAIL: " + e.getMessage());
-            throw new RuntimeException("Could not send reset email. Please check SMTP configuration.");
+            String resetLink = "http://localhost:3086/reset-password?token=" + token.getToken();
+            try {
+                emailService.sendResetPasswordEmail(email, resetLink);
+            } catch (Exception e) {
+                System.err.println("❌ FAILED TO SEND EMAIL: " + e.getMessage());
+            }
         }
-
-        return "A password reset link has been sent to your email address (" + email + ").";
+        return "If an account matches this email, a reset link will be sent.";
     }
 
     public void resetPassword(String token, String newPassword) {
@@ -105,22 +163,46 @@ public class AuthService {
         }
 
         User user = resetToken.getUser();
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        String encoded = passwordEncoder.encode(newPassword);
+        user.setPasswordHash(encoded);
         user.setRawPassword(newPassword);
         user.setForcePasswordChange(false);
         userRepository.save(user);
 
-        // Delete token after successful use
+        syncPasswordToRoleTable(user.getUsername(), encoded, newPassword);
         tokenRepository.delete(resetToken);
     }
 
     public void changePassword(String username, String newPassword) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        user.setRawPassword(newPassword);
-        user.setForcePasswordChange(false);
-        userRepository.save(user);
+        String encoded = passwordEncoder.encode(newPassword);
+        syncPasswordToRoleTable(username, encoded, newPassword);
+
+        // Also update legacy user if present
+        userRepository.findByUsername(username).ifPresent(u -> {
+            u.setPasswordHash(encoded);
+            u.setRawPassword(newPassword);
+            u.setForcePasswordChange(false);
+            userRepository.save(u);
+        });
+    }
+
+    private void syncPasswordToRoleTable(String username, String encodedPassword, String rawPassword) {
+        studentRepository.findByStudentId(username).ifPresent(s -> {
+            s.setPassword(encodedPassword);
+            s.setRawPassword(rawPassword);
+            s.setFirstLoginCompleted(true);
+            studentRepository.save(s);
+        });
+        facultyRepository.findByUsername(username).ifPresent(f -> {
+            f.setPassword(encodedPassword);
+            f.setRawPassword(rawPassword);
+            f.setFirstLoginCompleted(true);
+            facultyRepository.save(f);
+        });
+        adminRepository.findByUsername(username).ifPresent(a -> {
+            a.setPassword(encodedPassword);
+            a.setRawPassword(rawPassword);
+            adminRepository.save(a);
+        });
     }
 }

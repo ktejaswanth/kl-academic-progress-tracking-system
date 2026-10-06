@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Component
 public class DataSeeder implements CommandLineRunner {
 
+    @Autowired private AdminRepository adminRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private StudentProfileRepository studentProfileRepository;
     @Autowired private RequirementRepository requirementRepository;
@@ -24,62 +25,23 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 1. Seed Super Admin
-        if (userRepository.findByUsername("admin").isEmpty()) {
-            User admin = new User();
+        // 1. Seed Super Admin in admins table
+        if (adminRepository.findByUsername("admin").isEmpty()) {
+            Admin admin = new Admin();
             admin.setUsername("admin");
+            admin.setEmpId("ADMIN001");
             admin.setEmail("admin@university.edu");
-            admin.setPasswordHash(passwordEncoder.encode("password123"));
+            admin.setPassword(passwordEncoder.encode("password123"));
+            admin.setRawPassword("password123");
             admin.setFirstName("Super");
             admin.setLastName("Admin");
-            admin.setRole(UserRole.SUPER_ADMIN);
-            admin.setDepartment("ALL");
-            admin.setForcePasswordChange(false);
+            admin.setDesignation("Super Administrator");
             admin.setIsActive(true);
-            userRepository.save(admin);
-            System.out.println("✅ Super Admin created.");
+            adminRepository.save(admin);
+            System.out.println("✅ Super Admin created in admins table.");
         }
 
-        // 2. Seed a Test Student
-        if (userRepository.findByUsername("2100030001").isEmpty()) {
-            User student = new User();
-            student.setUsername("2100030001");
-            student.setEmail("student@kluniversity.in");
-            student.setPasswordHash(passwordEncoder.encode("password123"));
-            student.setFirstName("Rajesh");
-            student.setLastName("Kumar");
-            student.setRole(UserRole.STUDENT);
-            student.setDepartment("AIDS");
-            student.setSubDepartment("REGULAR");
-            student.setSpecializationType("NONE");
-            student.setForcePasswordChange(false);
-            student.setIsActive(true);
-            userRepository.save(student);
-
-            StudentProfile profile = new StudentProfile();
-            profile.setUser(student);
-            profile.setUniversityId("2100030001");
-            profile.setDegreeType("B.Tech");
-            profile.setSpecialization("AIDS");
-            profile.setCurrentYear(3);
-            profile.setAdmissionYear(2023);
-            studentProfileRepository.save(profile);
-
-            // Seed Completed Courses for Test Student
-            CompletedCourse c1 = new CompletedCourse();
-            c1.setStudent(student); c1.setCourseCode("23AD2101"); c1.setCourseName("Introduction to Data Science & AI");
-            c1.setCredits(4); c1.setGrade("A"); c1.setSemester("SEM-1");
-            c1.setCompletedDate(LocalDate.now());
-            completedCourseRepository.save(c1);
-
-            CompletedCourse c2 = new CompletedCourse();
-            c2.setStudent(student); c2.setCourseCode("23AD2102"); c2.setCourseName("Data Structures & Algorithms in Python");
-            c2.setCredits(4); c2.setGrade("O"); c2.setSemester("SEM-1");
-            c2.setCompletedDate(LocalDate.now());
-            completedCourseRepository.save(c2);
-
-            System.out.println("✅ Test AIDS Student and Completions seeded.");
-        }
+        // 2. Test Student auto-seeding disabled to keep database clean of student data
 
         // 3. Seed Y23 AIDS Curriculum Structure
         try {

@@ -77,7 +77,7 @@ public class CompletedCourse {
 
     private String category;
 
-    @Column(columnDefinition = "varchar(50) default 'Completed'")
+    @Column(length = 50)
     private String status = "Completed";
 
     @CreationTimestamp

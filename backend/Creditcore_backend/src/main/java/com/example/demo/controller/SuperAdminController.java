@@ -1,9 +1,9 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.User;
-import com.example.demo.model.UserRole;
 import com.example.demo.model.StudentIssue;
+import com.example.demo.model.UserRole;
 import com.example.demo.repository.StudentIssueRepository;
+import com.example.demo.service.AuditService;
 import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,44 +22,93 @@ public class SuperAdminController {
     private StudentIssueRepository studentIssueRepository;
 
     @Autowired
-    private com.example.demo.service.AuditService auditService;
+    private AuditService auditService;
+
+    // --- Admin Endpoints ---
+
+    @PostMapping("/admins")
+    public ResponseEntity<?> createAdmin(@RequestBody Map<String, Object> payload) {
+        try {
+            return ResponseEntity.status(201).body(userService.createAdmin(payload));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error creating admin: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/admins")
+    public ResponseEntity<?> getAllAdmins() {
+        return ResponseEntity.ok(userService.getAllAdmins());
+    }
+
+    @DeleteMapping("/admins/{id}")
+    public ResponseEntity<?> deleteAdmin(@PathVariable Long id) {
+        try {
+            userService.deleteAdmin(id);
+            return ResponseEntity.ok("Admin deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error deleting admin: " + e.getMessage());
+        }
+    }
+
+    // --- Faculty Endpoints ---
 
     @PostMapping("/faculty")
-    public ResponseEntity<?> createFaculty(@RequestBody User faculty) {
+    public ResponseEntity<?> createFaculty(@RequestBody Map<String, Object> payload) {
         try {
-            return ResponseEntity.status(201).body(userService.createFaculty(faculty));
+            return ResponseEntity.status(201).body(userService.createFaculty(payload));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error creating faculty: " + e.getMessage());
         }
     }
 
-    @PostMapping("/students")
-    public ResponseEntity<?> createStudent(@RequestBody User student) {
+    @GetMapping("/faculty")
+    public ResponseEntity<?> getFaculty() {
+        return ResponseEntity.ok(userService.getAllFaculty());
+    }
+
+    @DeleteMapping("/faculty/{id}")
+    public ResponseEntity<?> deleteFaculty(@PathVariable Long id) {
         try {
-            return ResponseEntity.status(201).body(userService.createStudent(student));
+            userService.deleteFaculty(id);
+            return ResponseEntity.ok("Faculty deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error deleting faculty: " + e.getMessage());
+        }
+    }
+
+    // --- Student Endpoints ---
+
+    @PostMapping("/students")
+    public ResponseEntity<?> createStudent(@RequestBody Map<String, Object> payload) {
+        try {
+            return ResponseEntity.status(201).body(userService.createStudent(payload));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error creating student: " + e.getMessage());
         }
     }
 
-    @GetMapping("/analytics")
-    public ResponseEntity<?> getAnalytics() {
-        return ResponseEntity.ok(userService.getDashboardAnalytics());
-    }
-
-    @GetMapping("/users")
-    public ResponseEntity<?> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
-    }
-
-    @GetMapping("/faculty")
-    public ResponseEntity<?> getFaculty() {
-        return ResponseEntity.ok(userService.getUsersByRole(UserRole.FACULTY));
-    }
-
     @GetMapping("/students")
     public ResponseEntity<?> getStudents() {
-        return ResponseEntity.ok(userService.getUsersByRole(UserRole.STUDENT));
+        return ResponseEntity.ok(userService.getAllStudents());
+    }
+
+    @DeleteMapping("/students/{id}")
+    public ResponseEntity<?> deleteStudent(@PathVariable Long id) {
+        try {
+            userService.deleteStudent(id);
+            return ResponseEntity.ok("Student deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error deleting student: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/students/{id}")
+    public ResponseEntity<?> updateStudentProfile(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        try {
+            return ResponseEntity.ok(userService.updateStudentProfile(id, payload));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error updating student profile: " + e.getMessage());
+        }
     }
 
     @GetMapping("/students/lookup/{username}")
@@ -71,21 +120,29 @@ public class SuperAdminController {
         }
     }
 
-    @DeleteMapping("/users/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok("User deleted successfully");
+    // --- Analytics & User Management ---
+
+    @GetMapping("/analytics")
+    public ResponseEntity<?> getAnalytics() {
+        return ResponseEntity.ok(userService.getDashboardAnalytics());
     }
 
-    @PutMapping("/students/{id}")
-    public ResponseEntity<?> updateStudentProfile(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+    @GetMapping("/users")
+    public ResponseEntity<?> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
-            User updated = userService.updateStudentProfile(id, payload);
-            return ResponseEntity.ok(updated);
+            userService.deleteUser(id);
+            return ResponseEntity.ok("User deleted successfully");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error updating student profile: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error deleting user: " + e.getMessage());
         }
     }
+
+    // --- Issues Management ---
 
     @GetMapping("/issues")
     public ResponseEntity<?> getAllIssues() {

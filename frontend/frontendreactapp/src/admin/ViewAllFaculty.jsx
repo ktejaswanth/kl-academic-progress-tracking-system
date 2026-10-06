@@ -84,24 +84,46 @@ export default function ViewAllFaculty() {
                         <table className="modern-table">
                             <thead>
                                 <tr>
-                                    <th>Employee ID</th>
+                                    <th>Emp ID</th>
                                     <th>Full Name</th>
                                     <th>Email Address</th>
                                     <th>Department</th>
+                                    <th>Designation</th>
+                                    <th>Cabin / Contact</th>
+                                    <th>Status</th>
                                     <th>Password</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredData.map((faculty, index) => (
-                                    <tr key={index}>
-                                        <td><code>{faculty.username}</code></td>
+                                    <tr key={faculty.id || index}>
+                                        <td><code>{faculty.empId || faculty.username}</code></td>
                                         <td><strong>{faculty.firstName} {faculty.lastName}</strong></td>
                                         <td>{faculty.email}</td>
                                         <td><span className="dept-tag">{faculty.department}</span></td>
+                                        <td><span style={{ fontSize: '0.85rem', color: '#475569' }}>{faculty.designation || 'Faculty'}</span></td>
+                                        <td>
+                                            <div style={{ fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                <span>🏠 {faculty.cabinNo || '—'}</span>
+                                                <span>📞 {faculty.contactNo || '—'}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span style={{ 
+                                                padding: '3px 8px', 
+                                                borderRadius: '12px', 
+                                                fontSize: '0.75rem', 
+                                                fontWeight: 700, 
+                                                background: faculty.isActive !== false ? '#DCFCE7' : '#F1F5F9',
+                                                color: faculty.isActive !== false ? '#166534' : '#64748B'
+                                            }}>
+                                                {faculty.isActive !== false ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
                                         <td>
                                             <div className="password-display">
-                                                <code>{visiblePasswords[index] ? (faculty.rawPassword || 'N/A') : '••••••••'}</code>
+                                                <code>{visiblePasswords[index] ? (faculty.rawPassword || '••••••••') : '••••••••'}</code>
                                                 <button
                                                     className="visibility-toggle"
                                                     onClick={() => togglePassword(index)}
@@ -126,7 +148,7 @@ export default function ViewAllFaculty() {
                                 ))}
                                 {filteredData.length === 0 && (
                                     <tr>
-                                        <td colSpan="6" className="empty-state">No faculty found matching your search.</td>
+                                        <td colSpan="9" className="empty-state">No faculty found matching your search.</td>
                                     </tr>
                                 )}
                             </tbody>

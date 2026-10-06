@@ -30,6 +30,9 @@ public class StudentOnboardingService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private com.example.demo.repository.StudentRepository studentRepository;
+
     public Optional<User> verifyFirstLogin(String username, String dobString) {
         Optional<User> user = userRepository.findByUsername(username);
         if (user.isEmpty()) {
@@ -46,13 +49,34 @@ public class StudentOnboardingService {
         }
     }
 
-    public User completeFirstLogin(Long userId, String password) {
+    public Map<String, Object> completeFirstLogin(Long userId, String password) {
+        String encoded = passwordEncoder.encode(password);
+        
+        Optional<com.example.demo.model.Student> studentOpt = studentRepository.findById(userId);
+        if (studentOpt.isPresent()) {
+            com.example.demo.model.Student s = studentOpt.get();
+            s.setPassword(encoded);
+            s.setRawPassword(password);
+            s.setFirstLoginCompleted(true);
+            studentRepository.save(s);
+            return Map.of("userId", s.getId(), "username", s.getStudentId(), "firstLoginCompleted", true);
+        }
+
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setPasswordHash(passwordEncoder.encode(password));
+        user.setPasswordHash(encoded);
+        user.setRawPassword(password);
         user.setForcePasswordChange(false);
         user.setFirstLoginCompleted(true);
         userRepository.save(user);
-        return user;
+
+        studentRepository.findByStudentId(user.getUsername()).ifPresent(s -> {
+            s.setPassword(encoded);
+            s.setRawPassword(password);
+            s.setFirstLoginCompleted(true);
+            studentRepository.save(s);
+        });
+
+        return Map.of("userId", user.getId(), "username", user.getUsername(), "firstLoginCompleted", true);
     }
 
     public StudentProfile updateProfile(Long userId, Map<String, Object> profileData) {

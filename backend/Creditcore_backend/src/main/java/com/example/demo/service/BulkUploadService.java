@@ -3,7 +3,9 @@ package com.example.demo.service;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import com.example.demo.utils.PasswordGenerator;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,11 +22,19 @@ import java.util.Optional;
 @Service
 public class BulkUploadService {
 
+    static {
+        IOUtils.setByteArrayMaxOverride(Integer.MAX_VALUE);
+        ZipSecureFile.setMinInflateRatio(0.0);
+    }
+
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private StudentProfileRepository studentProfileRepository;
+
+    @Autowired
+    private com.example.demo.repository.StudentRepository studentRepository;
 
     @Autowired
     private UploadHistoryRepository uploadHistoryRepository;
@@ -36,7 +46,14 @@ public class BulkUploadService {
     private PasswordEncoder passwordEncoder;
 
     public List<CredentialInfo> processBulkUpload(MultipartFile file, User uploadedBy) throws IOException {
-        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+        IOUtils.setByteArrayMaxOverride(Integer.MAX_VALUE);
+        ZipSecureFile.setMinInflateRatio(0.0);
+        Workbook workbook;
+        try {
+            workbook = WorkbookFactory.create(file.getInputStream());
+        } catch (Exception ex) {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        }
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rows = sheet.iterator();
 
@@ -49,35 +66,60 @@ public class BulkUploadService {
         int success = 0;
         int failed = 0;
 
-        int nameCol = 0;
-        int idCol = 1;
-        int emailCol = 2;
-        int deptCol = 3;
-        int subDeptCol = 4;
-        int specTypeCol = 5;
-        int specNameCol = 6;
+        int nameCol = -1;
+        int firstNameCol = -1;
+        int lastNameCol = -1;
+        int idCol = -1;
+        int emailCol = -1;
+        int acadYearCol = -1;
+        int deptCol = -1;
+        int subDeptCol = -1; // Add-on
+        int specTypeCol = -1;
+        int specNameCol = -1;
+        int passwordCol = -1;
 
         // Parse header row dynamically if present
         if (rows.hasNext()) {
             Row headerRow = rows.next();
             for (int c = 0; c < headerRow.getLastCellNum(); c++) {
                 String header = getCellValue(headerRow, c).toUpperCase().trim();
-                if (header.contains("NAME") && !header.contains("SPEC")) {
+                if (header.contains("FIRST") && header.contains("NAME")) {
+                    firstNameCol = c;
+                } else if (header.contains("LAST") && header.contains("NAME")) {
+                    lastNameCol = c;
+                } else if (header.contains("NAME") && !header.contains("SPEC")) {
                     nameCol = c;
+                } else if (header.contains("ACADEMIC") || header.contains("BATCH") || (header.contains("YEAR") && !header.contains("BIRTH"))) {
+                    acadYearCol = c;
                 } else if (header.contains("ID") && !header.contains("MAIL") && !header.contains("EMAIL")) {
                     idCol = c;
                 } else if (header.contains("MAIL") || header.contains("EMAIL")) {
                     emailCol = c;
-                } else if (header.contains("SUB DEPT") || header.contains("SUB DEPARTMENT") || header.contains("SUB_DEPT") || header.contains("SUBDEPT")) {
+                } else if (header.contains("ADD-ON") || header.contains("ADD ON") || header.contains("ADDON")
+                        || header.contains("SUB DEPT") || header.contains("SUB DEPARTMENT") 
+                        || header.contains("SUB_DEPT") || header.contains("SUBDEPT")) {
                     subDeptCol = c;
-                } else if (header.contains("DEPARTM") || header.contains("DEPT") || header.contains("DEPARTMENT")) {
+                } else if (header.contains("DEPARTM") || header.contains("DEPT") || header.contains("BRANCH")) {
                     deptCol = c;
                 } else if (header.contains("SPEC") && header.contains("TYPE")) {
                     specTypeCol = c;
                 } else if (header.contains("SPEC") && (header.contains("NAME") || header.contains("TITLE"))) {
                     specNameCol = c;
+                } else if (header.contains("PASS") || header.contains("PWD") || header.contains("SECRET")) {
+                    passwordCol = c;
                 }
             }
+        }
+
+        // Positional fallback for legacy 7-column sheets
+        if (idCol == -1 && nameCol == -1 && firstNameCol == -1) {
+            nameCol = 0;
+            idCol = 1;
+            emailCol = 2;
+            deptCol = 3;
+            subDeptCol = 4;
+            specTypeCol = 5;
+            specNameCol = 6;
         }
 
         List<CredentialInfo> credentials = new ArrayList<>();
@@ -85,78 +127,80 @@ public class BulkUploadService {
         while (rows.hasNext()) {
             Row row = rows.next();
             
-            String fullName = getCellValue(row, nameCol);
-            String studentId = getCellValue(row, idCol);
-            String email = getCellValue(row, emailCol);
+            String studentId = (idCol != -1) ? getCellValue(row, idCol) : "";
+            String email = (emailCol != -1) ? getCellValue(row, emailCol) : "";
+
+            String firstName = "";
+            String lastName = "";
+            if (firstNameCol != -1 && !getCellValue(row, firstNameCol).isEmpty()) {
+                firstName = getCellValue(row, firstNameCol);
+                lastName = (lastNameCol != -1) ? getCellValue(row, lastNameCol) : "";
+            } else if (nameCol != -1) {
+                String fullName = getCellValue(row, nameCol);
+                if (fullName.contains(" ")) {
+                    int lastSpace = fullName.lastIndexOf(" ");
+                    firstName = fullName.substring(0, lastSpace).trim();
+                    lastName = fullName.substring(lastSpace + 1).trim();
+                } else {
+                    firstName = fullName.trim();
+                    lastName = "";
+                }
+            }
 
             // Skip empty rows
-            if (fullName.isEmpty() && studentId.isEmpty() && email.isEmpty()) {
+            if (firstName.isEmpty() && lastName.isEmpty() && studentId.isEmpty() && email.isEmpty()) {
                 continue;
             }
 
             total++;
             try {
-                String department = getCellValue(row, deptCol);
-                String subDept = getCellValue(row, subDeptCol);
-                String specType = getCellValue(row, specTypeCol);
-                String specName = getCellValue(row, specNameCol);
-
-                if (studentId.isEmpty() || email.isEmpty() || fullName.isEmpty()) {
-                    throw new Exception("Missing required fields (Name, ID, or Email)");
+                if (studentId.isEmpty() || email.isEmpty() || firstName.isEmpty()) {
+                    throw new Exception("Missing required fields (ID, Name, or Email)");
                 }
 
-                // Split Name into First and Last
-                String firstName = fullName;
-                String lastName = "";
-                if (fullName.contains(" ")) {
-                    int lastSpace = fullName.lastIndexOf(" ");
-                    firstName = fullName.substring(0, lastSpace);
-                    lastName = fullName.substring(lastSpace + 1);
+                String academicYear = "Y23";
+                if (acadYearCol != -1 && !getCellValue(row, acadYearCol).isEmpty()) {
+                    academicYear = getCellValue(row, acadYearCol).trim().toUpperCase();
+                    if (academicYear.equals("2023-2024") || academicYear.equals("2023") || academicYear.equals("23")) academicYear = "Y23";
+                    else if (academicYear.equals("2024-2025") || academicYear.equals("2024") || academicYear.equals("24")) academicYear = "Y24";
+                    else if (academicYear.equals("2025-2026") || academicYear.equals("2025") || academicYear.equals("25")) academicYear = "Y25";
+                    else if (academicYear.equals("2026-2027") || academicYear.equals("2026") || academicYear.equals("26")) academicYear = "Y26";
                 }
 
-                Optional<User> existingOpt = userRepository.findByUsername(studentId);
-                User user;
-                String rawPassword;
+                String department = (deptCol != -1 && !getCellValue(row, deptCol).isEmpty()) ? getCellValue(row, deptCol) : "CSE";
+                String subDept = (subDeptCol != -1 && !getCellValue(row, subDeptCol).isEmpty()) ? getCellValue(row, subDeptCol) : "REGULAR";
+                String specType = (specTypeCol != -1 && !getCellValue(row, specTypeCol).isEmpty()) ? getCellValue(row, specTypeCol).toUpperCase() : "NONE";
+                String specName = (specNameCol != -1 && !getCellValue(row, specNameCol).isEmpty()) ? getCellValue(row, specNameCol) : "N/A";
 
-                if (existingOpt.isPresent()) {
-                    user = existingOpt.get();
-                    rawPassword = user.getRawPassword();
-                    if (rawPassword == null || rawPassword.isEmpty()) {
-                        rawPassword = PasswordGenerator.generateRandomPassword(8);
-                        user.setPasswordHash(passwordEncoder.encode(rawPassword));
-                        user.setRawPassword(rawPassword);
-                    }
-                } else {
+                Optional<com.example.demo.model.Student> existingStudentOpt = studentRepository.findByStudentId(studentId);
+                com.example.demo.model.Student student = existingStudentOpt.orElseGet(com.example.demo.model.Student::new);
+
+                String rawPassword = (passwordCol != -1 && !getCellValue(row, passwordCol).isEmpty()) 
+                        ? getCellValue(row, passwordCol) 
+                        : student.getRawPassword();
+
+                if (rawPassword == null || rawPassword.isEmpty()) {
                     rawPassword = PasswordGenerator.generateRandomPassword(8);
-                    user = new User();
-                    user.setUsername(studentId);
-                    user.setPasswordHash(passwordEncoder.encode(rawPassword));
-                    user.setRawPassword(rawPassword);
-                    user.setRole(UserRole.STUDENT);
-                    user.setForcePasswordChange(true);
                 }
 
-                user.setEmail(email);
-                user.setFirstName(firstName);
-                user.setLastName(lastName);
-                user.setDepartment(department.isEmpty() ? "N/A" : department);
-                user.setSubDepartment(subDept.isEmpty() ? "REGULAR" : subDept);
-                user.setSpecializationType(specType.isEmpty() ? "NONE" : specType.toUpperCase());
-                user.setSpecializationName(specName.isEmpty() ? "N/A" : specName);
+                student.setStudentId(studentId);
+                student.setAcademicYear(academicYear);
+                student.setFirstName(firstName);
+                student.setLastName(lastName);
+                student.setEmail(email);
+                student.setDepartment(department.isEmpty() ? "CSE" : department);
+                student.setSubDepartment(subDept.isEmpty() ? "REGULAR" : subDept);
+                student.setSpecializationType(specType.isEmpty() ? "NONE" : specType.toUpperCase());
+                student.setSpecializationName(specName.isEmpty() ? "N/A" : specName);
+                student.setPassword(passwordEncoder.encode(rawPassword));
+                student.setRawPassword(rawPassword);
+                student.setIsActive(true);
+                student.setFirstLoginCompleted(false);
 
-                final User savedUser = userRepository.save(user);
+                studentRepository.save(student);
 
-                Optional<StudentProfile> profileOpt = studentProfileRepository.findByUser(savedUser);
-                StudentProfile profile = profileOpt.orElseGet(() -> {
-                    StudentProfile sp = new StudentProfile();
-                    sp.setUser(savedUser);
-                    return sp;
-                });
-                profile.setDegreeType("B.Tech");
-                profile.setSpecialization(savedUser.getDepartment() != null && !savedUser.getDepartment().equals("N/A") ? savedUser.getDepartment() : "CSE");
-                studentProfileRepository.save(profile);
-
-                credentials.add(new CredentialInfo(studentId, rawPassword, email, fullName, savedUser.getDepartment(), savedUser.getSubDepartment(), savedUser.getSpecializationType(), savedUser.getSpecializationName()));
+                String fullName = (firstName + " " + lastName).trim();
+                credentials.add(new CredentialInfo(studentId, rawPassword, email, fullName, student.getDepartment(), student.getSubDepartment(), student.getSpecializationType(), student.getSpecializationName(), student.getAcademicYear()));
                 success++;
 
             } catch (Exception e) {
@@ -241,10 +285,17 @@ public class BulkUploadService {
         public String subDepartment;
         public String specializationType;
         public String specializationName;
+        public String academicYear;
+
         public CredentialInfo(String id, String password, String email, String fullName, String department, String subDepartment, String specializationType, String specializationName) {
+            this(id, password, email, fullName, department, subDepartment, specializationType, specializationName, "Y23");
+        }
+
+        public CredentialInfo(String id, String password, String email, String fullName, String department, String subDepartment, String specializationType, String specializationName, String academicYear) {
             this.id = id; this.password = password; this.email = email; this.fullName = fullName;
             this.department = department; this.subDepartment = subDepartment;
             this.specializationType = specializationType; this.specializationName = specializationName;
+            this.academicYear = academicYear;
         }
     }
 }

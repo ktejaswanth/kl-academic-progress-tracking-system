@@ -27,7 +27,7 @@ export default function Login() {
             }
 
             // Route based on role
-            if (userData.role === 'SUPER_ADMIN') {
+            if (userData.role === 'SUPER_ADMIN' || userData.role === 'ADMIN') {
                 navigate('/super_admin/home');
             } else if (userData.role === 'FACULTY') {
                 navigate('/faculty/home');

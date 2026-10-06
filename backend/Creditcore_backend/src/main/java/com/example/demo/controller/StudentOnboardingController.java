@@ -41,12 +41,8 @@ public class StudentOnboardingController {
             return ResponseEntity.badRequest().body("Passwords must match and be at least 6 characters.");
         }
 
-        User user = onboardingService.completeFirstLogin(userId, password);
-        return ResponseEntity.ok(Map.of(
-                "userId", user.getId(),
-                "username", user.getUsername(),
-                "firstLoginCompleted", user.getFirstLoginCompleted()
-        ));
+        Map<String, Object> result = onboardingService.completeFirstLogin(userId, password);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/profile-setup")

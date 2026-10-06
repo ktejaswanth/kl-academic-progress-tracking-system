@@ -2,7 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,11 @@ import java.util.*;
 
 @Service
 public class CurriculumBulkUploadService {
+
+    static {
+        IOUtils.setByteArrayMaxOverride(Integer.MAX_VALUE);
+        ZipSecureFile.setMinInflateRatio(0.0);
+    }
 
     @Autowired
     private MasterDataService masterDataService;

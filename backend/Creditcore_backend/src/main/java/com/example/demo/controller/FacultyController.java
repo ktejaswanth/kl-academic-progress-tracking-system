@@ -25,16 +25,26 @@ public class FacultyController {
     private UserRepository userRepository;
 
     @Autowired
+    private com.example.demo.repository.FacultyRepository facultyRepository;
+
+    @Autowired
     private com.example.demo.service.AuditService auditService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getFacultyDashboard() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User faculty = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Faculty not found"));
-                
-        String dept = faculty.getDepartment();
-        if (dept == null || dept.isEmpty()) dept = "CSE"; // Fallback
+        String dept = "CSE";
+        java.util.Optional<com.example.demo.model.Faculty> fOpt = facultyRepository.findByUsername(username);
+        if (fOpt.isPresent()) {
+            if (fOpt.get().getDepartment() != null && !fOpt.get().getDepartment().isEmpty()) {
+                dept = fOpt.get().getDepartment();
+            }
+        } else {
+            User faculty = userRepository.findByUsername(username).orElse(null);
+            if (faculty != null && faculty.getDepartment() != null && !faculty.getDepartment().isEmpty()) {
+                dept = faculty.getDepartment();
+            }
+        }
         
         long totalStudents = statusRepository.countByDepartment(dept);
         long eligibleStudents = statusRepository.countEligibleByDepartment(dept);

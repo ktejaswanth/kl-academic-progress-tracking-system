@@ -14,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.*;
+
 @RestController
 @RequestMapping("/api/student")
 public class StudentController {
@@ -25,18 +27,16 @@ public class StudentController {
     private UserRepository userRepository;
 
     @Autowired
+    private com.example.demo.repository.StudentRepository studentRepository;
+
+    @Autowired
     private EligibilityService eligibilityService;
 
     @GetMapping("/progress")
     public ResponseEntity<?> getMyProgress() {
         try {
-            // In a real scenario, extract ID from JWT
-            // For now, I'll assume the username is available in the context
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            
-            // Note: In my current setup, I might need to find the user ID from the username
-            // I'll update the AuditService to handle username or I'll fetch the ID here.
             return ResponseEntity.ok(auditService.getStudentProgressByUsername(username));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching progress: " + e.getMessage());
@@ -48,6 +48,23 @@ public class StudentController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
+            
+            Optional<com.example.demo.model.Student> studentOpt = studentRepository.findByStudentId(username);
+            if (studentOpt.isPresent()) {
+                com.example.demo.model.Student student = studentOpt.get();
+                java.util.Map<String, Object> profile = new java.util.HashMap<>();
+                profile.put("username", student.getStudentId());
+                profile.put("email", student.getEmail());
+                profile.put("firstName", student.getFirstName());
+                profile.put("lastName", student.getLastName());
+                profile.put("department", student.getDepartment());
+                profile.put("subDepartment", student.getSubDepartment());
+                profile.put("specializationType", student.getSpecializationType());
+                profile.put("specializationName", student.getSpecializationName());
+                profile.put("academicYear", student.getAcademicYear());
+                return ResponseEntity.ok(profile);
+            }
+
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("User not found"));
             
@@ -60,6 +77,7 @@ public class StudentController {
             profile.put("subDepartment", user.getSubDepartment());
             profile.put("specializationType", user.getSpecializationType());
             profile.put("specializationName", user.getSpecializationName());
+            profile.put("academicYear", user.getAcademicYear());
             return ResponseEntity.ok(profile);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching profile: " + e.getMessage());

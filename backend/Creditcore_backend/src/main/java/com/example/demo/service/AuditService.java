@@ -27,12 +27,64 @@ public class AuditService {
     private UserRepository userRepository;
 
     @Autowired
+    private com.example.demo.repository.StudentRepository studentRepository;
+
+    @Autowired
     private CompletedCourseRepository completedCourseRepository;
 
     public Map<String, Object> getStudentProgressByUsername(String username) {
+        Optional<com.example.demo.model.Student> studentOpt = studentRepository.findByStudentId(username);
+        if (studentOpt.isPresent()) {
+            return getStudentProgressForStudent(studentOpt.get());
+        }
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return getStudentProgress(user.getId());
+    }
+
+    public Map<String, Object> getStudentProgressForStudent(com.example.demo.model.Student student) {
+        String degreeType = "B.Tech";
+        String specialization = student.getDepartment() != null ? student.getDepartment() : "CSE";
+
+        List<Requirement> requirements = requirementRepository.findByDegreeTypeAndSpecialization(
+                degreeType, specialization);
+
+        List<CompletedCourse> completed = completedCourseRepository.findByStudentId(student.getId());
+
+        int totalRequired = requirements.stream().mapToInt(Requirement::getCredits).sum();
+        int totalCompleted = completed.stream()
+                .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                .mapToInt(CompletedCourse::getCredits)
+                .sum();
+        double percentage = totalRequired > 0 ? (double) totalCompleted / totalRequired * 100 : 0;
+
+        Map<String, Map<String, Object>> categorySummaries = new HashMap<>();
+        Map<String, List<Requirement>> groupedReqs = requirements.stream()
+                .collect(Collectors.groupingBy(Requirement::getBucketName));
+
+        for (String bucket : groupedReqs.keySet()) {
+            List<Requirement> bucketReqs = groupedReqs.get(bucket);
+            int reqCredits = bucketReqs.stream().mapToInt(Requirement::getCredits).sum();
+            int compCredits = completed.stream()
+                    .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
+                    .filter(c -> bucketReqs.stream().anyMatch(r -> r.getCourseCode().equals(c.getCourseCode())))
+                    .mapToInt(CompletedCourse::getCredits)
+                    .sum();
+            double catPct = reqCredits > 0 ? (double) compCredits / reqCredits * 100 : 0;
+
+            Map<String, Object> catData = new HashMap<>();
+            catData.put("required", reqCredits);
+            catData.put("completed", compCredits);
+            catData.put("percentage", Math.round(catPct * 10.0) / 10.0);
+            categorySummaries.put(bucket, catData);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalRequired", totalRequired);
+        response.put("totalCompleted", totalCompleted);
+        response.put("overallPercentage", Math.round(percentage * 10.0) / 10.0);
+        response.put("categories", categorySummaries);
+        return response;
     }
 
     public Map<String, Object> getStudentProgress(Long userId) {
@@ -105,28 +157,48 @@ public class AuditService {
     }
 
     public Map<String, Object> getStudentCurriculumCourses(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Optional<StudentProfile> profileOpt = studentProfileRepository.findByUserId(user.getId());
-
         String degreeType = "B.Tech";
         String specialization = "CSE";
         String honorsType = "REGULAR";
 
-        if (profileOpt.isPresent()) {
-            StudentProfile profile = profileOpt.get();
-            if (profile.getDegreeType() != null && !profile.getDegreeType().isEmpty()) degreeType = profile.getDegreeType();
-            if (profile.getSpecialization() != null && !profile.getSpecialization().isEmpty()) specialization = profile.getSpecialization();
-            if (profile.getHonorsType() != null && !profile.getHonorsType().isEmpty()) honorsType = profile.getHonorsType();
+        Long studentDbId = null;
+        String dept = "CSE";
+        String specName = "N/A";
+        String specType = "NONE";
+
+        Optional<com.example.demo.model.Student> studentOpt = studentRepository.findByStudentId(username);
+        if (studentOpt.isPresent()) {
+            com.example.demo.model.Student s = studentOpt.get();
+            studentDbId = s.getId();
+            if (s.getDepartment() != null && !s.getDepartment().isEmpty()) {
+                specialization = s.getDepartment();
+                dept = s.getDepartment();
+            }
+            if (s.getSubDepartment() != null && !s.getSubDepartment().isEmpty()) honorsType = s.getSubDepartment();
+            if (s.getSpecializationName() != null) specName = s.getSpecializationName();
+            if (s.getSpecializationType() != null) specType = s.getSpecializationType();
         } else {
-            // Fall back to User database fields populated by HOD
-            if (user.getDepartment() != null && !user.getDepartment().isEmpty()) {
-                specialization = user.getDepartment();
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + username));
+            studentDbId = user.getId();
+            Optional<StudentProfile> profileOpt = studentProfileRepository.findByUserId(user.getId());
+
+            if (profileOpt.isPresent()) {
+                StudentProfile profile = profileOpt.get();
+                if (profile.getDegreeType() != null && !profile.getDegreeType().isEmpty()) degreeType = profile.getDegreeType();
+                if (profile.getSpecialization() != null && !profile.getSpecialization().isEmpty()) specialization = profile.getSpecialization();
+                if (profile.getHonorsType() != null && !profile.getHonorsType().isEmpty()) honorsType = profile.getHonorsType();
+            } else {
+                if (user.getDepartment() != null && !user.getDepartment().isEmpty()) {
+                    specialization = user.getDepartment();
+                }
+                if (user.getSubDepartment() != null && !user.getSubDepartment().isEmpty()) {
+                    honorsType = user.getSubDepartment();
+                }
             }
-            if (user.getSubDepartment() != null && !user.getSubDepartment().isEmpty()) {
-                honorsType = user.getSubDepartment();
-            }
+            if (user.getDepartment() != null) dept = user.getDepartment();
+            if (user.getSpecializationName() != null) specName = user.getSpecializationName();
+            if (user.getSpecializationType() != null) specType = user.getSpecializationType();
         }
 
         // Final fallback if fields are empty
@@ -162,7 +234,9 @@ public class AuditService {
         }
 
         // Fetch completed course codes for this student
-        List<CompletedCourse> completed = completedCourseRepository.findByStudentId(user.getId());
+        List<CompletedCourse> completed = (studentDbId != null)
+                ? completedCourseRepository.findByStudentId(studentDbId)
+                : Collections.emptyList();
         Set<String> completedCodes = completed.stream()
                 .filter(c -> c.getStatus() == null || !c.getStatus().equalsIgnoreCase("On-Progress"))
                 .map(CompletedCourse::getCourseCode)
@@ -172,9 +246,9 @@ public class AuditService {
         response.put("degreeType", degreeType);
         response.put("specialization", specialization);
         response.put("honorsType", honorsType);
-        response.put("department", user.getDepartment() != null ? user.getDepartment() : "CSE");
-        response.put("specializationName", user.getSpecializationName() != null ? user.getSpecializationName() : "N/A");
-        response.put("specializationType", user.getSpecializationType() != null ? user.getSpecializationType() : "NONE");
+        response.put("department", dept);
+        response.put("specializationName", specName);
+        response.put("specializationType", specType);
         response.put("completedCourseCodes", completedCodes);
         response.put("courses", curriculumCourses);
         return response;

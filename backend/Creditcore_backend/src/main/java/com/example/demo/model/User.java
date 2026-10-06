@@ -56,6 +56,20 @@ public class User {
     @Column(name = "specialization_name")
     private String specializationName;
 
+    @Column(name = "emp_id")
+    private String empId;
+
+    @Column(name = "academic_year")
+    private String academicYear;
+
+    private String designation;
+
+    @Column(name = "cabin_no")
+    private String cabinNo;
+
+    @Column(name = "contact_no")
+    private String contactNo;
+
     @com.fasterxml.jackson.annotation.JsonIgnore
     @Column(name = "raw_password")
     private String rawPassword;

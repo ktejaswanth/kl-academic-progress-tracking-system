@@ -15,6 +15,7 @@ export default function ViewAllStudents() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [currentStudent, setCurrentStudent] = useState(null);
     const [editForm, setEditForm] = useState({
+        academicYear: "Y23",
         firstName: "",
         lastName: "",
         email: "",
@@ -52,6 +53,7 @@ export default function ViewAllStudents() {
     const openEditModal = (student) => {
         setCurrentStudent(student);
         setEditForm({
+            academicYear: student.academicYear || "Y23",
             firstName: student.firstName || "",
             lastName: student.lastName || "",
             email: student.email || "",
@@ -96,11 +98,12 @@ export default function ViewAllStudents() {
 
     const downloadAllCredentials = () => {
         const exportData = filteredData.map(s => ({
-            "Student ID": s.username,
+            "Student ID": s.studentId || s.username,
+            "Academic Year": s.academicYear || "Y23",
             "Full Name": `${s.firstName} ${s.lastName}`,
             "Email": s.email,
             "Department": s.department,
-            "Sub-Department": s.subDepartment || 'N/A',
+            "Add-on": s.subDepartment || 'REGULAR',
             "Spec Type": s.specializationType,
             "Spec Name": s.specializationName || 'N/A',
             "Real Password": s.rawPassword || "NOT_STORED"
@@ -116,7 +119,7 @@ export default function ViewAllStudents() {
         if (!window.confirm("Are you sure you want to delete this student account? This action cannot be undone.")) return;
         
         try {
-            await api.delete(`/admin/users/${id}`);
+            await api.delete(`/admin/students/${id}`);
             setData(data.filter(s => s.id !== id));
             alert("Student deleted successfully.");
         } catch (err) {
@@ -124,13 +127,17 @@ export default function ViewAllStudents() {
         }
     };
 
-    const filteredData = data.filter(s =>
-        s.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (s.department && s.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (s.specializationName && s.specializationName.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const filteredData = data.filter(s => {
+        const id = (s.studentId || s.username || '').toLowerCase();
+        const first = (s.firstName || '').toLowerCase();
+        const last = (s.lastName || '').toLowerCase();
+        const email = (s.email || '').toLowerCase();
+        const dept = (s.department || '').toLowerCase();
+        const spec = (s.specializationName || '').toLowerCase();
+        const acad = (s.academicYear || '').toLowerCase();
+        const q = searchTerm.toLowerCase();
+        return id.includes(q) || first.includes(q) || last.includes(q) || email.includes(q) || dept.includes(q) || spec.includes(q) || acad.includes(q);
+    });
 
     return (
         <div className="admin-page-container">
@@ -140,9 +147,14 @@ export default function ViewAllStudents() {
                         <h1>Student Management</h1>
                         <p>View and manage all registered student accounts including their credentials.</p>
                     </div>
-                    <button onClick={downloadAllCredentials} className="download-btn-premium">
-                        📥 Extract All Passwords (Excel)
-                    </button>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button onClick={() => navigate('/super_admin/addstudent')} className="btn-primary" style={{ padding: '0.6rem 1.2rem' }}>
+                            ➕ Add Student
+                        </button>
+                        <button onClick={downloadAllCredentials} className="download-btn-premium">
+                            📥 Extract All Passwords (Excel)
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -151,7 +163,7 @@ export default function ViewAllStudents() {
                     <span className="search-icon">🔍</span>
                     <input
                         type="text"
-                        placeholder="Search by ID, Name, Email, Dept or Spec..."
+                        placeholder="Search by ID, Name, Academic Year, Dept or Spec..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="input-field"
@@ -176,24 +188,27 @@ export default function ViewAllStudents() {
                             <thead>
                                 <tr>
                                     <th>Student ID</th>
+                                    <th>Academic Year</th>
                                     <th>Full Name</th>
                                     <th>Email Address</th>
-                                    <th>Dept / Sub-Dept</th>
+                                    <th>Dept / Add-on</th>
                                     <th>Specialization</th>
+                                    <th>Status</th>
                                     <th>Password</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredData.map((student, index) => (
-                                    <tr key={index}>
-                                        <td><code>{student.username}</code></td>
+                                    <tr key={student.id || index}>
+                                        <td><code>{student.studentId || student.username}</code></td>
+                                        <td><span className="acad-tag">{student.academicYear || 'Y23'}</span></td>
                                         <td><strong>{student.firstName} {student.lastName}</strong></td>
                                         <td>{student.email}</td>
                                         <td>
                                             <div className="dept-cell">
                                                 <span className="main-dept">{student.department}</span>
-                                                <span className="sub-dept">{student.subDepartment || 'N/A'}</span>
+                                                <span className="sub-dept">{student.subDepartment || 'REGULAR'}</span>
                                             </div>
                                         </td>
                                         <td>
@@ -203,8 +218,20 @@ export default function ViewAllStudents() {
                                             </div>
                                         </td>
                                         <td>
+                                            <span style={{ 
+                                                padding: '3px 8px', 
+                                                borderRadius: '12px', 
+                                                fontSize: '0.75rem', 
+                                                fontWeight: 700, 
+                                                background: student.isActive !== false ? '#DCFCE7' : '#F1F5F9',
+                                                color: student.isActive !== false ? '#166534' : '#64748B'
+                                            }}>
+                                                {student.isActive !== false ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td>
                                             <div className="password-display">
-                                                <code>{visiblePasswords[index] ? (student.rawPassword || 'N/A') : '••••••••'}</code>
+                                                <code>{visiblePasswords[index] ? (student.rawPassword || '••••••••') : '••••••••'}</code>
                                                 <button
                                                     className="visibility-toggle"
                                                     onClick={() => togglePassword(index)}
@@ -245,7 +272,7 @@ export default function ViewAllStudents() {
                                 ))}
                                 {filteredData.length === 0 && (
                                     <tr>
-                                        <td colSpan="7" className="empty-state">No students matching your search.</td>
+                                        <td colSpan="9" className="empty-state">No students matching your search.</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -297,6 +324,20 @@ export default function ViewAllStudents() {
                                     />
                                 </div>
                                 <div className="form-group">
+                                    <label>Academic Year</label>
+                                    <select 
+                                        name="academicYear" 
+                                        value={editForm.academicYear} 
+                                        onChange={handleEditFormChange} 
+                                        className="input-field"
+                                    >
+                                        <option value="Y23">Y23</option>
+                                        <option value="Y24">Y24</option>
+                                        <option value="Y25">Y25</option>
+                                        <option value="Y26">Y26</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
                                     <label>Department (Branch)</label>
                                     <input 
                                         type="text" 
@@ -308,14 +349,14 @@ export default function ViewAllStudents() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Academic Track (Sub-Dept / Honors)</label>
+                                    <label>Add-on</label>
                                     <select 
                                         name="subDepartment" 
                                         value={editForm.subDepartment} 
                                         onChange={handleEditFormChange} 
                                         className="input-field"
                                     >
-                                        <option value="REGULAR">Regular</option>
+                                        <option value="REGULAR">Regular (None)</option>
                                         <option value="HONOR">Honors</option>
                                         <option value="HTE">HTE</option>
                                         <option value="HTR">HTR</option>

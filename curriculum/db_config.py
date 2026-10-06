@@ -16,7 +16,7 @@ def load_dotenv_if_present():
                     k = k.strip()
                     v = v.strip().strip("'").strip('"')
                     if k not in os.environ:
-                        os.environ[k] = v
+                        os.environ[k] = v.replace("$$", "$")
 
 load_dotenv_if_present()
 

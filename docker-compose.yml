@@ -2,8 +2,9 @@ services:
   backend:
     build:
       context: ./backend/Creditcore_backend
+    container_name: creditcore-backend
     ports:
-      - "8086:8086"
+      - "127.0.0.1:8086:8086"
     environment:
       - DB_URL=${DB_URL}
       - DB_USERNAME=${DB_USERNAME}
@@ -15,16 +16,45 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-      start_period: 30s
+      start_period: 45s
 
   frontend:
     build:
       context: ./frontend/frontendreactapp
+    container_name: creditcore-frontend
     ports:
-      - "3086:80"
+      - "127.0.0.1:3086:80"
     environment:
-      - VITE_API_BASE_URL=http://localhost:8086
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8086}
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
     restart: always
     depends_on:
       backend:
         condition: service_healthy
+
+  # Optional local database (only used if explicitly started with --profile local-db)
+  db:
+    profiles:
+      - local-db
+    image: postgres:16-alpine
+    container_name: creditcore-db
+    restart: always
+    environment:
+      POSTGRES_DB: creditcore
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d creditcore"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+
+
