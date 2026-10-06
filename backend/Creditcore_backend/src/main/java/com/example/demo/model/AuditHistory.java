@@ -20,14 +20,13 @@ public class AuditHistory {
 
     @ManyToOne
     @JoinColumn(name = "student_id")
-    private com.example.demo.model.User student;
+    private Student student;
 
     @Column(name = "action_type")
     private String actionType;
 
-    @ManyToOne
-    @JoinColumn(name = "performed_by")
-    private com.example.demo.model.User performedBy;
+    @Column(name = "performed_by")
+    private Long performedBy;
 
     @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")

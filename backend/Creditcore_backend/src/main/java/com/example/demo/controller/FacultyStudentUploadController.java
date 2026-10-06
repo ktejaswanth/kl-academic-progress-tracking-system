@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.AdminRepository;
+import com.example.demo.repository.FacultyRepository;
 import com.example.demo.service.BulkUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +19,10 @@ public class FacultyStudentUploadController {
     private BulkUploadService bulkUploadService;
 
     @Autowired
-    private UserRepository userRepository;
+    private FacultyRepository facultyRepository;
+
+    @Autowired
+    private AdminRepository adminRepository;
 
     @PostMapping("/upload-students")
     public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file) {
@@ -29,9 +32,18 @@ public class FacultyStudentUploadController {
             }
             
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            User currentUser = userRepository.findByUsername(username).orElse(null);
+            Long uploaderId = null;
+            var fOpt = facultyRepository.findByUsername(username);
+            if (fOpt.isPresent()) {
+                uploaderId = fOpt.get().getId();
+            } else {
+                var aOpt = adminRepository.findByUsername(username);
+                if (aOpt.isPresent()) {
+                    uploaderId = aOpt.get().getId();
+                }
+            }
 
-            List<BulkUploadService.CredentialInfo> credentials = bulkUploadService.processBulkUpload(file, currentUser);
+            List<BulkUploadService.CredentialInfo> credentials = bulkUploadService.processBulkUpload(file, uploaderId);
             return ResponseEntity.ok(credentials);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Upload Error: " + e.getMessage());

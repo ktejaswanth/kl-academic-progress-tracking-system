@@ -20,7 +20,7 @@ public class StudentSelection {
 
     @OneToOne
     @JoinColumn(name = "student_id", unique = true)
-    private com.example.demo.model.User student;
+    private Student student;
 
     @ManyToOne
     @JoinColumn(name = "program_id")

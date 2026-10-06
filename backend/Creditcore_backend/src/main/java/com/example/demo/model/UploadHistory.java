@@ -19,9 +19,8 @@ public class UploadHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "uploaded_by", referencedColumnName = "id")
-    private User uploadedBy;
+    @Column(name = "uploaded_by")
+    private Long uploadedBy;
 
     @Column(name = "file_name")
     private String fileName;

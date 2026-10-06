@@ -22,7 +22,13 @@ public class CompletedCourse {
 
     @ManyToOne
     @JoinColumn(name = "student_id", referencedColumnName = "id")
-    private User student;
+    private Student student;
+
+    @Column(name = "university_id")
+    private String universityId;
+
+    @Column(name = "student_name")
+    private String studentName;
 
     @Column(name = "course_code", nullable = false)
     private String courseCode;
@@ -30,8 +36,8 @@ public class CompletedCourse {
     @Column(name = "course_name", nullable = false)
     private String courseName;
 
-    @Column(nullable = false)
-    private Integer credits;
+    @Column(name = "credits")
+    private Integer credits = 0;
 
     private String grade;
 
@@ -71,9 +77,8 @@ public class CompletedCourse {
     @Column(name = "completed_date")
     private LocalDate completedDate;
 
-    @ManyToOne
-    @JoinColumn(name = "verified_by", referencedColumnName = "id")
-    private User verifiedBy;
+    @Column(name = "verified_by")
+    private Long verifiedBy;
 
     private String category;
 

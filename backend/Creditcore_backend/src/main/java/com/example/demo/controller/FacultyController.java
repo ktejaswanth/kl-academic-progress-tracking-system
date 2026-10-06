@@ -1,9 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.StudentDegreeStatus;
-import com.example.demo.model.User;
 import com.example.demo.repository.StudentDegreeStatusRepository;
-import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,9 +18,6 @@ public class FacultyController {
 
     @Autowired
     private StudentDegreeStatusRepository statusRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private com.example.demo.repository.FacultyRepository facultyRepository;
@@ -35,15 +30,8 @@ public class FacultyController {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         String dept = "CSE";
         java.util.Optional<com.example.demo.model.Faculty> fOpt = facultyRepository.findByUsername(username);
-        if (fOpt.isPresent()) {
-            if (fOpt.get().getDepartment() != null && !fOpt.get().getDepartment().isEmpty()) {
-                dept = fOpt.get().getDepartment();
-            }
-        } else {
-            User faculty = userRepository.findByUsername(username).orElse(null);
-            if (faculty != null && faculty.getDepartment() != null && !faculty.getDepartment().isEmpty()) {
-                dept = faculty.getDepartment();
-            }
+        if (fOpt.isPresent() && fOpt.get().getDepartment() != null && !fOpt.get().getDepartment().isEmpty()) {
+            dept = fOpt.get().getDepartment();
         }
         
         long totalStudents = statusRepository.countByDepartment(dept);

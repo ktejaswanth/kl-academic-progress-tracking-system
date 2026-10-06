@@ -20,15 +20,18 @@ public class PasswordResetToken {
     @Column(nullable = false, unique = true)
     private String token;
 
-    @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)
-    @JoinColumn(nullable = false, name = "user_id")
-    private User user;
+    @Column(name = "username")
+    private String username;
+
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column(nullable = false)
     private LocalDateTime expiryDate;
 
-    public PasswordResetToken(User user) {
-        this.user = user;
+    public PasswordResetToken(String username, Long userId) {
+        this.username = username;
+        this.userId = userId;
         this.token = UUID.randomUUID().toString();
         // Set expiry to 20 minutes from now
         this.expiryDate = LocalDateTime.now().plusMinutes(20);

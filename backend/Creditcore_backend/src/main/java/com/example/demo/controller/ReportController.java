@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.model.Student;
+import com.example.demo.repository.StudentRepository;
 import com.example.demo.service.ReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +21,7 @@ public class ReportController {
     private ReportService reportService;
 
     @Autowired
-    private UserRepository userRepository;
+    private StudentRepository studentRepository;
 
     @GetMapping("/student/{id}")
     public ResponseEntity<?> getStudentReport(@PathVariable Long id) {
@@ -36,8 +36,8 @@ public class ReportController {
     @GetMapping("/student/me")
     public ResponseEntity<?> getMyReport() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User student = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Student user not found"));
+        Student student = studentRepository.findByStudentId(username)
+                .orElseThrow(() -> new RuntimeException("Student user not found: " + username));
 
         try {
             Map<String, Object> data = reportService.getStudentReport(student.getId());
@@ -63,8 +63,8 @@ public class ReportController {
     @GetMapping("/student/me/excel")
     public ResponseEntity<byte[]> downloadMyReportExcel() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User student = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Student user not found"));
+        Student student = studentRepository.findByStudentId(username)
+                .orElseThrow(() -> new RuntimeException("Student user not found: " + username));
 
         try {
             byte[] fileBytes = reportService.exportStudentReportExcel(student.getId());

@@ -20,7 +20,7 @@ public class StudentDegreeStatus {
 
     @OneToOne
     @JoinColumn(name = "student_id", unique = true, nullable = false)
-    private User student;
+    private Student student;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "degree_path_id")

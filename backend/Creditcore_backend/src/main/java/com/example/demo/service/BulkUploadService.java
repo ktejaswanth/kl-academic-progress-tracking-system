@@ -27,8 +27,6 @@ public class BulkUploadService {
         ZipSecureFile.setMinInflateRatio(0.0);
     }
 
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private StudentProfileRepository studentProfileRepository;
@@ -45,7 +43,7 @@ public class BulkUploadService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<CredentialInfo> processBulkUpload(MultipartFile file, User uploadedBy) throws IOException {
+    public List<CredentialInfo> processBulkUpload(MultipartFile file, Long uploadedBy) throws IOException {
         IOUtils.setByteArrayMaxOverride(Integer.MAX_VALUE);
         ZipSecureFile.setMinInflateRatio(0.0);
         Workbook workbook;
@@ -265,8 +263,10 @@ public class BulkUploadService {
         return out.toByteArray();
     }
 
-    public java.util.Map<String, Long> getFacultyAnalytics(User faculty) {
-        List<UploadHistory> history = uploadHistoryRepository.findByUploadedBy(faculty);
+    public java.util.Map<String, Long> getFacultyAnalytics(Long facultyId) {
+        List<UploadHistory> history = (facultyId != null)
+                ? uploadHistoryRepository.findByUploadedBy(facultyId)
+                : uploadHistoryRepository.findAll();
         long totalStudents = history.stream().mapToLong(UploadHistory::getSuccessCount).sum();
         long recentUploads = history.size();
         

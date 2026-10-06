@@ -21,7 +21,15 @@ public class StudentProfile {
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
-    private User user;
+    private Student user;
+
+    public Student getStudent() {
+        return user;
+    }
+
+    public void setStudent(Student student) {
+        this.user = student;
+    }
 
     @Column(name = "university_id", unique = true)
     private String universityId;

@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.*;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.StudentRepository;
 import com.example.demo.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,30 +21,33 @@ public class StudentProgressController {
     @Autowired private SpecializationProgressEngine specializationProgressEngine;
     @Autowired private MinorProgressEngine minorProgressEngine;
     @Autowired private SecondMajorProgressEngine secondMajorProgressEngine;
-    @Autowired private UserRepository userRepository;
+    @Autowired private StudentRepository studentRepository;
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getStudentDashboard(Authentication authentication) {
         String username = authentication.getName();
-        User student = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        Student student = studentRepository.findByStudentId(username)
+                .orElseThrow(() -> new RuntimeException("Student not found: " + username));
 
         return getStudentDashboardById(student.getId());
     }
 
     @GetMapping("/dashboard/{studentId}")
     public ResponseEntity<Map<String, Object>> getStudentDashboardById(@PathVariable Long studentId) {
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
 
         Map<String, Object> response = new LinkedHashMap<>();
 
         // 1. Student Identity Info
         Map<String, Object> studentInfo = new LinkedHashMap<>();
         studentInfo.put("studentId", student.getId());
-        studentInfo.put("username", student.getUsername());
-        studentInfo.put("universityId", student.getUsername());
-        studentInfo.put("fullName", student.getFirstName() + " " + student.getLastName());
+        studentInfo.put("username", student.getStudentId());
+        studentInfo.put("universityId", student.getStudentId());
+        String fullName = student.getName() != null && !student.getName().trim().isEmpty()
+                ? student.getName()
+                : ((student.getFirstName() != null ? student.getFirstName() : "") + " " + (student.getLastName() != null ? student.getLastName() : "")).trim();
+        studentInfo.put("fullName", fullName.isEmpty() ? student.getStudentId() : fullName);
         studentInfo.put("email", student.getEmail());
         studentInfo.put("department", student.getDepartment());
         studentInfo.put("degreeType", student.getSubDepartment() != null ? student.getSubDepartment() : "REGULAR");

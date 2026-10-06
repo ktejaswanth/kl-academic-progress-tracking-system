@@ -23,7 +23,7 @@ public class CrossCurriculumIsolationTest {
     private BucketMappingEngine bucketMappingEngine;
 
     @Autowired
-    private UserRepository userRepository;
+    private StudentRepository studentRepository;
 
     @Autowired
     private DegreePathRepository degreePathRepository;
@@ -46,20 +46,20 @@ public class CrossCurriculumIsolationTest {
     @DisplayName("Phase 18.1: Y23 CSE course MUST NOT satisfy Y23 AIDS requirement")
     public void testCseCourseCannotSatisfyAidsPath() {
         // 1. Create a dummy test student
-        User aidsStudent = new User();
-        aidsStudent.setUsername("TEST_AIDS_STUDENT_99");
+        Student aidsStudent = new Student();
+        aidsStudent.setStudentId("TEST_AIDS_STUDENT_99");
         aidsStudent.setEmail("aids99@test.com");
-        aidsStudent.setPasswordHash("hash");
+        aidsStudent.setPassword("hash");
         aidsStudent.setFirstName("AIDS");
         aidsStudent.setLastName("Student");
-        aidsStudent.setRole(UserRole.STUDENT);
-        aidsStudent = userRepository.save(aidsStudent);
+        aidsStudent.setDepartment("AIDS");
+        aidsStudent = studentRepository.save(aidsStudent);
 
         // 2. Add a CSE-specific course to this student's completed courses
         // Note: 23CS2101 is a CSE course, not an AIDS course
         StudentCourse sc = new StudentCourse();
         sc.setStudent(aidsStudent);
-        sc.setUniversityId(aidsStudent.getUsername());
+        sc.setUniversityId(aidsStudent.getStudentId());
         sc.setCourseCode("23CS2101");
         sc.setCourseName("Design and Analysis of Algorithms");
         sc.setCredits(4.0);
@@ -86,20 +86,20 @@ public class CrossCurriculumIsolationTest {
     @DisplayName("Phase 18.2: Y23 AIDS course MUST NOT satisfy Y23 CSE requirement")
     public void testAidsCourseCannotSatisfyCsePath() {
         // 1. Create a dummy test student
-        User cseStudent = new User();
-        cseStudent.setUsername("TEST_CSE_STUDENT_99");
+        Student cseStudent = new Student();
+        cseStudent.setStudentId("TEST_CSE_STUDENT_99");
         cseStudent.setEmail("cse99@test.com");
-        cseStudent.setPasswordHash("hash");
+        cseStudent.setPassword("hash");
         cseStudent.setFirstName("CSE");
         cseStudent.setLastName("Student");
-        cseStudent.setRole(UserRole.STUDENT);
-        cseStudent = userRepository.save(cseStudent);
+        cseStudent.setDepartment("CSE");
+        cseStudent = studentRepository.save(cseStudent);
 
         // 2. Add an AIDS-specific course to this student's completed courses
         // Note: 23AD2101 is an AIDS course
         StudentCourse sc = new StudentCourse();
         sc.setStudent(cseStudent);
-        sc.setUniversityId(cseStudent.getUsername());
+        sc.setUniversityId(cseStudent.getStudentId());
         sc.setCourseCode("23AD2101");
         sc.setCourseName("Introduction to Data Science & AI");
         sc.setCredits(4.0);

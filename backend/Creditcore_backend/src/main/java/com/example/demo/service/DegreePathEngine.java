@@ -23,7 +23,7 @@ import java.util.*;
 public class DegreePathEngine {
 
     @Autowired
-    private UserRepository userRepository;
+    private StudentRepository studentRepository;
     @Autowired
     private DegreePathRepository degreePathRepository;
     @Autowired
@@ -40,7 +40,7 @@ public class DegreePathEngine {
      * Uses the user's department, subDepartment (degree type), specializationType, and specializationName.
      */
     public DegreePath resolveAndAssignPath(Long studentId) {
-        User student = userRepository.findById(studentId)
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found: " + studentId));
 
         // Map user fields to DYOD codes
@@ -81,7 +81,7 @@ public class DegreePathEngine {
      * Manually assign a specific degree path to a student.
      */
     public DegreePath assignPath(Long studentId, Long degreePathId, Long assignedById) {
-        User student = userRepository.findById(studentId)
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
         DegreePath path = degreePathRepository.findById(degreePathId)
                 .orElseThrow(() -> new RuntimeException("Degree path not found"));
@@ -92,11 +92,7 @@ public class DegreePathEngine {
         sdp.setStudent(student);
         sdp.setDegreePath(path);
         sdp.setIsConfirmed(true);
-
-        if (assignedById != null) {
-            User assignedBy = userRepository.findById(assignedById).orElse(null);
-            sdp.setAssignedBy(assignedBy);
-        }
+        sdp.setAssignedBy(assignedById);
 
         studentDegreePathRepository.save(sdp);
         return path;
@@ -122,12 +118,12 @@ public class DegreePathEngine {
      * Auto-resolve paths for all students who don't have one assigned yet.
      */
     public Map<String, Object> autoAssignAllStudents() {
-        List<User> students = userRepository.findByRole(UserRole.STUDENT);
+        List<Student> students = studentRepository.findAll();
         int assigned = 0;
         int failed = 0;
         List<String> errors = new ArrayList<>();
 
-        for (User student : students) {
+        for (Student student : students) {
             if (studentDegreePathRepository.existsByStudentId(student.getId())) {
                 continue; // Already assigned
             }
@@ -136,7 +132,7 @@ public class DegreePathEngine {
                 assigned++;
             } catch (Exception e) {
                 failed++;
-                errors.add(student.getUsername() + ": " + e.getMessage());
+                errors.add(student.getStudentId() + ": " + e.getMessage());
             }
         }
 

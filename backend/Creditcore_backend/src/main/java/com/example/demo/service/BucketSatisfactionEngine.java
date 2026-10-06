@@ -35,7 +35,7 @@ public class BucketSatisfactionEngine {
     @Autowired
     private BucketMappingEngine bucketMappingEngine;
     @Autowired
-    private UserRepository userRepository;
+    private StudentRepository studentRepository;
 
     /**
      * Evaluate all bucket satisfaction for a student.
@@ -60,7 +60,7 @@ public class BucketSatisfactionEngine {
                 bucketMappingEngine.mapStudentCoursesToBuckets(studentId, degreePathId);
 
         // 4. For each required bucket, calculate progress
-        User student = userRepository.findById(studentId)
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
         DegreePath degreePath = sdp.getDegreePath();
 

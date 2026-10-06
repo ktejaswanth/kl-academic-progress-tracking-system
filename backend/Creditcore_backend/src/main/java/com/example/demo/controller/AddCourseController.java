@@ -1,8 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.CompletedCourse;
-import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AddCourseService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/dyod/courses")
@@ -26,16 +25,30 @@ public class AddCourseController {
     private AddCourseService addCourseService;
 
     @Autowired
-    private UserRepository userRepository;
+    private com.example.demo.repository.AdminRepository adminRepository;
+
+    @Autowired
+    private com.example.demo.repository.FacultyRepository facultyRepository;
+
+    @Autowired
+    private com.example.demo.repository.StudentRepository studentRepository;
+
+    private Long getVerifierId(String username) {
+        if (username == null || username.trim().isEmpty()) return 1L;
+        Optional<com.example.demo.model.Faculty> fOpt = facultyRepository.findByUsername(username);
+        if (fOpt.isPresent()) return fOpt.get().getId();
+        Optional<com.example.demo.model.Admin> aOpt = adminRepository.findByUsername(username);
+        if (aOpt.isPresent()) return aOpt.get().getId();
+        return 1L;
+    }
 
     @PostMapping("/add")
     public ResponseEntity<?> addSingleCourse(@RequestBody AddCourseRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User verifier = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Logged in user not found"));
+        Long verifierId = getVerifierId(username);
 
         try {
-            Map<String, Object> response = addCourseService.addSingleCourse(request, verifier.getId());
+            Map<String, Object> response = addCourseService.addSingleCourse(request, verifierId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -45,11 +58,10 @@ public class AddCourseController {
     @PostMapping("/bulk-upload")
     public ResponseEntity<?> bulkUploadCourses(@RequestParam("file") MultipartFile file) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User verifier = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Logged in user not found"));
+        Long verifierId = getVerifierId(username);
 
         try {
-            Map<String, Object> response = addCourseService.bulkUploadCourses(file, verifier.getId());
+            Map<String, Object> response = addCourseService.bulkUploadCourses(file, verifierId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -74,10 +86,11 @@ public class AddCourseController {
     @GetMapping("/student/me")
     public ResponseEntity<List<CompletedCourse>> getMyCourses() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User student = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Student user not found"));
-
-        return ResponseEntity.ok(addCourseService.getStudentCourses(student.getId()));
+        Optional<com.example.demo.model.Student> student = studentRepository.findByStudentId(username);
+        if (student.isPresent()) {
+            return ResponseEntity.ok(addCourseService.getStudentCourses(student.get().getId()));
+        }
+        return ResponseEntity.ok(addCourseService.getStudentCoursesByUniversityId(username));
     }
 
     @GetMapping("/template")

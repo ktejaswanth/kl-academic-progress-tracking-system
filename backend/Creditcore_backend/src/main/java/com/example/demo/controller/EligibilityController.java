@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.User;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.model.Student;
+import com.example.demo.repository.StudentRepository;
 import com.example.demo.service.EligibilityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,14 +16,14 @@ public class EligibilityController {
     private EligibilityService eligibilityService;
 
     @Autowired
-    private UserRepository userRepository;
+    private StudentRepository studentRepository;
 
     @GetMapping
     public ResponseEntity<?> getEligibility() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(eligibilityService.calculateEligibility(user.getId()));
+        Student student = studentRepository.findByStudentId(username)
+                .orElseThrow(() -> new RuntimeException("Student not found: " + username));
+        return ResponseEntity.ok(eligibilityService.calculateEligibility(student.getId()));
     }
 
     @GetMapping("/{studentId}")

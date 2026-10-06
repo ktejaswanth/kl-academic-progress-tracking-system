@@ -21,7 +21,6 @@ public class Y23AidsDataMigration {
     @Autowired private StudentCourseAttemptRepository studentAttemptRepo;
     @Autowired private StudentProfileRepository studentProfileRepo;
     @Autowired private CourseCatalogRepository courseCatalogRepo;
-    @Autowired private CurriculumVersionRepository curriculumVersionRepo;
     @Autowired private DegreePathEngine degreePathEngine;
 
     public Map<String, Object> migrateY23AidsStudentData() {
@@ -36,26 +35,45 @@ public class Y23AidsDataMigration {
 
         Set<Long> processedStudents = new HashSet<>();
 
+        // 1. Preload Course Catalog into map for O(1) lookups
+        Map<String, CourseCatalog> catalogMap = new HashMap<>();
+        for (CourseCatalog cat : courseCatalogRepo.findAll()) {
+            if (cat.getCourseCode() != null) {
+                catalogMap.put(cat.getCourseCode().toUpperCase().trim(), cat);
+            }
+        }
+
+        // 2. Preload existing student courses to avoid N+1 queries
+        Set<String> existingPairs = new HashSet<>();
+        for (StudentCourse sc : studentCourseRepo.findAll()) {
+            if (sc.getStudent() != null && sc.getCourseCode() != null) {
+                existingPairs.add(sc.getStudent().getId() + "#" + sc.getCourseCode().toUpperCase().trim());
+            }
+        }
+
+        List<StudentCourse> scToSave = new ArrayList<>();
+        List<StudentCourseAttempt> scaToSave = new ArrayList<>();
+
         for (CompletedCourse cc : rawList) {
-            User student = cc.getStudent();
+            Student student = cc.getStudent();
             if (student == null) continue;
 
-            processedStudents.add(student.getId());
+            String codeUpper = cc.getCourseCode() != null ? cc.getCourseCode().toUpperCase().trim() : "";
+            if (codeUpper.isEmpty()) continue;
 
-            String univId = student.getUsername(); // Student ID / Roll number
-            Optional<CourseCatalog> catalogOpt = courseCatalogRepo.findByCourseCode(cc.getCourseCode());
-
-            if (catalogOpt.isPresent()) {
-                matchedCourses++;
-            }
-
-            // Check if already in student_courses
-            boolean exists = studentCourseRepo.findByStudentId(student.getId()).stream()
-                    .anyMatch(sc -> sc.getCourseCode().equalsIgnoreCase(cc.getCourseCode()));
-
-            if (exists) {
+            String pairKey = student.getId() + "#" + codeUpper;
+            if (existingPairs.contains(pairKey)) {
                 duplicateRecords++;
                 continue;
+            }
+            existingPairs.add(pairKey);
+
+            String univId = cc.getUniversityId() != null ? cc.getUniversityId() : student.getStudentId();
+            processedStudents.add(student.getId());
+
+            CourseCatalog catalog = catalogMap.get(codeUpper);
+            if (catalog != null) {
+                matchedCourses++;
             }
 
             StudentCourse sc = new StudentCourse();
@@ -68,14 +86,11 @@ public class Y23AidsDataMigration {
             sc.setStatus(cc.getStatus() != null ? cc.getStatus() : "COMPLETED");
             sc.setSemester(cc.getSemester());
             sc.setCompletedDate(cc.getCompletedDate());
-            if (catalogOpt.isPresent()) {
-                sc.setCourse(catalogOpt.get());
+            if (catalog != null) {
+                sc.setCourse(catalog);
             }
+            scToSave.add(sc);
 
-            studentCourseRepo.save(sc);
-            migratedCourses++;
-
-            // Create qualifying attempt
             StudentCourseAttempt sca = new StudentCourseAttempt();
             sca.setStudent(student);
             sca.setUniversityId(univId);
@@ -85,7 +100,16 @@ public class Y23AidsDataMigration {
             sca.setStatus("COMPLETED");
             sca.setSemester(cc.getSemester());
             sca.setIsQualifying(true);
-            studentAttemptRepo.save(sca);
+            scaToSave.add(sca);
+
+            migratedCourses++;
+        }
+
+        if (!scToSave.isEmpty()) {
+            studentCourseRepo.saveAll(scToSave);
+        }
+        if (!scaToSave.isEmpty()) {
+            studentAttemptRepo.saveAll(scaToSave);
         }
 
         // Auto assign degree path to any student missing one

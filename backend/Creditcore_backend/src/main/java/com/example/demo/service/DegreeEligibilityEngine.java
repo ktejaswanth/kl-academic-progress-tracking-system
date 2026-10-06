@@ -37,7 +37,7 @@ public class DegreeEligibilityEngine {
     @Autowired
     private StudentDegreePathRepository studentDegreePathRepository;
     @Autowired
-    private UserRepository userRepository;
+    private StudentRepository studentRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -106,7 +106,7 @@ public class DegreeEligibilityEngine {
         }
 
         // 6. Save or update status
-        User student = userRepository.findById(studentId).orElseThrow();
+        Student student = studentRepository.findById(studentId).orElseThrow();
         StudentDegreeStatus degreeStatus = studentDegreeStatusRepository.findByStudentId(studentId)
                 .orElse(new StudentDegreeStatus());
 

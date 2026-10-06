@@ -15,7 +15,6 @@ import java.time.LocalDate;
 public class DataSeeder implements CommandLineRunner {
 
     @Autowired private AdminRepository adminRepository;
-    @Autowired private UserRepository userRepository;
     @Autowired private StudentProfileRepository studentProfileRepository;
     @Autowired private RequirementRepository requirementRepository;
     @Autowired private CompletedCourseRepository completedCourseRepository;

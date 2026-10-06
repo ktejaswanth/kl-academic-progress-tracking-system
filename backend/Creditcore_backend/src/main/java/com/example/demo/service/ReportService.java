@@ -14,12 +14,13 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 @Service
 @Transactional(readOnly = true)
 public class ReportService {
 
     @Autowired
-    private UserRepository userRepository;
+    private StudentRepository studentRepository;
 
     @Autowired
     private StudentDegreeStatusRepository studentDegreeStatusRepository;
@@ -37,7 +38,7 @@ public class ReportService {
      * Individual student progress report.
      */
     public Map<String, Object> getStudentReport(Long studentId) {
-        User student = userRepository.findById(studentId)
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         StudentDegreeStatus status = studentDegreeStatusRepository.findByStudentId(studentId)
@@ -48,7 +49,7 @@ public class ReportService {
 
         Map<String, Object> report = new LinkedHashMap<>();
         report.put("studentId", student.getId());
-        report.put("studentUsername", student.getUsername());
+        report.put("studentUsername", student.getStudentId());
         report.put("studentName", student.getFirstName() + " " + student.getLastName());
         report.put("department", student.getDepartment());
         report.put("subDepartment", student.getSubDepartment());
@@ -242,7 +243,7 @@ public class ReportService {
 
             for (StudentDegreeStatus status : students) {
                 Row row = sheet.createRow(rowIdx++);
-                row.createCell(0).setCellValue(status.getStudent().getUsername());
+                row.createCell(0).setCellValue(status.getStudent().getStudentId());
                 row.createCell(1).setCellValue(status.getStudent().getFirstName() + " " + status.getStudent().getLastName());
                 row.createCell(2).setCellValue(status.getDegreePath() != null ? status.getDegreePath().getPathCode() : "N/A");
                 row.createCell(3).setCellValue(status.getTotalRequiredCredits());
@@ -323,7 +324,7 @@ public class ReportService {
 
             for (StudentDegreeStatus status : roster) {
                 Row row = sheet.createRow(rowIdx++);
-                row.createCell(0).setCellValue(status.getStudent().getUsername());
+                row.createCell(0).setCellValue(status.getStudent().getStudentId());
                 row.createCell(1).setCellValue(status.getStudent().getFirstName() + " " + status.getStudent().getLastName());
                 row.createCell(2).setCellValue(status.getStudent().getDepartment());
                 row.createCell(3).setCellValue(status.getDegreePath() != null ? status.getDegreePath().getPathCode() : "N/A");

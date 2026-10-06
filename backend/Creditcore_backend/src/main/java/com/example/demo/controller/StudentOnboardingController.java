@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
+import com.example.demo.model.Student;
 import com.example.demo.model.StudentProfile;
 import com.example.demo.model.StudentSelection;
-import com.example.demo.model.User;
 import com.example.demo.service.StudentOnboardingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +23,10 @@ public class StudentOnboardingController {
         String dob = payload.get("dateOfBirth");
 
         return onboardingService.verifyFirstLogin(username, dob)
-                .map(user -> ResponseEntity.ok(Map.<String, Object>of(
-                        "userId", user.getId(),
-                        "username", user.getUsername(),
-                        "firstLoginCompleted", user.getFirstLoginCompleted()
+                .map(student -> ResponseEntity.ok(Map.<String, Object>of(
+                        "userId", student.getId(),
+                        "username", student.getStudentId(),
+                        "firstLoginCompleted", Boolean.TRUE.equals(student.getFirstLoginCompleted())
                 )))
                 .orElse(ResponseEntity.status(401).body(Map.<String, Object>of("error", "Invalid credentials")));
     }

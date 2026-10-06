@@ -22,30 +22,33 @@ public class BucketProgressController {
     private DegreeEligibilityEngine degreeEligibilityEngine;
 
     @Autowired
-    private com.example.demo.repository.UserRepository userRepository;
+    private com.example.demo.repository.StudentRepository studentRepository;
 
     @GetMapping("/student/me")
     public ResponseEntity<?> getMyProgress() {
         String username = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
-        com.example.demo.model.User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        com.example.demo.model.Student student = studentRepository.findByStudentId(username)
+                .orElseThrow(() -> new RuntimeException("Student not found: " + username));
         
         // Evaluate first to ensure it's up to date
         try {
-            degreeEligibilityEngine.evaluateEligibility(user.getId());
+            degreeEligibilityEngine.evaluateEligibility(student.getId());
         } catch (Exception e) {
             // Ignore error if path not assigned yet
         }
         
-        Optional<StudentDegreeStatus> status = degreeEligibilityEngine.getStudentStatus(user.getId());
+        Optional<StudentDegreeStatus> status = degreeEligibilityEngine.getStudentStatus(student.getId());
         if (status.isPresent()) {
             java.util.Map<String, Object> result = new java.util.HashMap<>();
             result.put("status", status.get());
-            result.put("buckets", bucketSatisfactionEngine.getDetailedBucketProgress(user.getId()));
-            result.put("studentName", user.getFirstName() + " " + user.getLastName());
-            result.put("department", user.getDepartment());
-            result.put("subDepartment", user.getSubDepartment());
-            result.put("specialization", user.getSpecializationName());
+            result.put("buckets", bucketSatisfactionEngine.getDetailedBucketProgress(student.getId()));
+            String fullName = student.getName() != null && !student.getName().trim().isEmpty()
+                    ? student.getName()
+                    : ((student.getFirstName() != null ? student.getFirstName() : "") + " " + (student.getLastName() != null ? student.getLastName() : "")).trim();
+            result.put("studentName", fullName.isEmpty() ? student.getStudentId() : fullName);
+            result.put("department", student.getDepartment());
+            result.put("subDepartment", student.getSubDepartment());
+            result.put("specialization", student.getSpecializationName());
             return ResponseEntity.ok(result);
         }
         return ResponseEntity.notFound().build();

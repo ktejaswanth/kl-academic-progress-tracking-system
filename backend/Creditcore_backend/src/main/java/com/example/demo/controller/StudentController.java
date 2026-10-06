@@ -1,11 +1,11 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.User;
 import com.example.demo.model.CompletedCourse;
+import com.example.demo.model.Student;
 import com.example.demo.model.StudentIssue;
-import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.CompletedCourseRepository;
 import com.example.demo.repository.StudentIssueRepository;
+import com.example.demo.repository.StudentRepository;
 import com.example.demo.service.AuditService;
 import com.example.demo.service.EligibilityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +24,7 @@ public class StudentController {
     private AuditService auditService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private com.example.demo.repository.StudentRepository studentRepository;
+    private StudentRepository studentRepository;
 
     @Autowired
     private EligibilityService eligibilityService;
@@ -49,35 +46,19 @@ public class StudentController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             
-            Optional<com.example.demo.model.Student> studentOpt = studentRepository.findByStudentId(username);
-            if (studentOpt.isPresent()) {
-                com.example.demo.model.Student student = studentOpt.get();
-                java.util.Map<String, Object> profile = new java.util.HashMap<>();
-                profile.put("username", student.getStudentId());
-                profile.put("email", student.getEmail());
-                profile.put("firstName", student.getFirstName());
-                profile.put("lastName", student.getLastName());
-                profile.put("department", student.getDepartment());
-                profile.put("subDepartment", student.getSubDepartment());
-                profile.put("specializationType", student.getSpecializationType());
-                profile.put("specializationName", student.getSpecializationName());
-                profile.put("academicYear", student.getAcademicYear());
-                return ResponseEntity.ok(profile);
-            }
-
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            Student student = studentRepository.findByStudentId(username)
+                    .orElseThrow(() -> new RuntimeException("Student not found: " + username));
             
-            java.util.Map<String, Object> profile = new java.util.HashMap<>();
-            profile.put("username", user.getUsername());
-            profile.put("email", user.getEmail());
-            profile.put("firstName", user.getFirstName());
-            profile.put("lastName", user.getLastName());
-            profile.put("department", user.getDepartment());
-            profile.put("subDepartment", user.getSubDepartment());
-            profile.put("specializationType", user.getSpecializationType());
-            profile.put("specializationName", user.getSpecializationName());
-            profile.put("academicYear", user.getAcademicYear());
+            Map<String, Object> profile = new HashMap<>();
+            profile.put("username", student.getStudentId());
+            profile.put("email", student.getEmail());
+            profile.put("firstName", student.getFirstName());
+            profile.put("lastName", student.getLastName());
+            profile.put("department", student.getDepartment());
+            profile.put("subDepartment", student.getSubDepartment());
+            profile.put("specializationType", student.getSpecializationType());
+            profile.put("specializationName", student.getSpecializationName());
+            profile.put("academicYear", student.getAcademicYear());
             return ResponseEntity.ok(profile);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching profile: " + e.getMessage());
@@ -89,9 +70,9 @@ public class StudentController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            User user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-            return ResponseEntity.ok(eligibilityService.generateRoadmap(user.getId()));
+            Student student = studentRepository.findByStudentId(username)
+                    .orElseThrow(() -> new RuntimeException("Student not found: " + username));
+            return ResponseEntity.ok(eligibilityService.generateRoadmap(student.getId()));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error generating roadmap: " + e.getMessage());
         }
@@ -119,7 +100,7 @@ public class StudentController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            User student = userRepository.findByUsername(username)
+            com.example.demo.model.Student student = studentRepository.findByStudentId(username)
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
             String courseName = (String) payload.get("courseName");
@@ -139,6 +120,8 @@ public class StudentController {
 
             CompletedCourse course = new CompletedCourse();
             course.setStudent(student);
+            course.setUniversityId(student.getStudentId());
+            course.setStudentName(student.getFirstName() + (student.getLastName() != null ? " " + student.getLastName() : ""));
             course.setCourseName(courseName);
             course.setCourseCode(courseCode);
             course.setCategory(category);
@@ -162,10 +145,15 @@ public class StudentController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            User student = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("Student not found"));
+            Optional<com.example.demo.model.Student> studentOpt = studentRepository.findByStudentId(username);
+            if (studentOpt.isPresent()) {
+                List<CompletedCourse> courses = completedCourseRepository.findByStudentId(studentOpt.get().getId());
+                if (!courses.isEmpty()) {
+                    return ResponseEntity.ok(courses);
+                }
+            }
 
-            return ResponseEntity.ok(completedCourseRepository.findByStudentId(student.getId()));
+            return ResponseEntity.ok(completedCourseRepository.findByUniversityId(username));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching courses: " + e.getMessage());
         }
@@ -176,13 +164,19 @@ public class StudentController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            User student = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new RuntimeException("Student not found"));
+            Optional<com.example.demo.model.Student> studentOpt = studentRepository.findByStudentId(username);
 
             CompletedCourse course = completedCourseRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Course not found"));
 
-            if (!course.getStudent().getId().equals(student.getId())) {
+            boolean authorized = false;
+            if (studentOpt.isPresent() && course.getStudent() != null && course.getStudent().getId().equals(studentOpt.get().getId())) {
+                authorized = true;
+            } else if (course.getUniversityId() != null && course.getUniversityId().equalsIgnoreCase(username)) {
+                authorized = true;
+            }
+
+            if (!authorized) {
                 return ResponseEntity.status(403).body("You are not authorized to delete this course.");
             }
 
@@ -198,7 +192,7 @@ public class StudentController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            User student = userRepository.findByUsername(username)
+            com.example.demo.model.Student student = studentRepository.findByStudentId(username)
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
             String title = payload.get("title");
@@ -225,7 +219,7 @@ public class StudentController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            User student = userRepository.findByUsername(username)
+            com.example.demo.model.Student student = studentRepository.findByStudentId(username)
                     .orElseThrow(() -> new RuntimeException("Student not found"));
 
             return ResponseEntity.ok(studentIssueRepository.findByStudentId(student.getId()));

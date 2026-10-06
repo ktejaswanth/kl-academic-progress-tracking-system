@@ -20,7 +20,7 @@ public class StudentDegreePath {
 
     @OneToOne
     @JoinColumn(name = "student_id", unique = true, nullable = false)
-    private User student;
+    private Student student;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "degree_path_id")
@@ -30,9 +30,8 @@ public class StudentDegreePath {
     @Column(name = "assigned_at", updatable = false)
     private LocalDateTime assignedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_by")
-    private User assignedBy;
+    @Column(name = "assigned_by")
+    private Long assignedBy;
 
     @Column(name = "is_confirmed")
     private Boolean isConfirmed = false;

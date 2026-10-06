@@ -21,7 +21,7 @@ public class StudentIssue {
 
     @ManyToOne
     @JoinColumn(name = "student_id", referencedColumnName = "id", nullable = false)
-    private User student;
+    private Student student;
 
     @Column(nullable = false, length = 150)
     private String title;

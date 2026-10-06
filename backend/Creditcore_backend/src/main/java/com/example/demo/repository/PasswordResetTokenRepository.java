@@ -1,7 +1,6 @@
 package com.example.demo.repository;
 
 import com.example.demo.model.PasswordResetToken;
-import com.example.demo.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,5 +12,5 @@ public interface PasswordResetTokenRepository extends JpaRepository<PasswordRese
     
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.transaction.annotation.Transactional
-    void deleteByUser(User user);
+    void deleteByUsername(String username);
 }

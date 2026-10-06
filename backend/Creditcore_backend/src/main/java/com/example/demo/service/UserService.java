@@ -28,9 +28,6 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired(required = false)
-    private UserRepository userRepository;
-
     // --- Admin Operations (stored ONLY in admins table) ---
 
     public Admin createAdmin(Map<String, Object> payload) {
@@ -130,22 +127,6 @@ public class UserService {
         return facultyRepository.save(faculty);
     }
 
-    public Faculty createFaculty(User facultyUser) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("empId", facultyUser.getEmpId() != null ? facultyUser.getEmpId() : facultyUser.getUsername());
-        map.put("username", facultyUser.getUsername());
-        map.put("firstName", facultyUser.getFirstName());
-        map.put("lastName", facultyUser.getLastName());
-        map.put("email", facultyUser.getEmail());
-        map.put("password", facultyUser.getPassword() != null ? facultyUser.getPassword() : facultyUser.getRawPassword());
-        map.put("designation", facultyUser.getDesignation());
-        map.put("department", facultyUser.getDepartment());
-        map.put("cabinNo", facultyUser.getCabinNo());
-        map.put("contactNo", facultyUser.getContactNo());
-        map.put("isActive", facultyUser.getIsActive());
-        return createFaculty(map);
-    }
-
     public List<Faculty> getAllFaculty() {
         return facultyRepository.findAll();
     }
@@ -201,22 +182,6 @@ public class UserService {
         student.setSpecializationName(specializationName);
         student.setFirstLoginCompleted(false);
         return studentRepository.save(student);
-    }
-
-    public Student createStudent(User studentUser) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("studentId", studentUser.getUsername());
-        map.put("academicYear", studentUser.getAcademicYear() != null ? studentUser.getAcademicYear() : "2023-2024");
-        map.put("firstName", studentUser.getFirstName());
-        map.put("lastName", studentUser.getLastName());
-        map.put("email", studentUser.getEmail());
-        map.put("password", studentUser.getPassword() != null ? studentUser.getPassword() : studentUser.getRawPassword());
-        map.put("department", studentUser.getDepartment());
-        map.put("subDepartment", studentUser.getSubDepartment());
-        map.put("specializationType", studentUser.getSpecializationType());
-        map.put("specializationName", studentUser.getSpecializationName());
-        map.put("isActive", studentUser.getIsActive());
-        return createStudent(map);
     }
 
     public List<Student> getAllStudents() {
@@ -303,8 +268,12 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
-        if (userRepository != null && userRepository.existsById(id)) {
-            userRepository.deleteById(id);
+        if (studentRepository.existsById(id)) {
+            studentRepository.deleteById(id);
+        } else if (facultyRepository.existsById(id)) {
+            facultyRepository.deleteById(id);
+        } else if (adminRepository.existsById(id)) {
+            adminRepository.deleteById(id);
         }
     }
 }

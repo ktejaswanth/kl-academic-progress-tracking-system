@@ -20,7 +20,7 @@ public class StudentCourseAttempt {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "student_id", nullable = false)
-    private User student;
+    private Student student;
 
     @Column(name = "university_id", nullable = false)
     private String universityId;

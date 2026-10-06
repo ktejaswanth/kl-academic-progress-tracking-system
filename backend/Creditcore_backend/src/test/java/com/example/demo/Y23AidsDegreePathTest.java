@@ -24,7 +24,8 @@ public class Y23AidsDegreePathTest {
 
     @Autowired private Y23AidsCurriculumSeeder seeder;
     @Autowired private Y23AidsDataMigration migration;
-    @Autowired private UserRepository userRepository;
+    @Autowired private StudentRepository studentRepository;
+    @Autowired private CompletedCourseRepository completedCourseRepo;
     @Autowired private DegreePathRepository degreePathRepo;
     @Autowired private DegreeEligibilityEngine eligibilityEngine;
     @Autowired private BucketSatisfactionEngine bucketEngine;
@@ -33,6 +34,35 @@ public class Y23AidsDegreePathTest {
     @BeforeEach
     public void setUp() {
         seeder.seedY23AidsCurriculum();
+
+        Student student = studentRepository.findByStudentId("2100030001").orElseGet(() -> {
+            Student s = new Student();
+            s.setStudentId("2100030001");
+            s.setFirstName("Test");
+            s.setLastName("Student");
+            s.setEmail("2100030001@kluniversity.in");
+            s.setPassword("password123");
+            s.setDepartment("AIDS");
+            s.setSubDepartment("REGULAR");
+            s.setSpecializationType("SPECIALIZATION");
+            s.setAcademicYear("2023-2024");
+            s.setIsActive(true);
+            return studentRepository.save(s);
+        });
+
+        if (completedCourseRepo.findByStudentId(student.getId()).isEmpty()) {
+            CompletedCourse cc = new CompletedCourse();
+            cc.setStudent(student);
+            cc.setUniversityId("2100030001");
+            cc.setCourseCode("23AD2101");
+            cc.setCourseName("Introduction to Data Science & AI");
+            cc.setCredits(4);
+            cc.setGrade("A");
+            cc.setStatus("COMPLETED");
+            cc.setSemester("Y23-S1");
+            completedCourseRepo.save(cc);
+        }
+
         migration.migrateY23AidsStudentData();
     }
 
@@ -62,7 +92,7 @@ public class Y23AidsDegreePathTest {
     @Test
     @DisplayName("Test 2: Verify Student Progress Calculation for Y23 AIDS")
     public void testStudentProgressCalculation() {
-        User student = userRepository.findByUsername("2100030001").orElse(null);
+        Student student = studentRepository.findByStudentId("2100030001").orElse(null);
         assertNotNull(student, "Test student 2100030001 should exist");
 
         StudentDegreeStatus status = eligibilityEngine.evaluateEligibility(student.getId());
@@ -77,7 +107,7 @@ public class Y23AidsDegreePathTest {
     @Test
     @DisplayName("Test 3: Verify Specialization Progress Calculation")
     public void testSpecializationProgress() {
-        User student = userRepository.findByUsername("2100030001").orElse(null);
+        Student student = studentRepository.findByStudentId("2100030001").orElse(null);
         assertNotNull(student);
 
         DegreePath specPath = degreePathRepo.findByPathCode("AIDS-REGULAR-SPECIALIZATION").orElse(null);

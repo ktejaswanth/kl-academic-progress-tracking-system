@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.StudentIssue;
-import com.example.demo.model.UserRole;
 import com.example.demo.repository.StudentIssueRepository;
 import com.example.demo.service.AuditService;
 import com.example.demo.service.UserService;

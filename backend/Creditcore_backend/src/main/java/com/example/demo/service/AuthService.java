@@ -7,12 +7,10 @@ import com.example.demo.model.Admin;
 import com.example.demo.model.Faculty;
 import com.example.demo.model.PasswordResetToken;
 import com.example.demo.model.Student;
-import com.example.demo.model.User;
 import com.example.demo.repository.AdminRepository;
 import com.example.demo.repository.FacultyRepository;
 import com.example.demo.repository.PasswordResetTokenRepository;
 import com.example.demo.repository.StudentRepository;
-import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,9 +33,6 @@ public class AuthService {
 
     @Autowired
     private JwtUtil jwtUtil;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private AdminRepository adminRepository;
@@ -110,21 +105,6 @@ public class AuthService {
             );
         }
 
-        // 4. Fallback for legacy user
-        Optional<User> legacyOpt = userRepository.findByUsername(request.getUsername());
-        if (legacyOpt.isPresent()) {
-            User user = legacyOpt.get();
-            String jwt = jwtUtil.generateToken(userDetails, user.getRole().name());
-            return new LoginResponse(
-                    jwt,
-                    user.getUsername(),
-                    user.getRole().name(),
-                    user.getForcePasswordChange(),
-                    user.getFirstName(),
-                    user.getLastName()
-            );
-        }
-
         throw new RuntimeException("User record not found in system.");
     }
 
@@ -135,12 +115,32 @@ public class AuthService {
     private EmailService emailService;
 
     public String initiatePasswordReset(String email) {
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (user != null) {
-            tokenRepository.deleteByUser(user);
+        String username = null;
+        Long userId = null;
+
+        var studentOpt = studentRepository.findByEmail(email);
+        if (studentOpt.isPresent()) {
+            username = studentOpt.get().getStudentId();
+            userId = studentOpt.get().getId();
+        } else {
+            var facultyOpt = facultyRepository.findByEmail(email);
+            if (facultyOpt.isPresent()) {
+                username = facultyOpt.get().getUsername();
+                userId = facultyOpt.get().getId();
+            } else {
+                var adminOpt = adminRepository.findByEmail(email);
+                if (adminOpt.isPresent()) {
+                    username = adminOpt.get().getUsername();
+                    userId = adminOpt.get().getId();
+                }
+            }
+        }
+
+        if (username != null) {
+            tokenRepository.deleteByUsername(username);
             tokenRepository.flush();
 
-            PasswordResetToken token = new PasswordResetToken(user);
+            PasswordResetToken token = new PasswordResetToken(username, userId);
             tokenRepository.save(token);
 
             String resetLink = "http://localhost:3086/reset-password?token=" + token.getToken();
@@ -162,28 +162,15 @@ public class AuthService {
             throw new RuntimeException("This password reset token has expired (20 min limit).");
         }
 
-        User user = resetToken.getUser();
+        String username = resetToken.getUsername();
         String encoded = passwordEncoder.encode(newPassword);
-        user.setPasswordHash(encoded);
-        user.setRawPassword(newPassword);
-        user.setForcePasswordChange(false);
-        userRepository.save(user);
-
-        syncPasswordToRoleTable(user.getUsername(), encoded, newPassword);
+        syncPasswordToRoleTable(username, encoded, newPassword);
         tokenRepository.delete(resetToken);
     }
 
     public void changePassword(String username, String newPassword) {
         String encoded = passwordEncoder.encode(newPassword);
         syncPasswordToRoleTable(username, encoded, newPassword);
-
-        // Also update legacy user if present
-        userRepository.findByUsername(username).ifPresent(u -> {
-            u.setPasswordHash(encoded);
-            u.setRawPassword(newPassword);
-            u.setForcePasswordChange(false);
-            userRepository.save(u);
-        });
     }
 
     private void syncPasswordToRoleTable(String username, String encodedPassword, String rawPassword) {

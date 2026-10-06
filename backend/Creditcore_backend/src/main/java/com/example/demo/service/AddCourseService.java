@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Transactional
@@ -34,7 +36,10 @@ public class AddCourseService {
     private CourseCatalogRepository courseCatalogRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private StudentCourseRepository studentCourseRepository;
@@ -55,60 +60,189 @@ public class AddCourseService {
     private DegreeEligibilityEngine degreeEligibilityEngine;
 
     /**
+     * Resolves student entity from universityId in students table directly.
+     * Checks students table and auto-registers in students table if not found.
+     * Does NOT use or populate the users table.
+     */
+    public Student resolveOrCreateStudent(String universityId, String studentName, String branch, String academicYear) {
+        if (universityId == null || universityId.trim().isEmpty()) {
+            throw new IllegalArgumentException("University ID cannot be null or empty.");
+        }
+        String cleanUnivId = universityId.trim();
+
+        // 1. Try finding in students table
+        Optional<Student> studentOpt = studentRepository.findByStudentId(cleanUnivId);
+        if (studentOpt.isPresent()) {
+            return studentOpt.get();
+        }
+
+        // 2. Auto-create student in students table
+        String firstName = cleanUnivId;
+        String lastName = "";
+        if (studentName != null && !studentName.trim().isEmpty()) {
+            String trimmedName = studentName.trim();
+            int spaceIdx = trimmedName.indexOf(' ');
+            if (spaceIdx > 0) {
+                firstName = trimmedName.substring(0, spaceIdx).trim();
+                lastName = trimmedName.substring(spaceIdx + 1).trim();
+            } else {
+                firstName = trimmedName;
+            }
+        }
+        String dept = (branch != null && !branch.trim().isEmpty()) ? branch.trim() : "CSE";
+        String acadYr = (academicYear != null && !academicYear.trim().isEmpty()) ? academicYear.trim() : "Y23";
+        String email = cleanUnivId.toLowerCase() + "@kluniversity.in";
+        String rawPassword = cleanUnivId;
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        Student newStudent = new Student();
+        newStudent.setStudentId(cleanUnivId);
+        newStudent.setFirstName(firstName);
+        newStudent.setLastName(lastName);
+        newStudent.setEmail(email);
+        newStudent.setPassword(encodedPassword);
+        newStudent.setRawPassword(rawPassword);
+        newStudent.setDepartment(dept);
+        newStudent.setSubDepartment("REGULAR");
+        newStudent.setSpecializationType("NONE");
+        newStudent.setSpecializationName("N/A");
+        newStudent.setAcademicYear(acadYr);
+        newStudent.setIsActive(true);
+        newStudent.setFirstLoginCompleted(false);
+        return studentRepository.save(newStudent);
+    }
+
+    /**
+     * Resolves course from CourseCatalog. If missing, auto-creates entry so upload never fails.
+     */
+    public CourseCatalog resolveOrCreateCourseCatalog(String courseCode, String courseName, String ltps, String branch) {
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("Course code cannot be null or empty.");
+        }
+        String cleanCode = courseCode.trim();
+
+        Optional<CourseCatalog> catalogOpt = courseCatalogRepository.findByCourseCode(cleanCode);
+        if (catalogOpt.isPresent()) {
+            CourseCatalog cat = catalogOpt.get();
+            if (cat.getCredits() == null) {
+                int credits = parseCreditsFromLtps(ltps);
+                cat.setCredits(credits);
+                return courseCatalogRepository.save(cat);
+            }
+            return cat;
+        }
+
+        // Auto-create course catalog entry
+        int credits = parseCreditsFromLtps(ltps);
+        String finalName = (courseName != null && !courseName.trim().isEmpty()) ? courseName.trim() : cleanCode;
+        CourseCatalog newCatalog = new CourseCatalog();
+        newCatalog.setCourseCode(cleanCode);
+        newCatalog.setCourseName(finalName);
+        newCatalog.setCredits(credits);
+        newCatalog.setCategory((branch != null && !branch.trim().isEmpty()) ? branch.trim() : "GENERAL");
+        return courseCatalogRepository.save(newCatalog);
+    }
+
+    /**
+     * Parse credits from LTPS string like "3-0-2-0", "3-0-0", "4", etc.
+     */
+    public static int parseCreditsFromLtps(String ltps) {
+        if (ltps == null || ltps.trim().isEmpty()) {
+            return 3;
+        }
+        String clean = ltps.trim();
+        try {
+            return Integer.parseInt(clean);
+        } catch (NumberFormatException ignored) {}
+
+        String[] parts = clean.split("[-:, /]+");
+        List<Double> nums = new ArrayList<>();
+        for (String p : parts) {
+            try {
+                nums.add(Double.parseDouble(p.trim()));
+            } catch (NumberFormatException ignored) {}
+        }
+        if (nums.isEmpty()) {
+            return 3;
+        }
+        if (nums.size() == 1) {
+            return Math.max(1, nums.get(0).intValue());
+        }
+        if (nums.size() >= 4) {
+            double l = nums.get(0);
+            double t = nums.get(1);
+            double p = nums.get(2);
+            double s = nums.get(3);
+            double credits = l + t + (p * 0.5) + (s * 0.5);
+            return Math.max(1, (int) Math.round(credits));
+        }
+        if (nums.size() == 3) {
+            double l = nums.get(0);
+            double t = nums.get(1);
+            double p = nums.get(2);
+            double credits = l + t + (p * 0.5);
+            return Math.max(1, (int) Math.round(credits));
+        }
+        return Math.max(1, nums.get(0).intValue());
+    }
+
+    /**
      * Add a single completed course entry for a student.
      */
     public Map<String, Object> addSingleCourse(AddCourseRequest request, Long verifiedById) {
-        User student = null;
-        if (request.getUniversityId() != null && !request.getUniversityId().isEmpty()) {
-            student = userRepository.findByUsername(request.getUniversityId())
-                    .orElseThrow(() -> new RuntimeException("Student with university ID " + request.getUniversityId() + " not found."));
-        } else {
+        if (request.getUniversityId() == null || request.getUniversityId().trim().isEmpty()) {
             throw new RuntimeException("Student university ID is required.");
         }
 
-        User verifiedBy = userRepository.findById(verifiedById)
-                .orElseThrow(() -> new RuntimeException("Verifier faculty not found"));
+        Student student = resolveOrCreateStudent(request.getUniversityId(), request.getStudentName(), request.getBranch(), request.getAcademicYear());
 
-        CourseCatalog catalog = courseCatalogRepository.findByCourseCode(request.getCourseCode())
-                .orElseThrow(() -> new RuntimeException("Course code " + request.getCourseCode() + " does not exist in the course catalog."));
 
-        if (completedCourseRepository.existsByStudentIdAndCourseCode(student.getId(), request.getCourseCode())) {
-            throw new RuntimeException("Course " + request.getCourseCode() + " is already marked as completed for this student.");
+        CourseCatalog catalog = resolveOrCreateCourseCatalog(request.getCourseCode(), request.getCourseName(), request.getLtps(), request.getBranch());
+
+        Optional<CompletedCourse> existing = completedCourseRepository
+                .findFirstByUniversityIdAndCourseCodeAndSemesterAndAcademicYear(
+                        student.getStudentId(), catalog.getCourseCode(), request.getSemester(), request.getAcademicYear()
+                );
+        if (!existing.isPresent()) {
+            existing = completedCourseRepository.findFirstByUniversityIdAndCourseCode(student.getStudentId(), catalog.getCourseCode());
         }
 
-        CompletedCourse completed = new CompletedCourse();
+        CompletedCourse completed = existing.orElseGet(CompletedCourse::new);
         completed.setStudent(student);
+        completed.setUniversityId(student.getStudentId());
+        completed.setStudentName(request.getStudentName() != null && !request.getStudentName().isEmpty() ? request.getStudentName() : (student.getFirstName() + " " + student.getLastName()).trim());
         completed.setCourseCode(catalog.getCourseCode());
         completed.setCourseName(request.getCourseName() != null && !request.getCourseName().isEmpty() ? request.getCourseName() : catalog.getCourseName());
         completed.setCredits(catalog.getCredits());
         completed.setGrade(request.getGrade() != null ? request.getGrade().toUpperCase() : null);
         completed.setSemester(request.getSemester() != null ? request.getSemester() : "ODD");
-        
+
         LocalDate registerDate = null;
         if (request.getRegisterDate() != null && !request.getRegisterDate().isEmpty()) {
             try {
                 registerDate = parseDateSafely(null, request.getRegisterDate());
-            } catch (Exception e) {}
+            } catch (Exception ignored) {}
         }
         completed.setRegisterDate(registerDate != null ? registerDate : LocalDate.now());
-        
+
         completed.setLtps(request.getLtps());
         completed.setBucketGroup(request.getBucketGroup());
         completed.setCourseType(request.getCourseType());
         completed.setAcademicYear(request.getAcademicYear());
-        
+
         if (request.getStudyYear() != null && !request.getStudyYear().isEmpty()) {
             try {
                 completed.setStudyYear(Integer.parseInt(request.getStudyYear()));
-            } catch (Exception e) {}
+            } catch (Exception ignored) {}
         }
-        
+
         completed.setSectionNo(request.getSectionNo());
         completed.setCourseRef(request.getCourseRef());
         completed.setOfferTo(request.getOfferTo());
         completed.setOfferBy(request.getOfferBy());
         completed.setBranch(request.getBranch());
-        completed.setVerifiedBy(verifiedBy);
+        completed.setVerifiedBy(verifiedById);
+        completed.setStatus("Completed");
 
         CompletedCourse saved = completedCourseRepository.save(completed);
 
@@ -128,9 +262,7 @@ public class AddCourseService {
                     bucketCode = bucketOpt.get().getBucketCode();
                     bucketName = bucketOpt.get().getBucketName();
                 }
-            } catch (Exception e) {
-                // Ignore and proceed
-            }
+            } catch (Exception ignored) {}
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -140,11 +272,11 @@ public class AddCourseService {
         return result;
     }
 
-    private static class ParsedCourse {
+    private static class ParsedCourseRow {
         String universityId;
         String studentName;
         String courseCode;
-        Set<String> ltpsComponents = new LinkedHashSet<>();
+        String ltps;
         String courseName;
         String bucketGroup;
         String courseType;
@@ -161,29 +293,32 @@ public class AddCourseService {
 
     /**
      * Bulk upload completed courses for students using Excel.
+     * Maps university_id to student/user table, auto-creates missing entities,
+     * updates existing or inserts new records, handling max length rows reliably.
      */
     public Map<String, Object> bulkUploadCourses(MultipartFile file, Long verifiedById) throws Exception {
         int added = 0;
+        int updated = 0;
         int skipped = 0;
         int failed = 0;
         List<String> errors = new ArrayList<>();
         Set<Long> affectedStudentIds = new HashSet<>();
 
-        User verifiedBy = userRepository.findById(verifiedById)
-                .orElseThrow(() -> new RuntimeException("Verifier faculty not found"));
 
-        Map<String, ParsedCourse> courseMap = new LinkedHashMap<>();
+        List<ParsedCourseRow> rowList = new ArrayList<>();
 
-        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
+        try (InputStream is = file.getInputStream(); Workbook workbook = WorkbookFactory.create(is)) {
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
 
-            // Skip header
+            // Skip header row
             if (rowIterator.hasNext()) {
                 rowIterator.next();
             }
 
+            int rowIdx = 1;
             while (rowIterator.hasNext()) {
+                rowIdx++;
                 Row row = rowIterator.next();
                 try {
                     String universityId = getCellString(row.getCell(0));
@@ -203,119 +338,159 @@ public class AddCourseService {
                     String offerBy = getCellString(row.getCell(14));
                     String branch = getCellString(row.getCell(15));
 
+                    if ((universityId == null || universityId.isEmpty()) && (courseCode == null || courseCode.isEmpty())) {
+                        continue; // skip empty line
+                    }
+
                     if (universityId == null || universityId.isEmpty()) {
-                        continue; // empty row
+                        throw new RuntimeException("Missing University ID at row " + rowIdx);
                     }
-
                     if (courseCode == null || courseCode.isEmpty()) {
-                        throw new RuntimeException("Missing course code");
+                        throw new RuntimeException("Missing Course Code for student " + universityId + " at row " + rowIdx);
                     }
 
-                    String key = universityId + "|" + courseCode;
-                    ParsedCourse pc = courseMap.getOrDefault(key, new ParsedCourse());
-                    pc.universityId = universityId;
-                    pc.studentName = studentName;
-                    pc.courseCode = courseCode;
-                    if (ltps != null && !ltps.isEmpty()) {
-                        pc.ltpsComponents.add(ltps);
-                    }
-                    if (pc.courseName == null) pc.courseName = courseName;
-                    if (pc.bucketGroup == null) pc.bucketGroup = bucketGroup;
-                    if (pc.courseType == null) pc.courseType = courseType;
-                    if (pc.academicYear == null) pc.academicYear = academicYear;
-                    if (pc.semester == null) pc.semester = semester;
-                    if (pc.studyYear == null && studyYearStr != null && !studyYearStr.isEmpty()) {
+                    ParsedCourseRow r = new ParsedCourseRow();
+                    r.universityId = universityId.trim();
+                    r.studentName = (studentName != null) ? studentName.trim() : "";
+                    r.courseCode = courseCode.trim().toUpperCase();
+                    r.ltps = (ltps != null) ? ltps.trim() : "";
+                    r.courseName = (courseName != null) ? courseName.trim() : "";
+                    r.bucketGroup = (bucketGroup != null) ? bucketGroup.trim() : "";
+                    r.courseType = (courseType != null) ? courseType.trim() : "";
+                    r.academicYear = (academicYear != null) ? academicYear.trim() : "";
+                    r.semester = (semester != null) ? semester.trim() : "ODD";
+                    if (studyYearStr != null && !studyYearStr.trim().isEmpty()) {
                         try {
-                            pc.studyYear = Integer.parseInt(studyYearStr);
-                        } catch (Exception e) {}
+                            r.studyYear = Integer.parseInt(studyYearStr.trim());
+                        } catch (Exception ignored) {}
                     }
-                    if (pc.sectionNo == null) pc.sectionNo = sectionNo;
-                    if (pc.registerDate == null) pc.registerDate = parseDateSafely(row.getCell(11), dateStr);
-                    if (pc.courseRef == null) pc.courseRef = courseRef;
-                    if (pc.offerTo == null) pc.offerTo = offerTo;
-                    if (pc.offerBy == null) pc.offerBy = offerBy;
-                    if (pc.branch == null) pc.branch = branch;
+                    r.sectionNo = (sectionNo != null) ? sectionNo.trim() : "";
+                    r.registerDate = parseDateSafely(row.getCell(11), dateStr);
+                    r.courseRef = (courseRef != null) ? courseRef.trim() : "";
+                    r.offerTo = (offerTo != null) ? offerTo.trim() : "";
+                    r.offerBy = (offerBy != null) ? offerBy.trim() : "";
+                    r.branch = (branch != null) ? branch.trim() : "";
 
-                    courseMap.put(key, pc);
+                    rowList.add(r);
 
                 } catch (Exception e) {
-                    errors.add("Row " + (row.getRowNum() + 1) + ": " + e.getMessage());
+                    failed++;
+                    if (errors.size() < 100) {
+                        errors.add("Row " + rowIdx + ": " + e.getMessage());
+                    }
                 }
             }
         }
 
-        for (Map.Entry<String, ParsedCourse> entry : courseMap.entrySet()) {
-            ParsedCourse pc = entry.getValue();
+        // Process all extracted course rows
+        for (ParsedCourseRow r : rowList) {
             try {
-                User student = userRepository.findByUsername(pc.universityId)
-                        .orElseThrow(() -> new RuntimeException("Student with ID/username " + pc.universityId + " not found."));
+                Student student = resolveOrCreateStudent(r.universityId, r.studentName, r.branch, r.academicYear);
+                CourseCatalog catalog = resolveOrCreateCourseCatalog(r.courseCode, r.courseName, r.ltps, r.branch);
 
-                CourseCatalog catalog = courseCatalogRepository.findByCourseCode(pc.courseCode).orElse(null);
-                
-                String finalCourseName = (catalog != null) ? catalog.getCourseName() : pc.courseName;
-                Integer finalCredits = (catalog != null) ? catalog.getCredits() : null;
+                String finalCourseName = (catalog.getCourseName() != null && !catalog.getCourseName().isEmpty())
+                        ? catalog.getCourseName()
+                        : ((r.courseName != null && !r.courseName.isEmpty()) ? r.courseName : r.courseCode);
+                Integer finalCredits = (catalog.getCredits() != null) ? catalog.getCredits() : parseCreditsFromLtps(r.ltps);
 
-                if (finalCourseName == null || finalCourseName.isEmpty() || finalCredits == null) {
-                    throw new RuntimeException("Course code " + pc.courseCode + " not in catalog and name/credits not available.");
+                Optional<CompletedCourse> existingOpt = completedCourseRepository
+                        .findFirstByUniversityIdAndCourseCodeAndSemesterAndAcademicYear(
+                                student.getStudentId(), r.courseCode, r.semester, r.academicYear
+                        );
+                if (!existingOpt.isPresent()) {
+                    existingOpt = completedCourseRepository.findFirstByUniversityIdAndCourseCode(student.getStudentId(), r.courseCode);
                 }
 
-                if (completedCourseRepository.existsByStudentIdAndCourseCode(student.getId(), pc.courseCode)) {
-                    skipped++;
-                    continue;
+                CompletedCourse target;
+                boolean isNew = !existingOpt.isPresent();
+                if (isNew) {
+                    target = new CompletedCourse();
+                    target.setStudent(student);
+                    target.setUniversityId(student.getStudentId());
+                    target.setStudentName(r.studentName);
+                    target.setCourseCode(r.courseCode);
+                    target.setStatus("Completed");
+                } else {
+                    target = existingOpt.get();
+                    target.setStudent(student);
+                    target.setUniversityId(student.getStudentId());
+                    if (r.studentName != null && !r.studentName.isEmpty()) {
+                        target.setStudentName(r.studentName);
+                    }
                 }
 
-                CompletedCourse completed = new CompletedCourse();
-                completed.setStudent(student);
-                completed.setCourseCode(pc.courseCode);
-                completed.setCourseName(finalCourseName);
-                completed.setCredits(finalCredits);
-                // Grade is optional in this format, leave null by default
-                completed.setGrade(null); 
-                completed.setSemester(pc.semester);
-                completed.setRegisterDate(pc.registerDate != null ? pc.registerDate : LocalDate.now());
-                
-                String combinedLtps = String.join(",", pc.ltpsComponents);
-                completed.setLtps(combinedLtps);
-                completed.setBucketGroup(pc.bucketGroup);
-                completed.setCourseType(pc.courseType);
-                completed.setAcademicYear(pc.academicYear);
-                completed.setStudyYear(pc.studyYear);
-                completed.setSectionNo(pc.sectionNo);
-                completed.setCourseRef(pc.courseRef);
-                completed.setOfferTo(pc.offerTo);
-                completed.setOfferBy(pc.offerBy);
-                completed.setBranch(pc.branch);
-                completed.setVerifiedBy(verifiedBy);
+                target.setCourseName(finalCourseName);
+                target.setCredits(finalCredits);
+                target.setLtps(mergeLtps(target.getLtps(), r.ltps));
+                if (r.bucketGroup != null && !r.bucketGroup.isEmpty()) target.setBucketGroup(r.bucketGroup);
+                if (r.courseType != null && !r.courseType.isEmpty()) target.setCourseType(r.courseType);
+                if (r.academicYear != null && !r.academicYear.isEmpty()) target.setAcademicYear(r.academicYear);
+                if (r.semester != null && !r.semester.isEmpty()) target.setSemester(r.semester);
+                if (r.studyYear != null) target.setStudyYear(r.studyYear);
+                if (r.sectionNo != null && !r.sectionNo.isEmpty()) target.setSectionNo(r.sectionNo);
+                if (r.registerDate != null) target.setRegisterDate(r.registerDate);
+                if (r.courseRef != null && !r.courseRef.isEmpty()) target.setCourseRef(r.courseRef);
+                if (r.offerTo != null && !r.offerTo.isEmpty()) target.setOfferTo(r.offerTo);
+                if (r.offerBy != null && !r.offerBy.isEmpty()) target.setOfferBy(r.offerBy);
+                if (r.branch != null && !r.branch.isEmpty()) target.setBranch(r.branch);
+                target.setVerifiedBy(verifiedById);
 
-                CompletedCourse saved = completedCourseRepository.save(completed);
+                CompletedCourse saved = completedCourseRepository.save(target);
 
                 // Dual-write into normalized student_courses and student_course_attempts table
                 syncStudentCourse(student, catalog, finalCourseName, finalCredits.doubleValue(),
                         saved.getGrade(), saved.getSemester(), saved.getRegisterDate(), saved.getAcademicYear());
 
                 affectedStudentIds.add(student.getId());
-                added++;
+
+                if (isNew) {
+                    added++;
+                } else {
+                    updated++;
+                }
+
             } catch (Exception e) {
                 failed++;
-                errors.add("Course " + pc.courseCode + " for student " + pc.universityId + ": " + e.getMessage());
+                if (errors.size() < 100) {
+                    errors.add("Course " + r.courseCode + " for student " + r.universityId + ": " + e.getMessage());
+                }
             }
         }
 
-        // Re-evaluate affected students
-        for (Long studentId : affectedStudentIds) {
-            try {
-                degreeEligibilityEngine.evaluateEligibility(studentId);
-            } catch (Exception e) {
-                // Ignore if path not assigned
+        // Re-evaluate affected students: sync for small sets, background async for large sets
+        if (affectedStudentIds.size() <= 20) {
+            for (Long studentId : affectedStudentIds) {
+                try {
+                    degreeEligibilityEngine.evaluateEligibility(studentId);
+                } catch (Exception ignored) {}
             }
+        } else {
+            Set<Long> idsToEval = new HashSet<>(affectedStudentIds);
+            CompletableFuture.runAsync(() -> {
+                for (Long studentId : idsToEval) {
+                    try {
+                        degreeEligibilityEngine.evaluateEligibility(studentId);
+                    } catch (Exception ignored) {}
+                }
+            });
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
+        result.put("total", rowList.size());
         result.put("added", added);
+        result.put("updated", updated);
         result.put("skipped", skipped);
         result.put("failed", failed);
         result.put("errors", errors);
+        result.put("message", "Processed " + (added + updated) + " records (" + added + " added, " + updated + " updated).");
         return result;
+    }
+
+    private String mergeLtps(String oldLtps, String newLtps) {
+        if (oldLtps == null || oldLtps.trim().isEmpty()) return newLtps;
+        if (newLtps == null || newLtps.trim().isEmpty()) return oldLtps;
+        if (oldLtps.equalsIgnoreCase(newLtps)) return oldLtps;
+        return oldLtps + ", " + newLtps;
     }
 
     /**
@@ -324,38 +499,38 @@ public class AddCourseService {
     public void deleteCourse(Long courseId) {
         CompletedCourse completed = completedCourseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Completed course entry not found"));
-        Long studentId = completed.getStudent().getId();
+        Long studentId = (completed.getStudent() != null) ? completed.getStudent().getId() : null;
         String courseCode = completed.getCourseCode();
 
         completedCourseRepository.delete(completed);
 
-        // Also delete from normalized student_courses if present
-        List<StudentCourse> scList = studentCourseRepository.findByStudentId(studentId);
-        for (StudentCourse sc : scList) {
-            if (courseCode.equalsIgnoreCase(sc.getCourseCode())) {
-                studentCourseRepository.delete(sc);
+        if (studentId != null) {
+            List<StudentCourse> scList = studentCourseRepository.findByStudentId(studentId);
+            for (StudentCourse sc : scList) {
+                if (courseCode.equalsIgnoreCase(sc.getCourseCode())) {
+                    studentCourseRepository.delete(sc);
+                }
             }
-        }
 
-        // Re-evaluate eligibility
-        try {
-            degreeEligibilityEngine.evaluateEligibility(studentId);
-        } catch (Exception e) {
-            // Ignore if path not assigned
+            try {
+                degreeEligibilityEngine.evaluateEligibility(studentId);
+            } catch (Exception ignored) {}
         }
     }
 
-    private void syncStudentCourse(User student, CourseCatalog catalog, String courseName, Double credits,
+    private void syncStudentCourse(Student student, CourseCatalog catalog, String courseName, Double credits,
                                    String grade, String semester, LocalDate completedDate, String academicYear) {
         if (student == null || catalog == null) return;
 
-        boolean exists = studentCourseRepository.findByStudentId(student.getId()).stream()
-                .anyMatch(sc -> sc.getCourseCode().equalsIgnoreCase(catalog.getCourseCode()));
+        List<StudentCourse> existingList = studentCourseRepository.findByStudentId(student.getId());
+        Optional<StudentCourse> scOpt = existingList.stream()
+                .filter(sc -> sc.getCourseCode().equalsIgnoreCase(catalog.getCourseCode()))
+                .findFirst();
 
-        if (!exists) {
+        if (!scOpt.isPresent()) {
             StudentCourse sc = new StudentCourse();
             sc.setStudent(student);
-            sc.setUniversityId(student.getUsername());
+            sc.setUniversityId(student.getStudentId());
             sc.setCourse(catalog);
             sc.setCourseCode(catalog.getCourseCode());
             sc.setCourseName(courseName != null ? courseName : catalog.getCourseName());
@@ -369,7 +544,7 @@ public class AddCourseService {
 
             StudentCourseAttempt sca = new StudentCourseAttempt();
             sca.setStudent(student);
-            sca.setUniversityId(student.getUsername());
+            sca.setUniversityId(student.getStudentId());
             sca.setCourseCode(catalog.getCourseCode());
             sca.setAttemptNumber(1);
             sca.setGrade(grade);
@@ -378,15 +553,31 @@ public class AddCourseService {
             sca.setAcademicYear(academicYear);
             sca.setIsQualifying(true);
             studentCourseAttemptRepository.save(sca);
+        } else {
+            StudentCourse sc = scOpt.get();
+            if (grade != null) sc.setGrade(grade);
+            if (semester != null) sc.setSemester(semester);
+            if (academicYear != null) sc.setAcademicYear(academicYear);
+            studentCourseRepository.save(sc);
         }
     }
 
     /**
-     * Get completed courses for a student.
+     * Get completed courses for a student by ID or university ID.
      */
     public List<CompletedCourse> getStudentCourses(Long studentId) {
-        // We can still use the older method or add findByStudentIdOrderByRegisterDateDesc
-        return completedCourseRepository.findByStudentIdOrderByRegisterDateDesc(studentId);
+        List<CompletedCourse> list = completedCourseRepository.findByStudentIdOrderByRegisterDateDesc(studentId);
+        if (list.isEmpty()) {
+            Optional<Student> sOpt = studentRepository.findById(studentId);
+            if (sOpt.isPresent()) {
+                return completedCourseRepository.findByUniversityIdOrderByRegisterDateDesc(sOpt.get().getStudentId());
+            }
+        }
+        return list;
+    }
+
+    public List<CompletedCourse> getStudentCoursesByUniversityId(String universityId) {
+        return completedCourseRepository.findByUniversityIdOrderByRegisterDateDesc(universityId);
     }
 
     /**
@@ -396,24 +587,23 @@ public class AddCourseService {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Template");
             Row header = sheet.createRow(0);
-            header.createCell(0).setCellValue("university_id");
-            header.createCell(1).setCellValue("student_name");
-            header.createCell(2).setCellValue("course_code");
-            header.createCell(3).setCellValue("ltps");
-            header.createCell(4).setCellValue("course_name");
-            header.createCell(5).setCellValue("bucket_group");
-            header.createCell(6).setCellValue("course_type");
-            header.createCell(7).setCellValue("academic_year");
-            header.createCell(8).setCellValue("semester");
-            header.createCell(9).setCellValue("study_year");
-            header.createCell(10).setCellValue("section");
-            header.createCell(11).setCellValue("register_date");
-            header.createCell(12).setCellValue("course_ref");
-            header.createCell(13).setCellValue("offered_to");
-            header.createCell(14).setCellValue("offered_by");
-            header.createCell(15).setCellValue("branch");
+            header.createCell(0).setCellValue("UNIVERSITY ID");
+            header.createCell(1).setCellValue("STUDENT NAME");
+            header.createCell(2).setCellValue("COURSE CODE");
+            header.createCell(3).setCellValue("LTPS");
+            header.createCell(4).setCellValue("COURSE NAME");
+            header.createCell(5).setCellValue("BUCKET GROUP");
+            header.createCell(6).setCellValue("COURSE TYPE");
+            header.createCell(7).setCellValue("ACADEMIC YEAR");
+            header.createCell(8).setCellValue("SEMESTER");
+            header.createCell(9).setCellValue("STUDY YEAR");
+            header.createCell(10).setCellValue("SECTION");
+            header.createCell(11).setCellValue("REGISTER DATE");
+            header.createCell(12).setCellValue("COURSE REF");
+            header.createCell(13).setCellValue("OFFERED TO");
+            header.createCell(14).setCellValue("OFFERED BY");
+            header.createCell(15).setCellValue("BRANCH");
 
-            // Auto size columns
             for (int i = 0; i < 16; i++) {
                 sheet.autoSizeColumn(i);
             }
@@ -434,6 +624,13 @@ public class AddCourseService {
                 yield String.valueOf((long) cell.getNumericCellValue());
             }
             case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+            case FORMULA -> {
+                try {
+                    yield cell.getStringCellValue().trim();
+                } catch (Exception e) {
+                    yield String.valueOf((long) cell.getNumericCellValue());
+                }
+            }
             default -> null;
         };
     }
@@ -445,13 +642,11 @@ public class AddCourseService {
         if (val == null || val.trim().isEmpty()) {
             return LocalDate.now();
         }
-        List<String> formats = Arrays.asList("yyyy-MM-dd", "dd-MM-yyyy", "MM/dd/yyyy", "dd/MM/yyyy", "yyyy/MM/dd", "dd-MM-yy");
+        List<String> formats = Arrays.asList("yyyy-MM-dd", "dd-MM-yyyy", "MM/dd/yyyy", "dd/MM/yyyy", "yyyy/MM/dd", "dd-MM-yy", "d-MMM-yyyy", "dd-MMM-yyyy");
         for (String format : formats) {
             try {
-                return LocalDate.parse(val.trim(), DateTimeFormatter.ofPattern(format));
-            } catch (Exception e) {
-                // Try next
-            }
+                return LocalDate.parse(val.trim(), DateTimeFormatter.ofPattern(format, Locale.ENGLISH));
+            } catch (Exception ignored) {}
         }
         return LocalDate.now();
     }

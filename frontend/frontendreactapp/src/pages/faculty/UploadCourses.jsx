@@ -142,7 +142,10 @@ export default function UploadCourses() {
                         <h3>Upload Summary</h3>
                         <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
                             <span className="status-tag success">Added: {results.added}</span>
-                            <span className="status-tag warning">Skipped (Duplicate): {results.skipped}</span>
+                            {results.updated !== undefined && results.updated > 0 && (
+                                <span className="status-tag info" style={{ background: '#E0F2FE', color: '#0369A1', borderColor: '#BAE6FD' }}>Updated: {results.updated}</span>
+                            )}
+                            <span className="status-tag warning">Skipped: {results.skipped}</span>
                             <span className="status-tag danger">Failed: {results.failed}</span>
                         </div>
                     </div>

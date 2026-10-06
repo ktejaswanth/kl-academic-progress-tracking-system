@@ -31,8 +31,15 @@ public class Student {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
+
     @Column(unique = true, nullable = false)
     private String email;
+
+    public String getName() {
+        return ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim();
+    }
 
     @Column(nullable = false)
     private String password;

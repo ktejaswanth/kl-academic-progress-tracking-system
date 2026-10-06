@@ -20,7 +20,7 @@ public class EligibilityResult {
 
     @ManyToOne
     @JoinColumn(name = "student_id")
-    private com.example.demo.model.User student;
+    private Student student;
 
     @Column(name = "snapshot_time")
     private LocalDateTime snapshotTime;

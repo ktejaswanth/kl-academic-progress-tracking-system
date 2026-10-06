@@ -34,8 +34,6 @@ public class CurriculumBulkUploadService {
     @Autowired
     private CompletedCourseRepository completedCourseRepository;
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private PathBucketRequirementRepository pathBucketRequirementRepository;
     @Autowired
     private CourseBucketMappingRepository courseBucketMappingRepository;
