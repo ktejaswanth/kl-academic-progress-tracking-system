@@ -17,6 +17,8 @@ import StudentLookupView from '../components/StudentLookupView';
 import CurriculumUpload from './CurriculumUpload';
 import CurriculumReview from './CurriculumReview';
 import CurriculumRepository from './CurriculumRepository';
+import AdminExitManagement from './AdminExitManagement';
+import AdminExitReports from './AdminExitReports';
 import './admin.css';
 
 export default function AdminNavBar() {
@@ -30,21 +32,48 @@ export default function AdminNavBar() {
         navigate('/login');
     };
 
-    const navItems = [
-        { path: '/super_admin/home', label: 'Dashboard', icon: '📊' },
-        { path: '/super_admin/addstudent', label: 'Add Student', icon: '👤' },
-        { path: '/super_admin/bulk-upload', label: 'Bulk Upload (Excel)', icon: '📁' },
-        { path: '/super_admin/upload-courses', label: 'Upload Courses', icon: '📚' },
-        { path: '/super_admin/viewallstudents', label: 'View Students', icon: '👥' },
-        { path: '/super_admin/student-issues', label: 'Student Issues', icon: '⚠️' },
-        { path: '/super_admin/student-lookup', label: 'Student Lookup', icon: '🔍' },
-        { path: '/super_admin/curriculum-upload', label: 'Upload Curriculum', icon: '📄' },
-        { path: '/super_admin/curriculum-repository', label: 'Curriculum Repository', icon: '📚' },
-        { path: '/super_admin/curriculum-management', label: 'Curriculum Setup', icon: '⚙️' },
-        { path: '/super_admin/addfaculty', label: 'Add Faculty', icon: '👨‍🏫' },
-        { path: '/super_admin/viewallfaculty', label: 'View Faculty', icon: '🏢' },
-        { path: '/super_admin/addadmin', label: 'Add Admin', icon: '🛡️' },
-        { path: '/super_admin/viewalladmins', label: 'View Admins', icon: '📋' },
+    const navGroups = [
+        {
+            label: 'Main Menu',
+            items: [
+                { path: '/super_admin/home', label: 'Dashboard', icon: '📊' },
+                { path: '/super_admin/exit-requirement-reports', label: 'Exit Requirement Reports', icon: '📋' },
+                { path: '/super_admin/exit-requirements', label: 'Exit Clearances', icon: '🎓' },
+                { path: '/super_admin/student-lookup', label: 'Student Lookup', icon: '🔍' },
+                { path: '/super_admin/upload-courses', label: 'Upload Courses', icon: '📚' },
+            ]
+        },
+        {
+            label: 'Student Management',
+            items: [
+                { path: '/super_admin/addstudent', label: 'Add Student', icon: '👤' },
+                { path: '/super_admin/viewallstudents', label: 'View Students', icon: '👥' },
+                { path: '/super_admin/bulk-upload', label: 'Bulk Upload (Excel)', icon: '📁' },
+                { path: '/super_admin/student-issues', label: 'Student Issues', icon: '⚠️' },
+            ]
+        },
+        {
+            label: 'Curriculum Management',
+            items: [
+                { path: '/super_admin/curriculum-upload', label: 'Upload Curriculum', icon: '📄' },
+                { path: '/super_admin/curriculum-repository', label: 'Curriculum Repository', icon: '📚' },
+                { path: '/super_admin/curriculum-management', label: 'Curriculum Setup', icon: '⚙️' },
+            ]
+        },
+        {
+            label: 'Faculty Management',
+            items: [
+                { path: '/super_admin/addfaculty', label: 'Add Faculty', icon: '👨‍🏫' },
+                { path: '/super_admin/viewallfaculty', label: 'View Faculty', icon: '🏢' },
+            ]
+        },
+        {
+            label: 'Admin Management',
+            items: [
+                { path: '/super_admin/addadmin', label: 'Add Admin', icon: '🛡️' },
+                { path: '/super_admin/viewalladmins', label: 'View Admins', icon: '📋' },
+            ]
+        }
     ];
 
     return (
@@ -64,85 +93,23 @@ export default function AdminNavBar() {
                 </div>
                 
                 <nav className="sidebar-nav">
-                    <div className="nav-group">
-                        <span className="group-label">Main Menu</span>
-                        {navItems.slice(0, 5).map((item) => (
-                            <Link 
-                                key={item.path} 
-                                to={item.path} 
-                                className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
-                                onClick={() => setSidebarOpen(false)}
-                            >
-                                <span className="nav-icon">{item.icon}</span>
-                                <span className="nav-label">{item.label}</span>
-                                {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
-                            </Link>
-                        ))}
-                    </div>
-
-                    <div className="nav-group">
-                        <span className="group-label">Student Management</span>
-                        {navItems.slice(5, 7).map((item) => (
-                            <Link 
-                                key={item.path} 
-                                to={item.path} 
-                                className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
-                                onClick={() => setSidebarOpen(false)}
-                            >
-                                <span className="nav-icon">{item.icon}</span>
-                                <span className="nav-label">{item.label}</span>
-                                {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
-                            </Link>
-                        ))}
-                    </div>
-
-                    <div className="nav-group">
-                        <span className="group-label">Curriculum Management</span>
-                        {navItems.slice(7, 10).map((item) => (
-                            <Link 
-                                key={item.path} 
-                                to={item.path} 
-                                className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
-                                onClick={() => setSidebarOpen(false)}
-                            >
-                                <span className="nav-icon">{item.icon}</span>
-                                <span className="nav-label">{item.label}</span>
-                                {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
-                            </Link>
-                        ))}
-                    </div>
-
-                    <div className="nav-group">
-                        <span className="group-label">Faculty Management</span>
-                        {navItems.slice(10, 12).map((item) => (
-                            <Link 
-                                key={item.path} 
-                                to={item.path} 
-                                className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
-                                onClick={() => setSidebarOpen(false)}
-                            >
-                                <span className="nav-icon">{item.icon}</span>
-                                <span className="nav-label">{item.label}</span>
-                                {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
-                            </Link>
-                        ))}
-                    </div>
-
-                    <div className="nav-group">
-                        <span className="group-label">Admin Management</span>
-                        {navItems.slice(12).map((item) => (
-                            <Link 
-                                key={item.path} 
-                                to={item.path} 
-                                className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
-                                onClick={() => setSidebarOpen(false)}
-                            >
-                                <span className="nav-icon">{item.icon}</span>
-                                <span className="nav-label">{item.label}</span>
-                                {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
-                            </Link>
-                        ))}
-                    </div>
+                    {navGroups.map((group) => (
+                        <div className="nav-group" key={group.label}>
+                            <span className="group-label">{group.label}</span>
+                            {group.items.map((item) => (
+                                <Link 
+                                    key={item.path} 
+                                    to={item.path} 
+                                    className={`nav-item ${location.pathname.includes(item.path) ? 'active' : ''}`}
+                                    onClick={() => setSidebarOpen(false)}
+                                >
+                                    <span className="nav-icon">{item.icon}</span>
+                                    <span className="nav-label">{item.label}</span>
+                                    {location.pathname.includes(item.path) && <span className="active-indicator"></span>}
+                                </Link>
+                            ))}
+                        </div>
+                    ))}
                 </nav>
 
                 <div className="sidebar-footer">
@@ -167,18 +134,23 @@ export default function AdminNavBar() {
                             ☰
                         </button>
                         <div className="breadcrumb">
-                            Admin / <span>{navItems.find(i => location.pathname.includes(i.path))?.label || 'Dashboard'}</span>
+                            Admin / <span>{navGroups.flatMap(g => g.items).find(i => location.pathname.includes(i.path))?.label || 'Dashboard'}</span>
                         </div>
                     </div>
                     <div className="user-info">
                         <span className="user-role">System Administrator</span>
                         <div className="user-avatar">SA</div>
+                        <button onClick={handleLogout} className="topbar-logout-btn" title="Sign Out">
+                            <span>🚪 Logout</span>
+                        </button>
                     </div>
                 </div>
 
                 <div className="content-area animate-fade">
                     <Routes>
                         <Route path="home" element={<AdminDashboard />} />
+                        <Route path="exit-requirement-reports" element={<AdminExitReports />} />
+                        <Route path="exit-requirements" element={<AdminExitManagement />} />
                         <Route path="addstudent" element={<AddStudent />} />
                         <Route path="bulk-upload" element={<BulkUpload />} />
                         <Route path="upload-courses" element={<UploadCourses />} />

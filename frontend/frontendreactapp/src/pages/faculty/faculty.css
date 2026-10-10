@@ -122,6 +122,80 @@
     color: #8B0000;
 }
 
+/* Faculty Top Bar Styles */
+.faculty-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.faculty-top-bar .breadcrumb {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.faculty-top-bar .breadcrumb span {
+    color: #8B0000;
+    font-weight: 800;
+}
+
+.faculty-top-bar .user-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: white;
+    padding: 6px 8px 6px 16px;
+    border-radius: 40px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+    border: 1px solid #e2e8f0;
+}
+
+.faculty-top-bar .user-role {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.faculty-top-bar .user-avatar {
+    width: 36px;
+    height: 36px;
+    background: #8B0000;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.8rem;
+}
+
+.topbar-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff1f2;
+    color: #e11d48;
+    border: 1px solid #fecdd3;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.topbar-logout-btn:hover {
+    background: #e11d48;
+    color: #ffffff;
+    border-color: #e11d48;
+    box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
+    transform: translateY(-1px);
+}
+
 /* Faculty Dashboard Styles */
 .faculty-main {
     margin-left: 280px;
