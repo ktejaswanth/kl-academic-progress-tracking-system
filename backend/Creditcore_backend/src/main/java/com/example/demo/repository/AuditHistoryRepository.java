@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface AuditHistoryRepository extends JpaRepository<AuditHistory, Long> {
     List<AuditHistory> findByStudentId(Long studentId);
+    List<AuditHistory> findByStudentIdOrderByCreatedAtDesc(Long studentId);
+    List<AuditHistory> findAllByOrderByCreatedAtDesc();
 }

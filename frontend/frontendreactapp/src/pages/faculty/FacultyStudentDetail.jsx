@@ -28,6 +28,9 @@ export default function FacultyStudentDetail() {
     const userRole = currentUser?.role ? String(currentUser.role).toUpperCase() : '';
     const canEdit = userRole === 'SUPER_ADMIN' || userRole === 'ADMIN' || userRole === 'FACULTY';
 
+    // Audit Log State
+    const [auditLogs, setAuditLogs] = useState([]);
+
     // Edit Course Form State
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
@@ -45,14 +48,16 @@ export default function FacultyStudentDetail() {
 
     const fetchData = async () => {
         try {
-            const [statusRes, bucketsRes, coursesRes] = await Promise.all([
+            const [statusRes, bucketsRes, coursesRes, auditRes] = await Promise.all([
                 api.get(`/dyod/progress/student/${studentId}/status`),
                 api.get(`/dyod/progress/student/${studentId}/buckets`),
-                api.get(`/dyod/courses/student/${studentId}`)
+                api.get(`/dyod/courses/student/${studentId}`),
+                canEdit ? api.get(`/dyod/courses/audit/${studentId}`).catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
             ]);
             setStatusData(statusRes.data);
             setBuckets(bucketsRes.data);
             setCourses(coursesRes.data);
+            if (auditRes?.data) setAuditLogs(auditRes.data);
         } catch (err) {
             setError('Failed to fetch student details. Ensure the student has been evaluated and a path is assigned.');
         } finally {
@@ -408,6 +413,97 @@ export default function FacultyStudentDetail() {
                 {formError && <div className="alert error" style={{ marginTop: '1.5rem' }}>{formError}</div>}
                 {formSuccess && <div className="alert success" style={{ marginTop: '1.5rem' }}>{formSuccess}</div>}
             </div>
+
+            {/* Audit History Log - Admin & Faculty Only */}
+            {canEdit && (
+                <div className="card" style={{ marginTop: '2.5rem', background: '#FFFFFF', borderRadius: '16px', padding: '1.8rem', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
+                        <div>
+                            <h3 style={{ margin: 0, fontSize: '1.3rem', color: '#1E293B', fontWeight: 700 }}>Course Audit History</h3>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748B' }}>
+                                Verified log of all course creations, edits, and deletions for this student.
+                            </p>
+                        </div>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, padding: '4px 10px', background: '#F1F5F9', color: '#475569', borderRadius: '20px' }}>
+                            {auditLogs.length} {auditLogs.length === 1 ? 'entry' : 'entries'}
+                        </span>
+                    </div>
+
+                    {auditLogs.length === 0 ? (
+                        <div style={{ padding: '2rem', textAlign: 'center', color: '#94A3B8', fontSize: '0.9rem', background: '#F8FAFC', borderRadius: '12px' }}>
+                            No audit history records found for this student yet.
+                        </div>
+                    ) : (
+                        <div style={{ overflowX: 'auto' }}>
+                            <table className="faculty-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+                                <thead>
+                                    <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', textAlign: 'left' }}>
+                                        <th style={{ padding: '12px 14px', color: '#475569' }}>Timestamp</th>
+                                        <th style={{ padding: '12px 14px', color: '#475569' }}>Action</th>
+                                        <th style={{ padding: '12px 14px', color: '#475569' }}>Course</th>
+                                        <th style={{ padding: '12px 14px', color: '#475569' }}>Performed By</th>
+                                        <th style={{ padding: '12px 14px', color: '#475569' }}>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {auditLogs.map((log) => {
+                                        const actionColor = log.actionType === 'CREATE' ? '#10B981' : log.actionType === 'UPDATE' ? '#3B82F6' : '#EF4444';
+                                        const actionBg = log.actionType === 'CREATE' ? '#ECFDF5' : log.actionType === 'UPDATE' ? '#EFF6FF' : '#FEF2F2';
+                                        return (
+                                            <tr key={log.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                                <td style={{ padding: '12px 14px', whiteSpace: 'nowrap', color: '#64748B' }}>
+                                                    {log.createdAt ? new Date(log.createdAt).toLocaleString() : 'N/A'}
+                                                </td>
+                                                <td style={{ padding: '12px 14px' }}>
+                                                    <span style={{
+                                                        padding: '3px 8px',
+                                                        borderRadius: '6px',
+                                                        fontWeight: 700,
+                                                        fontSize: '0.75rem',
+                                                        backgroundColor: actionBg,
+                                                        color: actionColor,
+                                                        border: `1px solid ${actionColor}30`
+                                                    }}>
+                                                        {log.actionType}
+                                                    </span>
+                                                </td>
+                                                <td style={{ padding: '12px 14px', fontWeight: 600, color: '#1E293B' }}>
+                                                    {log.courseCode || 'N/A'}
+                                                </td>
+                                                <td style={{ padding: '12px 14px', color: '#334155' }}>
+                                                    <strong>{log.actorUsername || 'System'}</strong>
+                                                    {log.actorRole && (
+                                                        <span style={{ marginLeft: '6px', fontSize: '0.75rem', color: '#64748B' }}>
+                                                            ({log.actorRole})
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td style={{ padding: '12px 14px', color: '#475569' }}>
+                                                    <div>{log.description || 'No description'}</div>
+                                                    {log.oldValues && log.newValues && (
+                                                        <div style={{ marginTop: '4px', fontSize: '0.78rem', color: '#64748B', background: '#F8FAFC', padding: '6px 8px', borderRadius: '6px' }}>
+                                                            {Object.keys(log.oldValues).map(key => {
+                                                                if (log.oldValues[key] !== log.newValues[key]) {
+                                                                    return (
+                                                                        <div key={key}>
+                                                                            <span style={{ fontWeight: 600 }}>{key}:</span> <span style={{ textDecoration: 'line-through', color: '#EF4444' }}>{String(log.oldValues[key])}</span> → <span style={{ color: '#10B981', fontWeight: 600 }}>{String(log.newValues[key])}</span>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Edit Course Modal */}
             {editModalOpen && editingCourse && (

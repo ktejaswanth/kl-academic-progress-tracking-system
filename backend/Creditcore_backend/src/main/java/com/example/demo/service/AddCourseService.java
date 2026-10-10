@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.controller.AddCourseController.AddCourseRequest;
+import com.example.demo.dto.AuditHistoryResponse;
 import com.example.demo.dto.UpdateCourseRequest;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
@@ -9,6 +10,9 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -59,6 +64,17 @@ public class AddCourseService {
 
     @Autowired
     private DegreeEligibilityEngine degreeEligibilityEngine;
+
+    @Autowired
+    private AuditHistoryRepository auditHistoryRepository;
+
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
+    private FacultyRepository facultyRepository;
+
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules();
 
     /**
      * Resolves student entity from universityId in students table directly.
@@ -282,6 +298,28 @@ public class AddCourseService {
         result.put("course", saved);
         result.put("mappedBucketCode", bucketCode);
         result.put("mappedBucketName", bucketName);
+
+        // Record audit entry for course creation
+        ActorInfo actor = resolveCurrentActor(verifiedById);
+        Map<String, Object> newValues = new LinkedHashMap<>();
+        newValues.put("courseCode", saved.getCourseCode());
+        newValues.put("courseName", saved.getCourseName());
+        newValues.put("credits", saved.getCredits());
+        newValues.put("grade", saved.getGrade());
+        newValues.put("semester", saved.getSemester());
+        newValues.put("academicYear", saved.getAcademicYear());
+
+        recordCourseAudit(
+                student,
+                "CREATE",
+                actor,
+                saved.getId(),
+                saved.getCourseCode(),
+                "Added course " + saved.getCourseCode() + " (" + (saved.getCourseName() != null ? saved.getCourseName() : "") + ") with " + saved.getCredits() + " credits",
+                null,
+                newValues
+        );
+
         return result;
     }
 
@@ -515,6 +553,15 @@ public class AddCourseService {
         Long studentId = (completed.getStudent() != null) ? completed.getStudent().getId() : null;
         String courseCode = completed.getCourseCode();
 
+        Student student = completed.getStudent();
+        Map<String, Object> deletedValues = new LinkedHashMap<>();
+        deletedValues.put("courseCode", completed.getCourseCode());
+        deletedValues.put("courseName", completed.getCourseName());
+        deletedValues.put("credits", completed.getCredits());
+        deletedValues.put("grade", completed.getGrade());
+        deletedValues.put("semester", completed.getSemester());
+        deletedValues.put("academicYear", completed.getAcademicYear());
+
         completedCourseRepository.delete(completed);
 
         if (studentId != null && courseCode != null) {
@@ -535,6 +582,19 @@ public class AddCourseService {
                 } catch (Exception ignored) {}
             }
         }
+
+        // Record audit entry for course deletion
+        ActorInfo actor = resolveCurrentActor(null);
+        recordCourseAudit(
+                student,
+                "DELETE",
+                actor,
+                courseId,
+                courseCode,
+                "Deleted course " + courseCode + " (" + (completed.getCourseName() != null ? completed.getCourseName() : "") + ")",
+                deletedValues,
+                null
+        );
     }
 
     /**
@@ -562,6 +622,17 @@ public class AddCourseService {
         if (student == null) {
             throw new IllegalStateException("Associated student record not found for course " + courseId);
         }
+
+        // Capture snapshot of old values for audit logging
+        Map<String, Object> oldValues = new LinkedHashMap<>();
+        oldValues.put("courseCode", completed.getCourseCode());
+        oldValues.put("courseName", completed.getCourseName());
+        oldValues.put("credits", completed.getCredits());
+        oldValues.put("grade", completed.getGrade());
+        oldValues.put("semester", completed.getSemester());
+        oldValues.put("academicYear", completed.getAcademicYear());
+        oldValues.put("sectionNo", completed.getSectionNo());
+        oldValues.put("status", completed.getStatus());
 
         // Prevent changing student ownership (protected field)
         if (request.getStudentId() != null && !request.getStudentId().equals(student.getId())) {
@@ -738,6 +809,42 @@ public class AddCourseService {
         response.put("course", saved);
         response.put("mappedBucketCode", bucketCode);
         response.put("mappedBucketName", bucketName);
+
+        // Record audit entry for course update
+        Map<String, Object> newValues = new LinkedHashMap<>();
+        newValues.put("courseCode", saved.getCourseCode());
+        newValues.put("courseName", saved.getCourseName());
+        newValues.put("credits", saved.getCredits());
+        newValues.put("grade", saved.getGrade());
+        newValues.put("semester", saved.getSemester());
+        newValues.put("academicYear", saved.getAcademicYear());
+        newValues.put("sectionNo", saved.getSectionNo());
+        newValues.put("status", saved.getStatus());
+
+        List<String> changeSummaries = new ArrayList<>();
+        for (String k : oldValues.keySet()) {
+            Object oldV = oldValues.get(k);
+            Object newV = newValues.get(k);
+            if (!Objects.equals(oldV, newV)) {
+                changeSummaries.add(k + ": '" + oldV + "' -> '" + newV + "'");
+            }
+        }
+        String desc = changeSummaries.isEmpty()
+                ? "Updated course " + saved.getCourseCode()
+                : "Updated course " + saved.getCourseCode() + " (" + String.join(", ", changeSummaries) + ")";
+
+        ActorInfo actor = resolveCurrentActor(verifierId);
+        recordCourseAudit(
+                student,
+                "UPDATE",
+                actor,
+                saved.getId(),
+                saved.getCourseCode(),
+                desc,
+                oldValues,
+                newValues
+        );
+
         return response;
     }
 
@@ -855,6 +962,27 @@ public class AddCourseService {
             } catch (Exception ignored) {}
         }
 
+        // Record audit entry for student custom course creation
+        ActorInfo actor = new ActorInfo(student.getId(), student.getStudentId(), "STUDENT");
+        Map<String, Object> newValues = new LinkedHashMap<>();
+        newValues.put("courseCode", saved.getCourseCode());
+        newValues.put("courseName", saved.getCourseName());
+        newValues.put("credits", saved.getCredits());
+        newValues.put("grade", saved.getGrade());
+        newValues.put("semester", saved.getSemester());
+        newValues.put("academicYear", saved.getAcademicYear());
+
+        recordCourseAudit(
+                student,
+                "CREATE",
+                actor,
+                saved.getId(),
+                saved.getCourseCode(),
+                "Student self-reported course " + saved.getCourseCode() + " (" + saved.getCourseName() + ")",
+                null,
+                newValues
+        );
+
         return saved;
     }
 
@@ -913,6 +1041,25 @@ public class AddCourseService {
                 degreeEligibilityEngine.evaluateEligibility(student.getId());
             } catch (Exception ignored) {}
         }
+
+        // Record audit entry for student custom course deletion
+        ActorInfo actor = new ActorInfo(student.getId(), student.getStudentId(), "STUDENT");
+        Map<String, Object> deletedValues = new LinkedHashMap<>();
+        deletedValues.put("courseCode", course.getCourseCode());
+        deletedValues.put("courseName", course.getCourseName());
+        deletedValues.put("credits", course.getCredits());
+        deletedValues.put("grade", course.getGrade());
+
+        recordCourseAudit(
+                student,
+                "DELETE",
+                actor,
+                courseId,
+                courseCode,
+                "Student deleted self-reported course " + courseCode,
+                deletedValues,
+                null
+        );
     }
 
     private void syncStudentCourse(Student student, CourseCatalog catalog, String courseName, Double credits,
@@ -1071,5 +1218,167 @@ public class AddCourseService {
             } catch (Exception ignored) {}
         }
         return LocalDate.now();
+    }
+
+    public record ActorInfo(Long id, String username, String role) {}
+
+    public ActorInfo resolveCurrentActor(Long fallbackId) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+                String principalName = auth.getName();
+                String role = auth.getAuthorities().stream()
+                        .findFirst()
+                        .map(GrantedAuthority::getAuthority)
+                        .orElse("UNKNOWN");
+
+                if (role.startsWith("ROLE_")) {
+                    role = role.substring(5);
+                }
+
+                // Check Admin
+                Optional<Admin> adminOpt = adminRepository.findByUsername(principalName);
+                if (adminOpt.isPresent()) {
+                    return new ActorInfo(adminOpt.get().getId(), adminOpt.get().getUsername(), "ADMIN");
+                }
+
+                // Check Faculty
+                Optional<Faculty> facOpt = facultyRepository.findByEmail(principalName);
+                if (!facOpt.isPresent()) {
+                    facOpt = facultyRepository.findByUsername(principalName);
+                }
+                if (facOpt.isPresent()) {
+                    String facName = facOpt.get().getUsername() != null ? facOpt.get().getUsername() : (facOpt.get().getFirstName() + " " + (facOpt.get().getLastName() != null ? facOpt.get().getLastName() : ""));
+                    return new ActorInfo(facOpt.get().getId(), facName.trim(), "FACULTY");
+                }
+
+                // Check Student
+                Optional<Student> stuOpt = studentRepository.findByStudentId(principalName);
+                if (!stuOpt.isPresent()) {
+                    stuOpt = studentRepository.findByEmail(principalName);
+                }
+                if (stuOpt.isPresent()) {
+                    return new ActorInfo(stuOpt.get().getId(), stuOpt.get().getStudentId(), "STUDENT");
+                }
+
+                return new ActorInfo(fallbackId, principalName, role);
+            }
+        } catch (Exception ignored) {}
+
+        if (fallbackId != null) {
+            Optional<Admin> admin = adminRepository.findById(fallbackId);
+            if (admin.isPresent()) {
+                return new ActorInfo(admin.get().getId(), admin.get().getUsername(), "ADMIN");
+            }
+            Optional<Faculty> faculty = facultyRepository.findById(fallbackId);
+            if (faculty.isPresent()) {
+                String facName = faculty.get().getUsername() != null ? faculty.get().getUsername() : (faculty.get().getFirstName() + " " + (faculty.get().getLastName() != null ? faculty.get().getLastName() : ""));
+                return new ActorInfo(faculty.get().getId(), facName.trim(), "FACULTY");
+            }
+            return new ActorInfo(fallbackId, "USER_" + fallbackId, "ADMIN");
+        }
+
+        return new ActorInfo(null, "SYSTEM", "SYSTEM");
+    }
+
+    public void recordCourseAudit(Student student, String actionType, ActorInfo actor, Long courseId,
+                                  String courseCode, String description,
+                                  Map<String, Object> oldValues, Map<String, Object> newValues) {
+        try {
+            AuditHistory audit = new AuditHistory();
+            audit.setStudent(student);
+            audit.setActionType(actionType != null ? actionType.toUpperCase() : "UNKNOWN");
+            audit.setPerformedBy(actor != null ? actor.id() : null);
+
+            Map<String, Object> payloadMap = new LinkedHashMap<>();
+            payloadMap.put("courseId", courseId);
+            payloadMap.put("courseCode", courseCode);
+            payloadMap.put("actorUsername", actor != null ? actor.username() : "SYSTEM");
+            payloadMap.put("actorRole", actor != null ? actor.role() : "SYSTEM");
+            payloadMap.put("description", description);
+            if (oldValues != null && !oldValues.isEmpty()) {
+                payloadMap.put("oldValues", oldValues);
+            }
+
+            Map<String, Object> resultMap = new LinkedHashMap<>();
+            resultMap.put("status", "SUCCESS");
+            if (newValues != null && !newValues.isEmpty()) {
+                resultMap.put("newValues", newValues);
+            }
+
+            audit.setPayload(objectMapper.writeValueAsString(payloadMap));
+            audit.setResult(objectMapper.writeValueAsString(resultMap));
+            audit.setCreatedAt(LocalDateTime.now());
+
+            auditHistoryRepository.save(audit);
+        } catch (Exception e) {
+            // Re-throw so transaction rolls back if audit fails in transactional context
+            throw new RuntimeException("Failed to record audit history: " + e.getMessage(), e);
+        }
+    }
+
+    public List<AuditHistoryResponse> getAuditHistoryForStudent(Long studentId) {
+        List<AuditHistory> audits = auditHistoryRepository.findByStudentIdOrderByCreatedAtDesc(studentId);
+        return audits.stream().map(this::toAuditResponse).toList();
+    }
+
+    public List<AuditHistoryResponse> getAllAuditHistory() {
+        List<AuditHistory> audits = auditHistoryRepository.findAllByOrderByCreatedAtDesc();
+        return audits.stream().map(this::toAuditResponse).toList();
+    }
+
+    private AuditHistoryResponse toAuditResponse(AuditHistory audit) {
+        String actorUsername = null;
+        String actorRole = null;
+        Long courseId = null;
+        String courseCode = null;
+        String description = null;
+        Map<String, Object> oldValues = null;
+        Map<String, Object> newValues = null;
+
+        if (audit.getPayload() != null && !audit.getPayload().trim().isEmpty()) {
+            try {
+                Map<String, Object> p = objectMapper.readValue(audit.getPayload(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+                if (p.containsKey("actorUsername")) actorUsername = String.valueOf(p.get("actorUsername"));
+                if (p.containsKey("actorRole")) actorRole = String.valueOf(p.get("actorRole"));
+                if (p.containsKey("courseId") && p.get("courseId") != null) courseId = Long.valueOf(p.get("courseId").toString());
+                if (p.containsKey("courseCode")) courseCode = String.valueOf(p.get("courseCode"));
+                if (p.containsKey("description")) description = String.valueOf(p.get("description"));
+                if (p.containsKey("oldValues") && p.get("oldValues") instanceof Map) {
+                    //noinspection unchecked
+                    oldValues = (Map<String, Object>) p.get("oldValues");
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (audit.getResult() != null && !audit.getResult().trim().isEmpty()) {
+            try {
+                Map<String, Object> r = objectMapper.readValue(audit.getResult(), new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+                if (r.containsKey("newValues") && r.get("newValues") instanceof Map) {
+                    //noinspection unchecked
+                    newValues = (Map<String, Object>) r.get("newValues");
+                }
+            } catch (Exception ignored) {}
+        }
+
+        Student student = audit.getStudent();
+        return AuditHistoryResponse.builder()
+                .id(audit.getId())
+                .studentId(student != null ? student.getId() : null)
+                .universityId(student != null ? student.getStudentId() : null)
+                .studentName(student != null ? (student.getFirstName() + " " + (student.getLastName() != null ? student.getLastName() : "")).trim() : null)
+                .actionType(audit.getActionType())
+                .performedBy(audit.getPerformedBy())
+                .actorUsername(actorUsername)
+                .actorRole(actorRole)
+                .courseId(courseId)
+                .courseCode(courseCode)
+                .description(description)
+                .oldValues(oldValues)
+                .newValues(newValues)
+                .payload(audit.getPayload())
+                .result(audit.getResult())
+                .createdAt(audit.getCreatedAt())
+                .build();
     }
 }

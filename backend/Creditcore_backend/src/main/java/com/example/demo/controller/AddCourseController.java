@@ -136,6 +136,36 @@ public class AddCourseController {
         }
     }
 
+    @GetMapping("/audit")
+    public ResponseEntity<?> getAllAuditHistory() {
+        org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAuthorized = auth != null && auth.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("ROLE_SUPER_ADMIN") ||
+                a.getAuthority().equals("ROLE_ADMIN") ||
+                a.getAuthority().equals("ROLE_FACULTY")
+        );
+        if (!isAuthorized) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "You are not authorized to view audit history."));
+        }
+        return ResponseEntity.ok(addCourseService.getAllAuditHistory());
+    }
+
+    @GetMapping("/audit/{studentId}")
+    public ResponseEntity<?> getAuditHistoryForStudent(@PathVariable Long studentId) {
+        org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAuthorized = auth != null && auth.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("ROLE_SUPER_ADMIN") ||
+                a.getAuthority().equals("ROLE_ADMIN") ||
+                a.getAuthority().equals("ROLE_FACULTY")
+        );
+        if (!isAuthorized) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "You are not authorized to view audit history."));
+        }
+        return ResponseEntity.ok(addCourseService.getAuditHistoryForStudent(studentId));
+    }
+
     @Data
     public static class AddCourseRequest {
         private Long studentId;
