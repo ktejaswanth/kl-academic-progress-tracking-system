@@ -336,4 +336,80 @@ public class AdminFacultyCourseEditTest {
         int earnedAfter = bucketsAfter.values().stream().mapToInt(BucketMappingEngine.BucketCreditsInfo::getEarnedCredits).sum();
         assertEquals(0, earnedAfter, "Failing grade edit must reduce earned credits to 0");
     }
+
+    @Test
+    @DisplayName("8. Role Authorization: Admin with ROLE_ADMIN is authorized to edit course records")
+    public void testAdminRoleCanEditCourse() {
+        AddCourseController.AddCourseRequest addReq = new AddCourseController.AddCourseRequest();
+        addReq.setUniversityId(testStudent.getStudentId());
+        addReq.setCourseCode("23CS2101");
+        addReq.setGrade("B");
+        addReq.setSemester("ODD");
+        Map<String, Object> addResult = addCourseService.addSingleCourse(addReq, testFaculty.getId());
+        CompletedCourse course = (CompletedCourse) addResult.get("course");
+
+        // Set security context to ROLE_ADMIN
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                        "admin_user",
+                        "password",
+                        List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                )
+        );
+
+        AddCourseController.UpdateCourseRequest editReq = new AddCourseController.UpdateCourseRequest();
+        editReq.setGrade("A+");
+
+        ResponseEntity<?> response = addCourseController.updateCourse(course.getId(), editReq);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        CompletedCourse updated = completedCourseRepository.findById(course.getId()).orElseThrow();
+        assertEquals("A+", updated.getGrade());
+    }
+
+    @Test
+    @DisplayName("9. Multi-field Synchronization: Editing grade, credits, semester, and code synchronizes CompletedCourse, StudentCourse, and Attempts")
+    public void testSynchronizeAllRecordsOnCreditsGradeSemesterCodeEdit() {
+        AddCourseController.AddCourseRequest addReq = new AddCourseController.AddCourseRequest();
+        addReq.setUniversityId(testStudent.getStudentId());
+        addReq.setCourseCode("23CS2101");
+        addReq.setGrade("B");
+        addReq.setSemester("ODD");
+        addReq.setAcademicYear("2023-2024");
+        Map<String, Object> addResult = addCourseService.addSingleCourse(addReq, testFaculty.getId());
+        CompletedCourse course = (CompletedCourse) addResult.get("course");
+
+        // Update credits from 4 to 3, grade from B to O, semester to EVEN
+        AddCourseController.UpdateCourseRequest updateReq = new AddCourseController.UpdateCourseRequest();
+        updateReq.setCredits(3);
+        updateReq.setGrade("O");
+        updateReq.setSemester("EVEN");
+
+        ResponseEntity<?> response = addCourseController.updateCourse(course.getId(), updateReq);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        // Verify CompletedCourse
+        CompletedCourse updatedCc = completedCourseRepository.findById(course.getId()).orElseThrow();
+        assertEquals(3, updatedCc.getCredits());
+        assertEquals("O", updatedCc.getGrade());
+        assertEquals("EVEN", updatedCc.getSemester());
+
+        // Verify normalized StudentCourse
+        List<StudentCourse> scList = studentCourseRepository.findByStudentId(testStudent.getId());
+        assertEquals(1, scList.size());
+        StudentCourse sc = scList.get(0);
+        assertEquals("23CS2101", sc.getCourseCode());
+        assertEquals(3.0, sc.getCredits());
+        assertEquals("O", sc.getGrade());
+        assertEquals("COMPLETED", sc.getStatus());
+        assertEquals("EVEN", sc.getSemester());
+
+        // Verify normalized StudentCourseAttempt
+        List<StudentCourseAttempt> attempts = studentCourseAttemptRepository.findByStudentIdAndCourseCode(testStudent.getId(), "23CS2101");
+        assertFalse(attempts.isEmpty());
+        StudentCourseAttempt attempt = attempts.get(attempts.size() - 1);
+        assertEquals("O", attempt.getGrade());
+        assertEquals("COMPLETED", attempt.getStatus());
+        assertTrue(attempt.getIsQualifying());
+        assertEquals("EVEN", attempt.getSemester());
+    }
 }

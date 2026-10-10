@@ -82,7 +82,9 @@ public class AddCourseController {
     public ResponseEntity<?> updateCourse(@PathVariable Long courseId, @RequestBody UpdateCourseRequest request) {
         org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAuthorized = auth != null && auth.getAuthorities().stream().anyMatch(a ->
-                a.getAuthority().equals("ROLE_SUPER_ADMIN") || a.getAuthority().equals("ROLE_FACULTY")
+                a.getAuthority().equals("ROLE_SUPER_ADMIN") ||
+                a.getAuthority().equals("ROLE_ADMIN") ||
+                a.getAuthority().equals("ROLE_FACULTY")
         );
         if (!isAuthorized) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)

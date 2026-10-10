@@ -25,7 +25,8 @@ export default function FacultyStudentDetail() {
     // Role check for Edit permissions
     const storedUser = localStorage.getItem('user');
     const currentUser = storedUser ? JSON.parse(storedUser) : null;
-    const canEdit = currentUser && (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN' || currentUser.role === 'FACULTY');
+    const userRole = currentUser?.role ? String(currentUser.role).toUpperCase() : '';
+    const canEdit = userRole === 'SUPER_ADMIN' || userRole === 'ADMIN' || userRole === 'FACULTY';
 
     // Edit Course Form State
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -131,6 +132,12 @@ export default function FacultyStudentDetail() {
         setEditFormLoading(true);
         setEditFormError('');
         setEditFormSuccess('');
+
+        if (!canEdit) {
+            setEditFormError('You are not authorized to edit course records.');
+            setEditFormLoading(false);
+            return;
+        }
 
         try {
             await api.put(`/dyod/courses/${editingCourse.id}`, {

@@ -956,12 +956,19 @@ public class AddCourseService {
             studentCourseAttemptRepository.save(sca);
         } else {
             StudentCourse sc = scOpt.get();
+            if (credits != null) {
+                sc.setCredits(credits);
+            }
+            if (courseName != null && !courseName.trim().isEmpty()) {
+                sc.setCourseName(courseName.trim());
+            }
             if (grade != null) {
                 sc.setGrade(grade);
                 sc.setStatus(finalStatus);
             }
             if (semester != null) sc.setSemester(semester);
             if (academicYear != null) sc.setAcademicYear(academicYear);
+            if (completedDate != null) sc.setCompletedDate(completedDate);
             studentCourseRepository.save(sc);
 
             List<StudentCourseAttempt> attempts = studentCourseAttemptRepository.findByStudentIdAndCourseCode(student.getId(), catalog.getCourseCode());
@@ -970,6 +977,8 @@ public class AddCourseService {
                 sca.setGrade(grade);
                 sca.setStatus(finalStatus);
                 sca.setIsQualifying(qualifying);
+                if (semester != null) sca.setSemester(semester);
+                if (academicYear != null) sca.setAcademicYear(academicYear);
                 studentCourseAttemptRepository.save(sca);
             }
         }
