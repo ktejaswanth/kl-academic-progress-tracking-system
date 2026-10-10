@@ -22,6 +22,26 @@ export default function FacultyStudentDetail() {
     const [formError, setFormError] = useState('');
     const [formSuccess, setFormSuccess] = useState('');
 
+    // Role check for Edit permissions
+    const storedUser = localStorage.getItem('user');
+    const currentUser = storedUser ? JSON.parse(storedUser) : null;
+    const canEdit = currentUser && (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN' || currentUser.role === 'FACULTY');
+
+    // Edit Course Form State
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editingCourse, setEditingCourse] = useState(null);
+    const [editCourseCode, setEditCourseCode] = useState('');
+    const [editCourseName, setEditCourseName] = useState('');
+    const [editCredits, setEditCredits] = useState(3);
+    const [editGrade, setEditGrade] = useState('O');
+    const [editSemester, setEditSemester] = useState('ODD');
+    const [editAcademicYear, setEditAcademicYear] = useState('');
+    const [editSectionNo, setEditSectionNo] = useState('');
+    const [editStatus, setEditStatus] = useState('Completed');
+    const [editFormLoading, setEditFormLoading] = useState(false);
+    const [editFormError, setEditFormError] = useState('');
+    const [editFormSuccess, setEditFormSuccess] = useState('');
+
     const fetchData = async () => {
         try {
             const [statusRes, bucketsRes, coursesRes] = await Promise.all([
@@ -70,6 +90,68 @@ export default function FacultyStudentDetail() {
             setFormError(err.response?.data?.error || 'Failed to add completed course. Ensure course code exists and is not duplicate.');
         } finally {
             setFormLoading(false);
+        }
+    };
+
+    const handleOpenEditModal = (course) => {
+        setEditingCourse(course);
+        setEditCourseCode(course.courseCode || '');
+        setEditCourseName(course.courseName || '');
+        setEditCredits(course.credits != null ? course.credits : 3);
+        setEditGrade(course.grade || 'O');
+        setEditSemester(course.semester || 'ODD');
+        setEditAcademicYear(course.academicYear || '');
+        setEditSectionNo(course.sectionNo || '');
+        setEditStatus(course.status || 'Completed');
+        setEditFormError('');
+        setEditFormSuccess('');
+        setEditModalOpen(true);
+    };
+
+    const handleCloseEditModal = () => {
+        setEditModalOpen(false);
+        setEditingCourse(null);
+        setEditFormError('');
+        setEditFormSuccess('');
+    };
+
+    const handleUpdateCourse = async (e) => {
+        e.preventDefault();
+        if (!editCourseCode.trim()) {
+            setEditFormError('Course code is required.');
+            return;
+        }
+
+        const credNum = parseInt(editCredits);
+        if (isNaN(credNum) || credNum < 0 || credNum > 30) {
+            setEditFormError('Credits must be a valid number between 0 and 30.');
+            return;
+        }
+
+        setEditFormLoading(true);
+        setEditFormError('');
+        setEditFormSuccess('');
+
+        try {
+            await api.put(`/dyod/courses/${editingCourse.id}`, {
+                courseCode: editCourseCode.trim().toUpperCase(),
+                courseName: editCourseName.trim(),
+                credits: credNum,
+                grade: editGrade,
+                semester: editSemester.trim(),
+                academicYear: editAcademicYear.trim(),
+                sectionNo: editSectionNo.trim(),
+                status: editStatus
+            });
+            setEditFormSuccess(`Course ${editCourseCode.toUpperCase()} updated successfully!`);
+            await fetchData();
+            setTimeout(() => {
+                handleCloseEditModal();
+            }, 600);
+        } catch (err) {
+            setEditFormError(err.response?.data?.error || err.response?.data?.message || 'Failed to update course.');
+        } finally {
+            setEditFormLoading(false);
         }
     };
 
@@ -228,12 +310,22 @@ export default function FacultyStudentDetail() {
                                         <td style={{ padding: '12px' }}><span className="grade-box">{c.grade}</span></td>
                                         <td style={{ padding: '12px' }}>{c.semester}</td>
                                         <td style={{ padding: '12px', textAlign: 'right' }}>
-                                            <button 
-                                                onClick={() => handleDeleteCourse(c.id, c.courseCode)}
-                                                style={{ background: '#FFF5F5', border: '1px solid #FECACA', color: '#8B0000', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
-                                            >
-                                                Delete Record
-                                            </button>
+                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                                {canEdit && (
+                                                    <button 
+                                                        onClick={() => handleOpenEditModal(c)}
+                                                        style={{ background: '#F8F9FA', border: '1px solid #CED4DA', color: '#2B2D42', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                )}
+                                                <button 
+                                                    onClick={() => handleDeleteCourse(c.id, c.courseCode)}
+                                                    style={{ background: '#FFF5F5', border: '1px solid #FECACA', color: '#8B0000', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -309,6 +401,189 @@ export default function FacultyStudentDetail() {
                 {formError && <div className="alert error" style={{ marginTop: '1.5rem' }}>{formError}</div>}
                 {formSuccess && <div className="alert success" style={{ marginTop: '1.5rem' }}>{formSuccess}</div>}
             </div>
+
+            {/* Edit Course Modal */}
+            {editModalOpen && editingCourse && (
+                <div className="modal-overlay" style={{
+                    position: 'fixed',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div className="modal-content glass-card" style={{
+                        background: '#ffffff',
+                        borderRadius: '20px',
+                        padding: '2.2rem',
+                        width: '100%',
+                        maxWidth: '560px',
+                        boxShadow: '0 25px 60px rgba(0, 0, 0, 0.2)',
+                        border: '1px solid #E2E8F0',
+                        position: 'relative'
+                    }}>
+                        <button 
+                            onClick={handleCloseEditModal}
+                            style={{
+                                position: 'absolute',
+                                top: '20px', right: '20px',
+                                background: 'transparent',
+                                border: 'none',
+                                fontSize: '1.5rem',
+                                color: '#94A3B8',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            &times;
+                        </button>
+
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#8B0000', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Faculty Academic Edit</span>
+                            <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1E293B', margin: '4px 0' }}>Edit Course Record</h2>
+                            <p style={{ color: '#64748B', fontSize: '0.85rem', margin: 0 }}>
+                                Student: <strong>{student.firstName} {student.lastName}</strong> ({student.username})
+                            </p>
+                        </div>
+
+                        {editFormError && (
+                            <div className="alert error" style={{ marginBottom: '1.2rem', padding: '10px 14px', borderRadius: '8px' }}>
+                                ⚠️ {editFormError}
+                            </div>
+                        )}
+                        {editFormSuccess && (
+                            <div className="alert success" style={{ marginBottom: '1.2rem', padding: '10px 14px', borderRadius: '8px' }}>
+                                ✅ {editFormSuccess}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleUpdateCourse}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Course Code *</label>
+                                    <input 
+                                        type="text" 
+                                        value={editCourseCode}
+                                        onChange={(e) => setEditCourseCode(e.target.value)}
+                                        style={{ padding: '9px 12px', border: '1px solid #CBD5E1', borderRadius: '8px', outline: 'none' }}
+                                        required
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Credits *</label>
+                                    <input 
+                                        type="number" 
+                                        min="0"
+                                        max="30"
+                                        value={editCredits}
+                                        onChange={(e) => setEditCredits(e.target.value)}
+                                        style={{ padding: '9px 12px', border: '1px solid #CBD5E1', borderRadius: '8px', outline: 'none' }}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '1rem' }}>
+                                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Course Name</label>
+                                <input 
+                                    type="text" 
+                                    value={editCourseName}
+                                    onChange={(e) => setEditCourseName(e.target.value)}
+                                    placeholder="Course Title"
+                                    style={{ padding: '9px 12px', border: '1px solid #CBD5E1', borderRadius: '8px', outline: 'none' }}
+                                />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Grade</label>
+                                    <select 
+                                        value={editGrade}
+                                        onChange={(e) => setEditGrade(e.target.value)}
+                                        style={{ padding: '9px 12px', border: '1px solid #CBD5E1', borderRadius: '8px', outline: 'none', background: 'white' }}
+                                    >
+                                        <option value="O">O</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A">A</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                        <option value="P">P</option>
+                                        <option value="F">F</option>
+                                        <option value="Pass">Pass</option>
+                                        <option value="IP">IP</option>
+                                    </select>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Status</label>
+                                    <select 
+                                        value={editStatus}
+                                        onChange={(e) => setEditStatus(e.target.value)}
+                                        style={{ padding: '9px 12px', border: '1px solid #CBD5E1', borderRadius: '8px', outline: 'none', background: 'white' }}
+                                    >
+                                        <option value="Completed">Completed</option>
+                                        <option value="On-Progress">On-Progress</option>
+                                        <option value="In-Progress">In-Progress</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Semester</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="e.g. ODD"
+                                        value={editSemester}
+                                        onChange={(e) => setEditSemester(e.target.value)}
+                                        style={{ padding: '9px 12px', border: '1px solid #CBD5E1', borderRadius: '8px', outline: 'none' }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Academic Year</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="e.g. 2023-2024"
+                                        value={editAcademicYear}
+                                        onChange={(e) => setEditAcademicYear(e.target.value)}
+                                        style={{ padding: '9px 12px', border: '1px solid #CBD5E1', borderRadius: '8px', outline: 'none' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '1.5rem' }}>
+                                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Section</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. S1"
+                                    value={editSectionNo}
+                                    onChange={(e) => setEditSectionNo(e.target.value)}
+                                    style={{ padding: '9px 12px', border: '1px solid #CBD5E1', borderRadius: '8px', outline: 'none' }}
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={handleCloseEditModal}
+                                    disabled={editFormLoading}
+                                    style={{ padding: '10px 18px', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, color: '#475569' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={editFormLoading}
+                                    style={{ padding: '10px 20px', background: '#8B0000', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                                >
+                                    {editFormLoading ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.controller.AddCourseController.AddCourseRequest;
+import com.example.demo.dto.UpdateCourseRequest;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
@@ -191,7 +192,19 @@ public class AddCourseService {
      */
     public Map<String, Object> addSingleCourse(AddCourseRequest request, Long verifiedById) {
         if (request.getUniversityId() == null || request.getUniversityId().trim().isEmpty()) {
-            throw new RuntimeException("Student university ID is required.");
+            if (request.getStudentId() != null) {
+                Optional<Student> sOpt = studentRepository.findById(request.getStudentId());
+                if (sOpt.isPresent()) {
+                    request.setUniversityId(sOpt.get().getStudentId());
+                    if (request.getStudentName() == null || request.getStudentName().trim().isEmpty()) {
+                        request.setStudentName(sOpt.get().getFirstName() + " " + (sOpt.get().getLastName() != null ? sOpt.get().getLastName() : ""));
+                    }
+                } else {
+                    throw new RuntimeException("Student not found for ID: " + request.getStudentId());
+                }
+            } else {
+                throw new RuntimeException("Student university ID is required.");
+            }
         }
 
         Student student = resolveOrCreateStudent(request.getUniversityId(), request.getStudentName(), request.getBranch(), request.getAcademicYear());
@@ -522,6 +535,210 @@ public class AddCourseService {
                 } catch (Exception ignored) {}
             }
         }
+    }
+
+    /**
+     * Update an existing completed course record by Admin/Faculty.
+     * Prevents changes to protected fields (id, student ownership).
+     * Enforces duplicate validation.
+     * Synchronizes normalized student_courses and student_course_attempts.
+     * Recalculates student degree eligibility and bucket progress.
+     */
+    public Map<String, Object> updateCourse(Long courseId, UpdateCourseRequest request, Long verifierId) {
+        if (courseId == null) {
+            throw new IllegalArgumentException("Course ID must not be null.");
+        }
+        if (request == null) {
+            throw new IllegalArgumentException("Update request body cannot be null.");
+        }
+
+        CompletedCourse completed = completedCourseRepository.findById(courseId)
+                .orElseThrow(() -> new NoSuchElementException("Completed course record with ID " + courseId + " not found."));
+
+        Student student = completed.getStudent();
+        if (student == null && completed.getUniversityId() != null) {
+            student = studentRepository.findByStudentId(completed.getUniversityId()).orElse(null);
+        }
+        if (student == null) {
+            throw new IllegalStateException("Associated student record not found for course " + courseId);
+        }
+
+        // Prevent changing student ownership (protected field)
+        if (request.getStudentId() != null && !request.getStudentId().equals(student.getId())) {
+            throw new IllegalArgumentException("Changing student ownership of a course record is not permitted.");
+        }
+        if (request.getUniversityId() != null && !request.getUniversityId().trim().equalsIgnoreCase(completed.getUniversityId())) {
+            throw new IllegalArgumentException("Changing student ownership of a course record is not permitted.");
+        }
+
+        if (request.getCourseCode() != null && request.getCourseCode().trim().isEmpty()) {
+            throw new IllegalArgumentException("Course code cannot be empty.");
+        }
+
+        String oldCourseCode = completed.getCourseCode();
+        String newCourseCode = (request.getCourseCode() != null && !request.getCourseCode().trim().isEmpty())
+                ? request.getCourseCode().trim().toUpperCase()
+                : (oldCourseCode != null ? oldCourseCode.trim().toUpperCase() : "");
+
+        if (newCourseCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("Course code cannot be empty.");
+        }
+
+        String targetSemester = (request.getSemester() != null && !request.getSemester().trim().isEmpty())
+                ? request.getSemester().trim()
+                : completed.getSemester();
+        String targetAcademicYear = (request.getAcademicYear() != null && !request.getAcademicYear().trim().isEmpty())
+                ? request.getAcademicYear().trim()
+                : completed.getAcademicYear();
+
+        // Duplicate validation: check if another record for this student already has this courseCode
+        List<CompletedCourse> existingStudentCourses = completedCourseRepository.findByStudentId(student.getId());
+        for (CompletedCourse other : existingStudentCourses) {
+            if (!other.getId().equals(courseId)) {
+                if (other.getCourseCode() != null && other.getCourseCode().trim().equalsIgnoreCase(newCourseCode)) {
+                    if (targetSemester != null && targetAcademicYear != null
+                            && other.getSemester() != null && other.getAcademicYear() != null) {
+                        if (other.getSemester().equalsIgnoreCase(targetSemester) && other.getAcademicYear().equalsIgnoreCase(targetAcademicYear)) {
+                            throw new IllegalArgumentException("Another course record with code " + newCourseCode + " already exists for semester " + targetSemester + " (" + targetAcademicYear + ").");
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Another course record with code " + newCourseCode + " already exists for this student.");
+                    }
+                }
+            }
+        }
+
+        // Validate credits if specified
+        if (request.getCredits() != null) {
+            if (request.getCredits() < 0 || request.getCredits() > 30) {
+                throw new IllegalArgumentException("Credits must be a non-negative integer between 0 and 30.");
+            }
+            completed.setCredits(request.getCredits());
+        }
+
+        completed.setCourseCode(newCourseCode);
+
+        if (request.getCourseName() != null && !request.getCourseName().trim().isEmpty()) {
+            completed.setCourseName(request.getCourseName().trim());
+        } else if (!newCourseCode.equalsIgnoreCase(oldCourseCode)) {
+            // If course code changed and no name given, fetch name from catalog
+            Optional<CourseCatalog> catOpt = courseCatalogRepository.findByCourseCode(newCourseCode);
+            catOpt.ifPresent(cat -> completed.setCourseName(cat.getCourseName()));
+        }
+
+        if (request.getGrade() != null) {
+            completed.setGrade(request.getGrade().trim().toUpperCase());
+        }
+
+        if (request.getSemester() != null) {
+            completed.setSemester(request.getSemester().trim());
+        }
+
+        if (request.getAcademicYear() != null) {
+            completed.setAcademicYear(request.getAcademicYear().trim());
+        }
+
+        if (request.getLtps() != null) {
+            completed.setLtps(request.getLtps().trim());
+        }
+
+        if (request.getSectionNo() != null) {
+            completed.setSectionNo(request.getSectionNo().trim());
+        }
+
+        if (request.getStatus() != null) {
+            completed.setStatus(request.getStatus().trim());
+        }
+
+        if (request.getCategory() != null) {
+            completed.setCategory(request.getCategory().trim());
+        }
+
+        if (request.getCourseType() != null) {
+            completed.setCourseType(request.getCourseType().trim());
+        }
+
+        if (request.getBucketGroup() != null) {
+            completed.setBucketGroup(request.getBucketGroup().trim());
+        }
+
+        if (request.getRegisterDate() != null && !request.getRegisterDate().trim().isEmpty()) {
+            try {
+                completed.setRegisterDate(parseDateSafely(null, request.getRegisterDate()));
+            } catch (Exception ignored) {}
+        }
+
+        if (request.getCompletedDate() != null && !request.getCompletedDate().trim().isEmpty()) {
+            try {
+                completed.setCompletedDate(parseDateSafely(null, request.getCompletedDate()));
+            } catch (Exception ignored) {}
+        }
+
+        if (verifierId != null) {
+            completed.setVerifiedBy(verifierId);
+        }
+
+        CompletedCourse saved = completedCourseRepository.save(completed);
+
+        // Clean up old normalized records if course code changed and no other record uses it
+        if (oldCourseCode != null && !newCourseCode.equalsIgnoreCase(oldCourseCode)) {
+            List<CompletedCourse> remainingOld = completedCourseRepository.findByStudentId(student.getId()).stream()
+                    .filter(c -> !c.getId().equals(saved.getId()) && c.getCourseCode() != null && c.getCourseCode().equalsIgnoreCase(oldCourseCode))
+                    .toList();
+            if (remainingOld.isEmpty()) {
+                List<StudentCourse> scList = studentCourseRepository.findByStudentId(student.getId());
+                for (StudentCourse sc : scList) {
+                    if (sc.getCourseCode() != null && sc.getCourseCode().equalsIgnoreCase(oldCourseCode)) {
+                        studentCourseRepository.delete(sc);
+                    }
+                }
+                List<StudentCourseAttempt> attempts = studentCourseAttemptRepository.findByStudentIdAndCourseCode(student.getId(), oldCourseCode);
+                if (attempts != null && !attempts.isEmpty()) {
+                    studentCourseAttemptRepository.deleteAll(attempts);
+                }
+            }
+        }
+
+        // Dual-write into normalized student_courses and student_course_attempts
+        CourseCatalog catalog = resolveOrCreateCourseCatalog(
+                newCourseCode,
+                saved.getCourseName(),
+                saved.getLtps(),
+                saved.getBranch() != null ? saved.getBranch() : saved.getCategory()
+        );
+
+        syncStudentCourse(
+                student,
+                catalog,
+                saved.getCourseName(),
+                saved.getCredits() != null ? saved.getCredits().doubleValue() : 0.0,
+                saved.getGrade(),
+                saved.getSemester(),
+                saved.getCompletedDate() != null ? saved.getCompletedDate() : saved.getRegisterDate(),
+                saved.getAcademicYear()
+        );
+
+        // Recalculate degree eligibility and bucket progress
+        String bucketCode = "N/A";
+        String bucketName = "N/A";
+        Optional<StudentDegreePath> sdpOpt = studentDegreePathRepository.findByStudentId(student.getId());
+        if (sdpOpt.isPresent()) {
+            try {
+                degreeEligibilityEngine.evaluateEligibility(student.getId());
+                Optional<BucketMaster> bucketOpt = bucketMappingEngine.resolveBucket(newCourseCode, sdpOpt.get().getDegreePath().getId());
+                if (bucketOpt.isPresent()) {
+                    bucketCode = bucketOpt.get().getBucketCode();
+                    bucketName = bucketOpt.get().getBucketName();
+                }
+            } catch (Exception ignored) {}
+        }
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message", "Course record updated successfully.");
+        response.put("course", saved);
+        response.put("mappedBucketCode", bucketCode);
+        response.put("mappedBucketName", bucketName);
+        return response;
     }
 
     /**

@@ -78,6 +78,34 @@ public class AddCourseController {
         }
     }
 
+    @PutMapping("/{courseId}")
+    public ResponseEntity<?> updateCourse(@PathVariable Long courseId, @RequestBody UpdateCourseRequest request) {
+        org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAuthorized = auth != null && auth.getAuthorities().stream().anyMatch(a ->
+                a.getAuthority().equals("ROLE_SUPER_ADMIN") || a.getAuthority().equals("ROLE_FACULTY")
+        );
+        if (!isAuthorized) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "You are not authorized to edit course records."));
+        }
+
+        String username = auth.getName();
+        Long verifierId = getVerifierId(username);
+
+        try {
+            Map<String, Object> response = addCourseService.updateCourse(courseId, request, verifierId);
+            return ResponseEntity.ok(response);
+        } catch (java.util.NoSuchElementException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<CompletedCourse>> getStudentCourses(@PathVariable Long studentId) {
         return ResponseEntity.ok(addCourseService.getStudentCourses(studentId));
@@ -108,6 +136,7 @@ public class AddCourseController {
 
     @Data
     public static class AddCourseRequest {
+        private Long studentId;
         private String universityId;
         private String studentName;
         private String courseCode;
@@ -127,4 +156,6 @@ public class AddCourseController {
         // Grade can still be passed if needed or updated later.
         private String grade;
     }
+
+    public static class UpdateCourseRequest extends com.example.demo.dto.UpdateCourseRequest {}
 }
