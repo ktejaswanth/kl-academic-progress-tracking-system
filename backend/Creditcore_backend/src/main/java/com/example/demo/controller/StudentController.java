@@ -95,6 +95,9 @@ public class StudentController {
     @Autowired
     private CompletedCourseRepository completedCourseRepository;
 
+    @Autowired
+    private com.example.demo.service.AddCourseService addCourseService;
+
     @PostMapping("/courses")
     public ResponseEntity<?> addStudentCourse(@RequestBody java.util.Map<String, Object> payload) {
         try {
@@ -108,6 +111,8 @@ public class StudentController {
             String category = (String) payload.get("category");
             Object creditsObj = payload.get("credits");
             String status = (String) payload.get("status");
+            String semester = (String) payload.get("semester");
+            String academicYear = (String) payload.get("academicYear");
 
             if (courseName == null || courseName.trim().isEmpty() ||
                 courseCode == null || courseCode.trim().isEmpty() ||
@@ -118,23 +123,13 @@ public class StudentController {
 
             Integer credits = Integer.parseInt(creditsObj.toString());
 
-            CompletedCourse course = new CompletedCourse();
-            course.setStudent(student);
-            course.setUniversityId(student.getStudentId());
-            course.setStudentName(student.getFirstName() + (student.getLastName() != null ? " " + student.getLastName() : ""));
-            course.setCourseName(courseName);
-            course.setCourseCode(courseCode);
-            course.setCategory(category);
-            course.setCredits(credits);
-            course.setStatus(status);
-            
-            if ("Completed".equalsIgnoreCase(status)) {
-                course.setGrade("Pass");
-            } else {
-                course.setGrade("IP");
-            }
+            CompletedCourse saved = addCourseService.addStudentCustomCourse(
+                    student, courseName, courseCode, category, credits, status, semester, academicYear
+            );
 
-            return ResponseEntity.ok(completedCourseRepository.save(course));
+            return ResponseEntity.ok(saved);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error adding course: " + e.getMessage());
         }
@@ -164,24 +159,15 @@ public class StudentController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            Optional<com.example.demo.model.Student> studentOpt = studentRepository.findByStudentId(username);
+            com.example.demo.model.Student student = studentRepository.findByStudentId(username)
+                    .orElseThrow(() -> new RuntimeException("Student not found"));
 
-            CompletedCourse course = completedCourseRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Course not found"));
-
-            boolean authorized = false;
-            if (studentOpt.isPresent() && course.getStudent() != null && course.getStudent().getId().equals(studentOpt.get().getId())) {
-                authorized = true;
-            } else if (course.getUniversityId() != null && course.getUniversityId().equalsIgnoreCase(username)) {
-                authorized = true;
-            }
-
-            if (!authorized) {
-                return ResponseEntity.status(403).body("You are not authorized to delete this course.");
-            }
-
-            completedCourseRepository.delete(course);
+            addCourseService.deleteStudentCustomCourse(student, id);
             return ResponseEntity.ok("Course deleted successfully.");
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body("You are not authorized to delete this course.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error deleting course: " + e.getMessage());
         }

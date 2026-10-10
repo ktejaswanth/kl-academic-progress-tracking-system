@@ -504,16 +504,196 @@ public class AddCourseService {
 
         completedCourseRepository.delete(completed);
 
-        if (studentId != null) {
+        if (studentId != null && courseCode != null) {
             List<StudentCourse> scList = studentCourseRepository.findByStudentId(studentId);
             for (StudentCourse sc : scList) {
                 if (courseCode.equalsIgnoreCase(sc.getCourseCode())) {
                     studentCourseRepository.delete(sc);
                 }
             }
+            List<StudentCourseAttempt> attempts = studentCourseAttemptRepository.findByStudentIdAndCourseCode(studentId, courseCode);
+            if (attempts != null && !attempts.isEmpty()) {
+                studentCourseAttemptRepository.deleteAll(attempts);
+            }
 
+            if (studentDegreePathRepository.findByStudentId(studentId).isPresent()) {
+                try {
+                    degreeEligibilityEngine.evaluateEligibility(studentId);
+                } catch (Exception ignored) {}
+            }
+        }
+    }
+
+    /**
+     * Add student self-reported custom course.
+     * Enforces duplicate validation across completed_courses and student_courses.
+     * Dual-writes into normalized student_courses and student_course_attempts marked UNVERIFIED (isQualifying = false).
+     * Distinguishes student self-reported courses from officially verified courses (verifiedBy remains null).
+     * Triggers degree progress recalculation.
+     */
+    public CompletedCourse addStudentCustomCourse(Student student, String courseName, String courseCode,
+                                                 String category, Integer credits, String status,
+                                                 String semester, String academicYear) {
+        if (student == null) {
+            throw new IllegalArgumentException("Student is required.");
+        }
+        if (courseName == null || courseName.trim().isEmpty() ||
+            courseCode == null || courseCode.trim().isEmpty() ||
+            category == null || category.trim().isEmpty() ||
+            credits == null || status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("All fields (courseName, courseCode, category, credits, status) are required.");
+        }
+
+        String cleanCode = courseCode.trim().toUpperCase();
+        String sem = (semester != null && !semester.trim().isEmpty()) ? semester.trim() : "ODD";
+        String acadYr = (academicYear != null && !academicYear.trim().isEmpty()) ? academicYear.trim() : student.getAcademicYear();
+
+        // 1. Duplicate check across completed courses
+        List<CompletedCourse> studentCompleted = completedCourseRepository.findByStudentId(student.getId());
+        if (studentCompleted.isEmpty()) {
+            studentCompleted = completedCourseRepository.findByUniversityId(student.getStudentId());
+        }
+        for (CompletedCourse cc : studentCompleted) {
+            if (cc.getCourseCode() != null && cc.getCourseCode().trim().equalsIgnoreCase(cleanCode)) {
+                if (semester != null && academicYear != null && cc.getSemester() != null && cc.getAcademicYear() != null) {
+                    if (cc.getSemester().equalsIgnoreCase(sem) && cc.getAcademicYear().equalsIgnoreCase(acadYr)) {
+                        throw new IllegalArgumentException("Course " + cleanCode + " already exists for semester " + sem + " (" + acadYr + ").");
+                    }
+                } else {
+                    throw new IllegalArgumentException("Course " + cleanCode + " already exists in your academic records.");
+                }
+            }
+        }
+
+        // Also check student_courses
+        List<StudentCourse> scList = studentCourseRepository.findByStudentId(student.getId());
+        for (StudentCourse sc : scList) {
+            if (sc.getCourseCode() != null && sc.getCourseCode().trim().equalsIgnoreCase(cleanCode)) {
+                if (semester != null && academicYear != null && sc.getSemester() != null && sc.getAcademicYear() != null) {
+                    if (sc.getSemester().equalsIgnoreCase(sem) && sc.getAcademicYear().equalsIgnoreCase(acadYr)) {
+                        throw new IllegalArgumentException("Course " + cleanCode + " already exists for semester " + sem + " (" + acadYr + ").");
+                    }
+                } else {
+                    throw new IllegalArgumentException("Course " + cleanCode + " already exists in your academic records.");
+                }
+            }
+        }
+
+        // 2. Save self-reported completed course
+        CompletedCourse course = new CompletedCourse();
+        course.setStudent(student);
+        course.setUniversityId(student.getStudentId());
+        course.setStudentName(student.getFirstName() + (student.getLastName() != null ? " " + student.getLastName() : ""));
+        course.setCourseName(courseName.trim());
+        course.setCourseCode(cleanCode);
+        course.setCategory(category.trim());
+        course.setCredits(credits);
+        course.setStatus(status);
+        if ("Completed".equalsIgnoreCase(status)) {
+            course.setGrade("Pass");
+        } else {
+            course.setGrade("IP");
+        }
+        course.setSemester(sem);
+        course.setAcademicYear(acadYr);
+        course.setRegisterDate(LocalDate.now());
+        course.setVerifiedBy(null); // Explicitly unverified
+
+        CompletedCourse saved = completedCourseRepository.save(course);
+
+        // 3. Dual-write into normalized student_courses and student_course_attempts
+        CourseCatalog catalog = resolveOrCreateCourseCatalog(cleanCode, courseName.trim(), String.valueOf(credits), category);
+
+        String normStatus = "Completed".equalsIgnoreCase(status) ? "UNVERIFIED" : "IN_PROGRESS";
+        StudentCourse sc = new StudentCourse();
+        sc.setStudent(student);
+        sc.setUniversityId(student.getStudentId());
+        sc.setCourse(catalog);
+        sc.setCourseCode(cleanCode);
+        sc.setCourseName(courseName.trim());
+        sc.setCredits(credits.doubleValue());
+        sc.setGrade(saved.getGrade());
+        sc.setStatus(normStatus);
+        sc.setSemester(sem);
+        sc.setAcademicYear(acadYr);
+        sc.setCompletedDate(LocalDate.now());
+        studentCourseRepository.save(sc);
+
+        StudentCourseAttempt sca = new StudentCourseAttempt();
+        sca.setStudent(student);
+        sca.setUniversityId(student.getStudentId());
+        sca.setCourseCode(cleanCode);
+        sca.setAttemptNumber(1);
+        sca.setGrade(saved.getGrade());
+        sca.setStatus(normStatus);
+        sca.setSemester(sem);
+        sca.setAcademicYear(acadYr);
+        sca.setIsQualifying(false); // Unverified course is never qualifying
+        studentCourseAttemptRepository.save(sca);
+
+        // 4. Trigger progress recalculation
+        if (studentDegreePathRepository.findByStudentId(student.getId()).isPresent()) {
             try {
-                degreeEligibilityEngine.evaluateEligibility(studentId);
+                degreeEligibilityEngine.evaluateEligibility(student.getId());
+            } catch (Exception ignored) {}
+        }
+
+        return saved;
+    }
+
+    /**
+     * Delete student self-reported course.
+     * Validates student ownership and prevents students from deleting officially verified academic records.
+     * Cleans up corresponding normalized records and triggers progress recalculation.
+     */
+    public void deleteStudentCustomCourse(Student student, Long courseId) {
+        if (student == null) {
+            throw new IllegalArgumentException("Student is required.");
+        }
+        CompletedCourse course = completedCourseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+
+        boolean authorized = false;
+        if (course.getStudent() != null && course.getStudent().getId().equals(student.getId())) {
+            authorized = true;
+        } else if (course.getUniversityId() != null && course.getUniversityId().equalsIgnoreCase(student.getStudentId())) {
+            authorized = true;
+        }
+
+        if (!authorized) {
+            throw new SecurityException("You are not authorized to delete this course.");
+        }
+
+        // Students cannot delete officially verified course records
+        if (course.getVerifiedBy() != null) {
+            throw new IllegalStateException("Cannot delete an officially verified academic course record.");
+        }
+
+        String courseCode = course.getCourseCode();
+        completedCourseRepository.delete(course);
+
+        // Clean up normalized student_courses and attempts if no other record exists for this course
+        if (courseCode != null) {
+            List<CompletedCourse> remaining = completedCourseRepository.findByStudentId(student.getId());
+            boolean hasRemaining = remaining.stream().anyMatch(c -> c.getCourseCode() != null && c.getCourseCode().trim().equalsIgnoreCase(courseCode.trim()));
+            if (!hasRemaining) {
+                List<StudentCourse> scList = studentCourseRepository.findByStudentId(student.getId());
+                for (StudentCourse sc : scList) {
+                    if (sc.getCourseCode() != null && sc.getCourseCode().trim().equalsIgnoreCase(courseCode.trim())) {
+                        studentCourseRepository.delete(sc);
+                    }
+                }
+                List<StudentCourseAttempt> attempts = studentCourseAttemptRepository.findByStudentIdAndCourseCode(student.getId(), courseCode.trim());
+                if (attempts != null && !attempts.isEmpty()) {
+                    studentCourseAttemptRepository.deleteAll(attempts);
+                }
+            }
+        }
+
+        // Recalculate progress
+        if (studentDegreePathRepository.findByStudentId(student.getId()).isPresent()) {
+            try {
+                degreeEligibilityEngine.evaluateEligibility(student.getId());
             } catch (Exception ignored) {}
         }
     }
@@ -521,6 +701,10 @@ public class AddCourseService {
     private void syncStudentCourse(Student student, CourseCatalog catalog, String courseName, Double credits,
                                    String grade, String semester, LocalDate completedDate, String academicYear) {
         if (student == null || catalog == null) return;
+
+        boolean isPassing = BucketMappingEngine.isPassingGrade(grade);
+        String finalStatus = isPassing ? "COMPLETED" : "FAILED";
+        boolean qualifying = isPassing;
 
         List<StudentCourse> existingList = studentCourseRepository.findByStudentId(student.getId());
         Optional<StudentCourse> scOpt = existingList.stream()
@@ -536,7 +720,7 @@ public class AddCourseService {
             sc.setCourseName(courseName != null ? courseName : catalog.getCourseName());
             sc.setCredits(credits != null ? credits : (catalog.getCredits() != null ? catalog.getCredits().doubleValue() : 0.0));
             sc.setGrade(grade);
-            sc.setStatus("COMPLETED");
+            sc.setStatus(finalStatus);
             sc.setSemester(semester != null ? semester : "ODD");
             sc.setAcademicYear(academicYear);
             sc.setCompletedDate(completedDate != null ? completedDate : LocalDate.now());
@@ -548,17 +732,29 @@ public class AddCourseService {
             sca.setCourseCode(catalog.getCourseCode());
             sca.setAttemptNumber(1);
             sca.setGrade(grade);
-            sca.setStatus("COMPLETED");
+            sca.setStatus(finalStatus);
             sca.setSemester(semester != null ? semester : "ODD");
             sca.setAcademicYear(academicYear);
-            sca.setIsQualifying(true);
+            sca.setIsQualifying(qualifying);
             studentCourseAttemptRepository.save(sca);
         } else {
             StudentCourse sc = scOpt.get();
-            if (grade != null) sc.setGrade(grade);
+            if (grade != null) {
+                sc.setGrade(grade);
+                sc.setStatus(finalStatus);
+            }
             if (semester != null) sc.setSemester(semester);
             if (academicYear != null) sc.setAcademicYear(academicYear);
             studentCourseRepository.save(sc);
+
+            List<StudentCourseAttempt> attempts = studentCourseAttemptRepository.findByStudentIdAndCourseCode(student.getId(), catalog.getCourseCode());
+            if (attempts != null && !attempts.isEmpty()) {
+                StudentCourseAttempt sca = attempts.get(attempts.size() - 1);
+                sca.setGrade(grade);
+                sca.setStatus(finalStatus);
+                sca.setIsQualifying(qualifying);
+                studentCourseAttemptRepository.save(sca);
+            }
         }
     }
 

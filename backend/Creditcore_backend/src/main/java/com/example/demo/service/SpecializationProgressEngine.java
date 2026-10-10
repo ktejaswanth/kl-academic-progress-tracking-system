@@ -42,14 +42,20 @@ public class SpecializationProgressEngine {
         List<StudentCourse> studentCourses = studentCourseRepo.findByStudentIdAndStatus(studentId, "COMPLETED");
         Set<String> completedCodes = new HashSet<>();
         for (StudentCourse sc : studentCourses) {
-            completedCodes.add(sc.getCourseCode());
+            if (sc.getCourseCode() != null && BucketMappingEngine.isPassingGrade(sc.getGrade())) {
+                completedCodes.add(sc.getCourseCode().trim().toUpperCase());
+            }
         }
         
-        // Also check raw completed courses as fallback
+        // Also check raw completed courses as fallback for verified courses
         List<CompletedCourse> rawCompleted = completedCourseRepo.findByStudentId(studentId);
         for (CompletedCourse cc : rawCompleted) {
-            if (cc.getStatus() == null || !cc.getStatus().equalsIgnoreCase("On-Progress")) {
-                completedCodes.add(cc.getCourseCode());
+            if (cc.getCourseCode() == null) continue;
+            boolean isCompletedStatus = cc.getStatus() == null || cc.getStatus().equalsIgnoreCase("Completed") || cc.getStatus().equalsIgnoreCase("COMPLETED");
+            boolean isVerified = cc.getVerifiedBy() != null || cc.getLtps() != null || cc.getSectionNo() != null;
+            boolean isPassing = BucketMappingEngine.isPassingGrade(cc.getGrade());
+            if (isCompletedStatus && isVerified && isPassing) {
+                completedCodes.add(cc.getCourseCode().trim().toUpperCase());
             }
         }
 
@@ -71,7 +77,8 @@ public class SpecializationProgressEngine {
             courseInfo.put("role", sc.getRole());
             courseInfo.put("credits", courseCredits);
 
-            if (completedCodes.contains(sc.getCourse().getCourseCode())) {
+            String cCode = sc.getCourse().getCourseCode() != null ? sc.getCourse().getCourseCode().trim().toUpperCase() : "";
+            if (completedCodes.contains(cCode)) {
                 completedCount++;
                 earnedCredits += courseCredits;
                 completedList.add(courseInfo);

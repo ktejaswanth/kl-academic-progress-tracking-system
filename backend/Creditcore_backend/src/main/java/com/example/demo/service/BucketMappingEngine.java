@@ -48,28 +48,40 @@ public class BucketMappingEngine {
                 ? degreePath.getCurriculumVersion().getId()
                 : null;
 
-        // Fetch completed courses from StudentCourse table
+        // 1. Fetch completed courses from StudentCourse table (official normalized records)
         List<StudentCourse> studentCourses = studentCourseRepository.findByStudentIdAndStatus(studentId, "COMPLETED");
         
-        // Also fetch legacy CompletedCourse if studentCourses is empty
         Map<String, CourseCompletionInfo> courseCompletions = new LinkedHashMap<>();
         for (StudentCourse sc : studentCourses) {
-            courseCompletions.put(sc.getCourseCode(), new CourseCompletionInfo(
-                    sc.getCourseCode(),
-                    sc.getCourseName(),
-                    sc.getCredits() != null ? sc.getCredits().intValue() : 0,
-                    sc.getGrade()
-            ));
+            if (sc.getCourseCode() != null && isPassingGrade(sc.getGrade())) {
+                String codeKey = sc.getCourseCode().trim().toUpperCase();
+                courseCompletions.put(codeKey, new CourseCompletionInfo(
+                        sc.getCourseCode().trim(),
+                        sc.getCourseName(),
+                        sc.getCredits() != null ? sc.getCredits().intValue() : 0,
+                        sc.getGrade()
+                ));
+            }
         }
 
-        if (courseCompletions.isEmpty()) {
-            List<CompletedCourse> rawCompleted = completedCourseRepository.findByStudentId(studentId);
-            for (CompletedCourse cc : rawCompleted) {
-                if (cc.getStatus() == null || !cc.getStatus().equalsIgnoreCase("On-Progress")) {
-                    courseCompletions.put(cc.getCourseCode(), new CourseCompletionInfo(
-                            cc.getCourseCode(),
+        // 2. Also inspect completed_courses for verified official records not yet in studentCourses
+        List<CompletedCourse> rawCompleted = completedCourseRepository.findByStudentId(studentId);
+        for (CompletedCourse cc : rawCompleted) {
+            if (cc.getCourseCode() == null) continue;
+            String codeKey = cc.getCourseCode().trim().toUpperCase();
+
+            // Prevent double-counting: only add if not already present from StudentCourse
+            if (!courseCompletions.containsKey(codeKey)) {
+                boolean isCompletedStatus = cc.getStatus() == null || cc.getStatus().equalsIgnoreCase("Completed") || cc.getStatus().equalsIgnoreCase("COMPLETED");
+                // Unverified student custom courses (verifiedBy == null without official metadata) do NOT count as earned credit
+                boolean isVerified = cc.getVerifiedBy() != null || cc.getLtps() != null || cc.getSectionNo() != null;
+                boolean isPassing = isPassingGrade(cc.getGrade());
+
+                if (isCompletedStatus && isVerified && isPassing) {
+                    courseCompletions.put(codeKey, new CourseCompletionInfo(
+                            cc.getCourseCode().trim(),
                             cc.getCourseName(),
-                            cc.getCredits(),
+                            cc.getCredits() != null ? cc.getCredits() : 0,
                             cc.getGrade()
                     ));
                 }
@@ -248,5 +260,16 @@ public class BucketMappingEngine {
             map.put("courses", courses);
             return map;
         }
+    }
+
+    public static boolean isPassingGrade(String grade) {
+        if (grade == null || grade.trim().isEmpty()) {
+            return true;
+        }
+        String g = grade.trim().toUpperCase();
+        return !g.equals("F") && !g.equals("FAIL") && !g.equals("FAILED")
+                && !g.equals("AB") && !g.equals("ABSENT") && !g.equals("DT")
+                && !g.equals("NA") && !g.equals("RA") && !g.equals("W")
+                && !g.equals("WITHDRAWN") && !g.equals("IP");
     }
 }
