@@ -28,6 +28,21 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private CourseCatalogRepository courseCatalogRepository;
+
+    @Autowired
+    private CurriculumVersionRepository curriculumVersionRepository;
+
+    @Autowired
+    private StudentIssueRepository studentIssueRepository;
+
+    @Autowired
+    private UnmatchedStudentQueueRepository unmatchedQueueRepository;
+
+    @Autowired
+    private UploadHistoryRepository uploadHistoryRepository;
+
     // --- Admin Operations (stored ONLY in admins table) ---
 
     public Admin createAdmin(Map<String, Object> payload) {
@@ -226,15 +241,72 @@ public class UserService {
         return studentRepository.save(student);
     }
 
-    public Map<String, Long> getDashboardAnalytics() {
-        Map<String, Long> analytics = new HashMap<>();
+    public Map<String, Object> getDashboardAnalytics() {
+        Map<String, Object> analytics = new HashMap<>();
         long totalAdmins = adminRepository.count();
         long totalFaculty = facultyRepository.count();
         long totalStudents = studentRepository.count();
+        long totalCourses = courseCatalogRepository.count();
+        long totalCurriculums = curriculumVersionRepository.count();
+
+        long openIssues = 0;
+        try {
+            openIssues = studentIssueRepository.findAll().stream()
+                    .filter(i -> i.getStatus() == null || !"RESOLVED".equalsIgnoreCase(i.getStatus()))
+                    .count();
+        } catch (Exception ignored) {}
+
+        long unmatchedStudents = 0;
+        try {
+            unmatchedStudents = unmatchedQueueRepository.count();
+        } catch (Exception ignored) {}
+
+        long pendingAudits = openIssues + unmatchedStudents;
+
         analytics.put("totalUsers", totalAdmins + totalFaculty + totalStudents);
         analytics.put("totalAdmins", totalAdmins);
         analytics.put("totalFaculty", totalFaculty);
         analytics.put("totalStudents", totalStudents);
+        analytics.put("totalCourses", totalCourses);
+        analytics.put("totalCurriculums", totalCurriculums);
+        analytics.put("pendingAudits", pendingAudits);
+        analytics.put("systemHealth", "Operational");
+
+        // Fetch real-time recent system activities from upload history & student issues
+        List<Map<String, Object>> activities = new java.util.ArrayList<>();
+        try {
+            uploadHistoryRepository.findAll().stream()
+                    .sorted((a, b) -> b.getCreatedAt() != null && a.getCreatedAt() != null ? b.getCreatedAt().compareTo(a.getCreatedAt()) : 0)
+                    .limit(5)
+                    .forEach(uh -> {
+                        Map<String, Object> act = new java.util.LinkedHashMap<>();
+                        act.put("type", "UPLOAD");
+                        act.put("title", "Course File Upload");
+                        act.put("description", "File '" + uh.getFileName() + "' processed (" + (uh.getSuccessCount() != null ? uh.getSuccessCount() : 0) + " records synced)");
+                        act.put("status", uh.getStatus());
+                        act.put("time", uh.getCreatedAt() != null ? uh.getCreatedAt().toString() : "Recent");
+                        activities.add(act);
+                    });
+        } catch (Exception ignored) {}
+
+        try {
+            studentIssueRepository.findAllByOrderByCreatedAtDesc().stream()
+                    .limit(5)
+                    .forEach(issue -> {
+                        Map<String, Object> act = new java.util.LinkedHashMap<>();
+                        act.put("type", "ISSUE");
+                        act.put("title", "Student Support Ticket: " + (issue.getTitle() != null ? issue.getTitle() : "Issue"));
+                        act.put("description", issue.getDescription() != null ? issue.getDescription() : "Issue submitted");
+                        act.put("status", issue.getStatus());
+                        act.put("time", issue.getCreatedAt() != null ? issue.getCreatedAt().toString() : "Recent");
+                        activities.add(act);
+                    });
+        } catch (Exception ignored) {}
+
+        // Sort all real-time activities by timestamp descending
+        activities.sort((a, b) -> String.valueOf(b.get("time")).compareTo(String.valueOf(a.get("time"))));
+
+        analytics.put("recentActivities", activities);
         return analytics;
     }
 

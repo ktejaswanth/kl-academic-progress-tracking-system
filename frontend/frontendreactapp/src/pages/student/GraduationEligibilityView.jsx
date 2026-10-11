@@ -17,12 +17,12 @@ export default function GraduationEligibilityView() {
 
     const status = dashboardData?.degreeStatus || {};
     const buckets = dashboardData?.buckets || [];
-    const cgpa = dashboardData?.cgpa || 8.85;
+    const cgpa = dashboardData?.cgpa !== undefined && dashboardData?.cgpa !== null ? dashboardData.cgpa : 0.0;
     const readiness = dashboardData?.graduationReadiness || {};
 
     const totalEarned = status.totalEarnedCredits || 0;
-    const totalRequired = status.totalRequiredCredits || 163;
-    const isEligible = status.isDegreeEligible || (totalEarned >= totalRequired);
+    const totalRequired = status.totalRequiredCredits || dashboardData?.degreePath?.totalRequiredCredits || 0;
+    const isEligible = status.isDegreeEligible || (totalRequired > 0 && totalEarned >= totalRequired);
 
     // Identify blockers / preventing factors
     const bucketBlockers = buckets.filter(b => b.earnedCredits < b.requiredCredits);

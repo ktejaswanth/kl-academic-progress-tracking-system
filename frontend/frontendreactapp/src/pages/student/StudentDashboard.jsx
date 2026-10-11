@@ -32,17 +32,21 @@ export default function StudentDashboard() {
     const buckets = dashboardData?.buckets || [];
     const narrative = dashboardData?.narrative || {};
     const readiness = dashboardData?.graduationReadiness || {};
-    const cgpa = dashboardData?.cgpa || 8.85;
+    const cgpa = dashboardData?.cgpa !== undefined && dashboardData?.cgpa !== null ? dashboardData.cgpa : 0.0;
 
-    const studentName = student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Student';
-    const rollNumber = student.studentId || student.username || '2300080412';
-    const department = student.department || degreePath.departmentName || degreePath.department || progressData?.department || 'AIDS';
+    const studentName = student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.studentId || 'Student';
+    const rollNumber = student.studentId || student.username || 'N/A';
+    const department = student.department || degreePath.departmentName || degreePath.department || 'N/A';
     const degreeType = degreePath.degreeTypeName || student.degreeType || 'Regular Track';
-    const curriculum = degreePath.curriculumVersion || '2023-2027';
-    const specialization = degreePath.addonName || degreePath.specializationName || student.addonName || 'AI & Machine Learning';
+    const curriculum = student.curriculum || degreePath.curriculumVersion || 'N/A';
+    const specialization = (degreePath.addonName && degreePath.addonName !== 'N/A' && degreePath.addonName !== 'NONE')
+        ? degreePath.addonName
+        : (student.addonName && student.addonName !== 'N/A' && student.addonName !== 'NONE')
+            ? student.addonName
+            : null;
 
     const totalEarned = status.totalEarnedCredits || 0;
-    const totalRequired = status.totalRequiredCredits || degreePath.totalRequiredCredits || (department === 'AIDS' ? 166 : 163);
+    const totalRequired = status.totalRequiredCredits || degreePath.totalRequiredCredits || 0;
     const remainingCredits = Math.max(0, totalRequired - totalEarned);
     const completionPercentage = status.completionPercentage || Math.min(100, Math.round((totalEarned / totalRequired) * 100));
     const isEligible = status.isDegreeEligible || (totalEarned >= totalRequired);

@@ -13,36 +13,7 @@ export default function NotificationsView() {
         );
     }
 
-    const notifications = dashboardData?.notifications || [];
-    const status = dashboardData?.degreeStatus || {};
-    const totalEarned = status.totalEarnedCredits || 0;
-    const totalRequired = status.totalRequiredCredits || 163;
-    const remaining = Math.max(0, totalRequired - totalEarned);
-
-    const defaultAlerts = [
-        {
-            title: 'Official Exit Clearance Notice',
-            type: remaining === 0 ? 'SUCCESS' : 'WARNING',
-            message: remaining === 0
-                ? 'All category credits have been verified. You may now generate your 6-Page Student Exit Requirement PDF.'
-                : `You currently have ${remaining} remaining credits before degree exit clearance can be issued.`,
-            date: 'Today'
-        },
-        {
-            title: 'Curriculum Course Audit Updated',
-            type: 'INFO',
-            message: 'Your course attempts and grade classifications have been synchronized with the University Academic Ledger.',
-            date: 'Yesterday'
-        },
-        {
-            title: 'Specialization Track Progress',
-            type: 'INFO',
-            message: 'Remember to verify elective requirements under your chosen specialization to avoid graduation delay.',
-            date: '3 days ago'
-        }
-    ];
-
-    const allNotifications = notifications.length > 0 ? notifications : defaultAlerts;
+    const allNotifications = dashboardData?.notifications || [];
 
     return (
         <div className="student-notifications animate-fade" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem' }}>
@@ -54,10 +25,11 @@ export default function NotificationsView() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {allNotifications.map((n, idx) => {
-                    const isSuccess = n.type === 'SUCCESS' || n.type === 'CLEARANCE';
-                    const isWarning = n.type === 'WARNING' || n.type === 'PENDING';
-                    return (
+                {allNotifications.length > 0 ? (
+                    allNotifications.map((n, idx) => {
+                        const isSuccess = n.type === 'SUCCESS' || n.type === 'CLEARANCE';
+                        const isWarning = n.type === 'WARNING' || n.type === 'PENDING';
+                        return (
                         <div key={idx} className="glass-card" style={{
                             padding: '1.5rem',
                             background: 'white',
@@ -80,8 +52,15 @@ export default function NotificationsView() {
                             </div>
                         </div>
                     );
-                })}
-            </div>
+                })
+            ) : (
+                <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', background: 'white' }}>
+                    <p style={{ margin: 0, color: '#64748B', fontSize: '1rem', fontWeight: 600 }}>
+                        No active academic alerts or notifications at this time.
+                    </p>
+                </div>
+            )}
         </div>
-    );
+    </div>
+);
 }

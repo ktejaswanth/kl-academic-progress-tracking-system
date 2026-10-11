@@ -114,8 +114,8 @@ public class Y23AidsCurriculumSeeder {
         // 7. Seed all 20 AIDS Degree Paths
         seedAidsDegreePaths(y23AidsVer, aidsDept, degreeTypes, addonTypes, y23Reg);
 
-        // 8. Seed Essential Catalog and Curriculum Courses
-        seedEssentialCourses(y23CseVer, y23AidsVer);
+        // 8. Seed Full Per-Bucket Path Requirements (Rule Structure Only - No Dummy Courses)
+        seedFullPerBucketRequirements();
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("success", true);
@@ -170,15 +170,15 @@ public class Y23AidsCurriculumSeeder {
                 Map.entry("AIDS-HTE-DOUBLE_MAJOR", 211),
                 Map.entry("AIDS-HTE-SPECIALIZATION", 196),
                 Map.entry("AIDS-HTE", 186),
-                Map.entry("AIDS-HTI-MINOR", 206),
+                Map.entry("AIDS-HTI-MINOR", 204),
                 Map.entry("AIDS-HTI-DOUBLE_MAJOR", 211),
                 Map.entry("AIDS-HTI-SPECIALIZATION", 196),
                 Map.entry("AIDS-HTI", 186),
-                Map.entry("AIDS-HTR-MINOR", 206),
+                Map.entry("AIDS-HTR-MINOR", 204),
                 Map.entry("AIDS-HTR-DOUBLE_MAJOR", 211),
                 Map.entry("AIDS-HTR-SPECIALIZATION", 196),
                 Map.entry("AIDS-HTR", 186),
-                Map.entry("AIDS-HONORS-MINOR", 206),
+                Map.entry("AIDS-HONORS-MINOR", 204),
                 Map.entry("AIDS-HONORS-DOUBLE_MAJOR", 211),
                 Map.entry("AIDS-HONORS-SPECIALIZATION", 196),
                 Map.entry("AIDS-HONORS", 186),
@@ -197,84 +197,6 @@ public class Y23AidsCurriculumSeeder {
 
             upsertDegreePath(ver, dept, dt.get(typeCode), at.get(addonCode), reg, pathCode, credits);
         }
-    }
-
-    private void seedEssentialCourses(CurriculumVersion cseVer, CurriculumVersion aidsVer) {
-        BucketMaster pcc = bucketRepo.findByBucketCode("PCC-CORE").orElseGet(() -> {
-            BucketMaster b = new BucketMaster();
-            b.setBucketCode("PCC-CORE");
-            b.setBucketName("Professional Core Courses");
-            b.setBucketCategory("Professional Core");
-            return bucketRepo.save(b);
-        });
-
-        // CSE Course
-        CourseCatalog cseCourse = courseCatalogRepo.findByCourseCode("23CS2101").orElseGet(() -> {
-            CourseCatalog c = new CourseCatalog();
-            c.setCourseCode("23CS2101");
-            c.setCourseName("Design and Analysis of Algorithms");
-            c.setCredits(4);
-            c.setCategory("PCC");
-            return courseCatalogRepo.save(c);
-        });
-
-        CurriculumCourse cseCc = curriculumCourseRepo.findByCurriculumVersionIdAndCourseId(cseVer.getId(), cseCourse.getId())
-                .orElseGet(() -> {
-                    CurriculumCourse cc = new CurriculumCourse();
-                    cc.setCurriculumVersion(cseVer);
-                    cc.setCourse(cseCourse);
-                    cc.setCourseName(cseCourse.getCourseName());
-                    cc.setCredits(4.0);
-                    cc.setCategory("PCC");
-                    cc.setSubcategory("PCC-CORE");
-                    return curriculumCourseRepo.save(cc);
-                });
-
-        // AIDS Course
-        CourseCatalog aidsCourse = courseCatalogRepo.findByCourseCode("23AD2101").orElseGet(() -> {
-            CourseCatalog c = new CourseCatalog();
-            c.setCourseCode("23AD2101");
-            c.setCourseName("Introduction to Data Science & AI");
-            c.setCredits(4);
-            c.setCategory("PCC");
-            return courseCatalogRepo.save(c);
-        });
-
-        CurriculumCourse aidsCc = curriculumCourseRepo.findByCurriculumVersionIdAndCourseId(aidsVer.getId(), aidsCourse.getId())
-                .orElseGet(() -> {
-                    CurriculumCourse cc = new CurriculumCourse();
-                    cc.setCurriculumVersion(aidsVer);
-                    cc.setCourse(aidsCourse);
-                    cc.setCourseName(aidsCourse.getCourseName());
-                    cc.setCredits(4.0);
-                    cc.setCategory("PCC");
-                    cc.setSubcategory("PCC-CORE");
-                    return curriculumCourseRepo.save(cc);
-                });
-
-        // Create authoritative mappings
-        if (curriculumMappingRepo.findByCurriculumVersionIdAndBucketId(cseVer.getId(), pcc.getId()).isEmpty()) {
-            CurriculumCourseMapping ccm = new CurriculumCourseMapping();
-            ccm.setCurriculumVersion(cseVer);
-            ccm.setCurriculumCourse(cseCc);
-            ccm.setBucket(pcc);
-            ccm.setMappingSource("OFFICIAL_PDF");
-            ccm.setMappingConfidence(1.0);
-            curriculumMappingRepo.save(ccm);
-        }
-
-        if (curriculumMappingRepo.findByCurriculumVersionIdAndBucketId(aidsVer.getId(), pcc.getId()).isEmpty()) {
-            CurriculumCourseMapping ccm = new CurriculumCourseMapping();
-            ccm.setCurriculumVersion(aidsVer);
-            ccm.setCurriculumCourse(aidsCc);
-            ccm.setBucket(pcc);
-            ccm.setMappingSource("OFFICIAL_PDF");
-            ccm.setMappingConfidence(1.0);
-            curriculumMappingRepo.save(ccm);
-        }
-
-        // Seed Full Per-Bucket Path Requirements from JSON
-        seedFullPerBucketRequirements();
     }
 
     private void seedFullPerBucketRequirements() {

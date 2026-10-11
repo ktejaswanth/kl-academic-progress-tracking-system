@@ -5,8 +5,12 @@ export default function AdminDashboard() {
     const [realStats, setRealStats] = useState({
         totalStudents: 0,
         totalFaculty: 0,
-        pendingAudits: 156, // Mock for now, could be added to backend later
-        systemHealth: '99.9%'
+        totalAdmins: 0,
+        totalCourses: 0,
+        totalCurriculums: 0,
+        pendingAudits: 0,
+        systemHealth: 'Operational',
+        recentActivities: []
     });
     const [loading, setLoading] = useState(true);
 
@@ -14,11 +18,16 @@ export default function AdminDashboard() {
         const fetchAnalytics = async () => {
             try {
                 const response = await api.get('/admin/analytics');
-                setRealStats(prev => ({
-                    ...prev,
-                    totalStudents: response.data.totalStudents,
-                    totalFaculty: response.data.totalFaculty,
-                }));
+                setRealStats({
+                    totalStudents: response.data.totalStudents || 0,
+                    totalFaculty: response.data.totalFaculty || 0,
+                    totalAdmins: response.data.totalAdmins || 0,
+                    totalCourses: response.data.totalCourses || 0,
+                    totalCurriculums: response.data.totalCurriculums || 0,
+                    pendingAudits: response.data.pendingAudits || 0,
+                    systemHealth: response.data.systemHealth || 'Operational',
+                    recentActivities: response.data.recentActivities || []
+                });
             } catch (err) {
                 console.error("Failed to fetch analytics", err);
             } finally {
@@ -31,8 +40,8 @@ export default function AdminDashboard() {
     const stats = [
         { label: 'Total Students', value: loading ? '...' : realStats.totalStudents.toLocaleString(), icon: '🎓', color: '#8B0000' },
         { label: 'Active Faculty', value: loading ? '...' : realStats.totalFaculty.toLocaleString(), icon: '🏫', color: '#8B0000' },
-        { label: 'Pending Audits', value: realStats.pendingAudits, icon: '📄', color: '#8B0000' },
-        { label: 'System Health', value: realStats.systemHealth, icon: '⚡', color: '#8B0000' },
+        { label: 'Pending Audits', value: loading ? '...' : realStats.pendingAudits.toLocaleString(), icon: '📄', color: '#8B0000' },
+        { label: 'System Health', value: loading ? '...' : realStats.systemHealth, icon: '⚡', color: '#8B0000' },
     ];
 
     return (
@@ -63,22 +72,22 @@ export default function AdminDashboard() {
                 <div className="dashboard-card info-card">
                     <h3>Recent System Activities</h3>
                     <div className="activity-list">
-                        <div className="activity-item">
-                            <div className="activity-dot success"></div>
-                            <div className="activity-info">
-                                <strong>Bulk Upload Completed</strong>
-                                <p>Faculty "Dr. Smith" uploaded 50 students.</p>
-                                <span className="activity-time">2 minutes ago</span>
+                        {realStats.recentActivities && realStats.recentActivities.length > 0 ? (
+                            realStats.recentActivities.map((act, idx) => (
+                                <div key={idx} className="activity-item">
+                                    <div className={`activity-dot ${act.type === 'UPLOAD' ? 'success' : 'warning'}`}></div>
+                                    <div className="activity-info">
+                                        <strong>{act.title}</strong>
+                                        <p>{act.description}</p>
+                                        <span className="activity-time">{act.time && act.time !== 'Recent' ? new Date(act.time).toLocaleString() : 'Recent'}</span>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div style={{ padding: '1.5rem', textAlign: 'center', color: '#64748B' }}>
+                                <p style={{ margin: 0, fontSize: '0.9rem' }}>No recent system activities recorded.</p>
                             </div>
-                        </div>
-                        <div className="activity-item">
-                            <div className="activity-dot warning"></div>
-                            <div className="activity-info">
-                                <strong>New Faculty Added</strong>
-                                <p>Super Admin created account for "Prof. Jane".</p>
-                                <span className="activity-time">45 minutes ago</span>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 

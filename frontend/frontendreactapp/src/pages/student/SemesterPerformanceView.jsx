@@ -14,7 +14,13 @@ export default function SemesterPerformanceView() {
     }
 
     const semesters = dashboardData?.semesterPerformance || [];
-    const cgpa = dashboardData?.cgpa || 8.85;
+    const cgpa = dashboardData?.cgpa !== undefined && dashboardData?.cgpa !== null ? dashboardData.cgpa : 0.0;
+
+    const standingText = cgpa >= 8.5 ? 'First Class with Distinction'
+        : cgpa >= 7.0 ? 'First Class'
+        : cgpa >= 5.0 ? 'Second Class'
+        : cgpa > 0 ? 'Pass Division'
+        : 'In Progress / Not Evaluated';
 
     // SVG Chart dimensions
     const chartHeight = 180;
@@ -35,7 +41,7 @@ export default function SemesterPerformanceView() {
                 <div className="glass-card" style={{ padding: '1.5rem', background: 'white', textAlign: 'center' }}>
                     <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Current Cumulative GPA</span>
                     <span style={{ display: 'block', fontSize: '2.5rem', fontWeight: 900, color: '#8B0000', margin: '4px 0' }}>{cgpa}</span>
-                    <span style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 600 }}>First Class with Distinction</span>
+                    <span style={{ fontSize: '0.82rem', color: cgpa >= 5.0 ? '#059669' : '#D97706', fontWeight: 600 }}>{standingText}</span>
                 </div>
 
                 <div className="glass-card" style={{ padding: '1.5rem', background: 'white', textAlign: 'center' }}>
@@ -46,7 +52,9 @@ export default function SemesterPerformanceView() {
 
                 <div className="glass-card" style={{ padding: '1.5rem', background: 'white', textAlign: 'center' }}>
                     <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Academic Standing</span>
-                    <span style={{ display: 'block', fontSize: '1.6rem', fontWeight: 900, color: '#059669', margin: '10px 0' }}>GOOD STANDING</span>
+                    <span style={{ display: 'block', fontSize: '1.6rem', fontWeight: 900, color: cgpa >= 5.0 ? '#059669' : '#D97706', margin: '10px 0' }}>
+                        {cgpa >= 5.0 ? 'GOOD STANDING' : cgpa > 0 ? 'ADVISORY' : 'ACTIVE'}
+                    </span>
                     <span style={{ fontSize: '0.82rem', color: '#64748B' }}>Zero active academic warnings</span>
                 </div>
             </div>
@@ -58,7 +66,7 @@ export default function SemesterPerformanceView() {
 
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: '20px', height: '220px', padding: '20px 10px', background: '#F8FAFC', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
                         {semesters.map((s, idx) => {
-                            const val = parseFloat(s.sgpa) || 8.5;
+                            const val = parseFloat(s.sgpa) || 0.0;
                             const heightPercent = Math.min(100, (val / maxGpa) * 100);
                             return (
                                 <div key={idx} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end' }}>
@@ -97,27 +105,35 @@ export default function SemesterPerformanceView() {
                             </tr>
                         </thead>
                         <tbody>
-                            {semesters.map((s, idx) => (
-                                <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9', background: idx % 2 === 0 ? 'white' : '#FCFDFD' }}>
-                                    <td style={{ padding: '14px 16px' }}>
-                                        <strong style={{ color: '#8B0000' }}>{s.semester}</strong>
-                                    </td>
-                                    <td style={{ padding: '14px 16px', textAlign: 'center', color: '#1E293B' }}>
-                                        {s.coursesCount} courses
-                                    </td>
-                                    <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 800, color: '#059669' }}>
-                                        {s.creditsEarned} Credits
-                                    </td>
-                                    <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 800, color: '#8B0000', fontSize: '1rem' }}>
-                                        {s.sgpa}
-                                    </td>
-                                    <td style={{ padding: '14px 16px', textAlign: 'center' }}>
-                                        <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700, background: '#DCFCE7', color: '#166534' }}>
-                                            PASSED
-                                        </span>
+                            {semesters.length > 0 ? (
+                                semesters.map((s, idx) => (
+                                    <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9', background: idx % 2 === 0 ? 'white' : '#FCFDFD' }}>
+                                        <td style={{ padding: '14px 16px' }}>
+                                            <strong style={{ color: '#8B0000' }}>{s.semester}</strong>
+                                        </td>
+                                        <td style={{ padding: '14px 16px', textAlign: 'center', color: '#1E293B' }}>
+                                            {s.coursesCompleted || s.coursesCount || 0} courses
+                                        </td>
+                                        <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 800, color: '#059669' }}>
+                                            {s.creditsEarned} Credits
+                                        </td>
+                                        <td style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 800, color: '#8B0000', fontSize: '1rem' }}>
+                                            {s.sgpa}
+                                        </td>
+                                        <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                                            <span style={{ padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 700, background: '#DCFCE7', color: '#166534' }}>
+                                                PASSED
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: '#64748B' }}>
+                                        No semester transcript records registered yet.
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

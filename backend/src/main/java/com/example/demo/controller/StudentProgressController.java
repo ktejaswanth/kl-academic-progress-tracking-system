@@ -57,13 +57,20 @@ public class StudentProgressController {
         studentInfo.put("fullName", fullName.isEmpty() ? student.getStudentId() : fullName);
         studentInfo.put("email", student.getEmail());
         studentInfo.put("department", student.getDepartment() != null ? student.getDepartment() : "CSE");
+        // Fetch courses for academic calculations and semester determination
+        List<StudentCourse> studentCourses = studentCourseRepository.findByStudentId(studentId);
+        if (studentCourses.isEmpty()) {
+            studentCourses = studentCourseRepository.findByUniversityId(student.getStudentId());
+        }
+        String currentSemester = determineCurrentSemester(student, studentCourses);
+
         studentInfo.put("program", "B.Tech");
-        studentInfo.put("batch", student.getAcademicYear() != null ? student.getAcademicYear() : "2023-2027");
+        studentInfo.put("batch", student.getAcademicYear() != null ? student.getAcademicYear() : "N/A");
         studentInfo.put("curriculum", "Y23 Regulation");
         studentInfo.put("degreeType", student.getSubDepartment() != null ? student.getSubDepartment() : "REGULAR");
         studentInfo.put("addonType", student.getSpecializationType() != null ? student.getSpecializationType() : "NONE");
-        studentInfo.put("addonName", student.getSpecializationName() != null ? student.getSpecializationName() : "N/A");
-        studentInfo.put("currentSemester", "Semester 6");
+        studentInfo.put("addonName", student.getSpecializationName() != null && !student.getSpecializationName().isBlank() ? student.getSpecializationName() : "N/A");
+        studentInfo.put("currentSemester", currentSemester);
         response.put("student", studentInfo);
 
         // 2. Assigned Degree Path
@@ -158,7 +165,7 @@ public class StudentProgressController {
 
         Map<String, List<StudentCourse>> bySemester = new LinkedHashMap<>();
         for (StudentCourse sc : courses) {
-            String sem = sc.getSemester() != null && !sc.getSemester().isBlank() ? sc.getSemester() : "Year 1";
+            String sem = sc.getSemester() != null && !sc.getSemester().isBlank() ? sc.getSemester() : "Term 1";
             bySemester.computeIfAbsent(sem, k -> new ArrayList<>()).add(sc);
         }
 
@@ -175,14 +182,14 @@ public class StudentProgressController {
             int completedCount = 0;
 
             for (StudentCourse c : semCourses) {
-                double cr = c.getCredits() != null ? c.getCredits() : 3.0;
-                String grade = c.getGrade() != null ? c.getGrade().trim().toUpperCase() : "PASS";
+                double cr = c.getCredits() != null ? c.getCredits() : 0.0;
+                String grade = c.getGrade() != null ? c.getGrade().trim().toUpperCase() : "";
                 double gp = getGradePoint(grade);
 
                 if (!"DROPPED".equalsIgnoreCase(c.getStatus())) {
                     semPoints += (gp * cr);
                     semCredits += cr;
-                    if (!"FAILED".equalsIgnoreCase(c.getStatus()) && !"F".equalsIgnoreCase(grade)) {
+                    if (!"FAILED".equalsIgnoreCase(c.getStatus()) && !"F".equalsIgnoreCase(grade) && !"FAIL".equalsIgnoreCase(grade)) {
                         completedCount++;
                     }
                 }
@@ -191,20 +198,19 @@ public class StudentProgressController {
             totalPoints += semPoints;
             totalCredits += semCredits;
 
-            double sgpa = semCredits > 0 ? Math.round((semPoints / semCredits) * 100.0) / 100.0 : 8.5;
-            double cgpa = totalCredits > 0 ? Math.round((totalPoints / totalCredits) * 100.0) / 100.0 : 8.6;
+            double sgpa = semCredits > 0 ? Math.round((semPoints / semCredits) * 100.0) / 100.0 : 0.0;
+            double cgpa = totalCredits > 0 ? Math.round((totalPoints / totalCredits) * 100.0) / 100.0 : 0.0;
 
             Map<String, Object> semData = new LinkedHashMap<>();
             semData.put("semester", semName);
             semData.put("creditsEarned", semCredits);
             semData.put("coursesCompleted", completedCount);
-            semData.put("sgpa", sgpa > 0 ? sgpa : 8.5);
-            semData.put("cgpa", cgpa > 0 ? cgpa : 8.6);
+            semData.put("sgpa", sgpa);
+            semData.put("cgpa", cgpa);
             semesterList.add(semData);
         }
 
-        double overallCgpa = totalCredits > 0 ? Math.round((totalPoints / totalCredits) * 100.0) / 100.0 : 8.65;
-        if (overallCgpa <= 0) overallCgpa = 8.65;
+        double overallCgpa = totalCredits > 0 ? Math.round((totalPoints / totalCredits) * 100.0) / 100.0 : 0.0;
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("cgpa", overallCgpa);
@@ -213,7 +219,7 @@ public class StudentProgressController {
     }
 
     private double getGradePoint(String grade) {
-        if (grade == null) return 8.0;
+        if (grade == null) return 0.0;
         switch (grade.toUpperCase()) {
             case "O": return 10.0;
             case "A+": return 9.0;
@@ -222,11 +228,48 @@ public class StudentProgressController {
             case "B": return 6.0;
             case "C": return 5.0;
             case "P":
-            case "PASS": return 4.5;
+            case "PASS": return 4.0;
             case "F":
-            case "FAIL": return 0.0;
-            default: return 8.0;
+            case "FAIL":
+            default: return 0.0;
         }
+    }
+
+    private String determineCurrentSemester(Student student, List<StudentCourse> courses) {
+        if (courses != null && !courses.isEmpty()) {
+            int maxSem = 0;
+            for (StudentCourse sc : courses) {
+                String sem = sc.getSemester();
+                if (sem != null) {
+                    java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\d+").matcher(sem);
+                    if (m.find()) {
+                        try {
+                            int val = Integer.parseInt(m.group());
+                            if (val > maxSem && val <= 8) maxSem = val;
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
+            }
+            if (maxSem > 0) {
+                return "Semester " + maxSem;
+            }
+        }
+        if (student != null && student.getAcademicYear() != null) {
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d{4})").matcher(student.getAcademicYear());
+            if (m.find()) {
+                try {
+                    int startYear = Integer.parseInt(m.group(1));
+                    int currentYear = LocalDate.now().getYear();
+                    int currentMonth = LocalDate.now().getMonthValue();
+                    int yearDiff = Math.max(0, currentYear - startYear);
+                    int sem = (yearDiff * 2) + (currentMonth >= 7 ? 1 : 0);
+                    if (sem >= 1 && sem <= 8) {
+                        return "Semester " + sem;
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        return "Semester 1";
     }
 
     private Map<String, Object> buildAcademicNarrative(

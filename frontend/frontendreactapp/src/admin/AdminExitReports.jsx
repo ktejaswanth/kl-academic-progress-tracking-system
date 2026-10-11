@@ -6,7 +6,7 @@ import './admin.css';
 
 export default function AdminExitReports() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const initialRoll = searchParams.get('studentId') || '2300080412';
+    const initialRoll = searchParams.get('studentId') || '';
 
     const [searchInput, setSearchInput] = useState(initialRoll);
     const [suggestions, setSuggestions] = useState([]);
@@ -128,7 +128,7 @@ export default function AdminExitReports() {
                             <input
                                 type="text"
                                 className="form-control"
-                                placeholder="Enter Student ID (e.g. 2300080412)..."
+                                placeholder="Enter Student University ID..."
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
@@ -220,30 +220,6 @@ export default function AdminExitReports() {
                         </button>
                     </div>
                 </form>
-
-                {/* Quick Roll Suggestion Chips */}
-                <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Quick Sample:</span>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setSearchInput('2300080412');
-                            fetchReport('2300080412');
-                        }}
-                        style={{
-                            background: '#f1f5f9',
-                            border: '1px solid #cbd5e1',
-                            borderRadius: '9999px',
-                            padding: '0.2rem 0.75rem',
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            color: '#1e293b',
-                            fontWeight: 600
-                        }}
-                    >
-                        2300080412 (RONGALA DEVISREE - AIDS)
-                    </button>
-                </div>
             </div>
 
             {/* Error Notification */}
@@ -301,6 +277,24 @@ export default function AdminExitReports() {
                     downloadUrl={`/exit/admin/download-pdf/${currentRoll}`}
                     onRefresh={() => fetchReport(currentRoll)}
                 />
+            )}
+
+            {/* Empty Search Prompt */}
+            {!loading && !reportData && !error && (
+                <div style={{
+                    padding: '3rem',
+                    textAlign: 'center',
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0',
+                    color: '#64748b'
+                }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🔍</div>
+                    <h3 style={{ margin: 0, color: '#1e293b' }}>Search Student Exit Report</h3>
+                    <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
+                        Enter a student University ID or name above to generate the real-time graduation audit report.
+                    </p>
+                </div>
             )}
         </div>
     );

@@ -49,20 +49,14 @@ public class DataSeeder implements CommandLineRunner {
 
         // 2. Test Student auto-seeding disabled to keep database clean of student data
 
-        // 3. Seed Y23 AIDS Curriculum Structure
+        // 3. Seed Y23 AIDS Curriculum Structure (Rules and Bucket Requirements Only)
         try {
             y23AidsCurriculumSeeder.seedY23AidsCurriculum();
-            System.out.println("✅ Y23 AIDS Curriculum Structure seeded.");
+            System.out.println("✅ Y23 Curriculum Structure validated.");
         } catch (Exception e) {
-            System.err.println("⚠️ Y23 AIDS Curriculum Seeding notice: " + e.getMessage());
+            System.err.println("⚠️ Y23 Curriculum Seeding notice: " + e.getMessage());
         }
 
-        // 4. Migrate Student Course Data
-        try {
-            y23AidsDataMigration.migrateY23AidsStudentData();
-            System.out.println("✅ Student Course Data Normalization complete.");
-        } catch (Exception e) {
-            System.err.println("⚠️ Student Course Data Migration notice: " + e.getMessage());
-        }
+        // 4. Student Course Data: Realtime data only - no automated mock data seeding.
     }
 }

@@ -45,7 +45,7 @@ export default function RecommendedCoursesView() {
                                         {c.courseCode}
                                     </span>
                                     <span style={{ background: '#ECFDF5', color: '#059669', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700 }}>
-                                        {c.credits || 3.0} Credits
+                                        {c.credits !== undefined && c.credits !== null ? `${c.credits} Credits` : ''}
                                     </span>
                                 </div>
 
