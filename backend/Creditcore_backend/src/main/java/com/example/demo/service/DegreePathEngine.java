@@ -34,6 +34,10 @@ public class DegreePathEngine {
     private DegreeTypeMasterRepository degreeTypeMasterRepository;
     @Autowired
     private AddonTypeMasterRepository addonTypeMasterRepository;
+    @Autowired
+    private UnmatchedStudentQueueRepository unmatchedStudentQueueRepository;
+    @Autowired
+    private MappingAuditLogRepository mappingAuditLogRepository;
 
     /**
      * Resolve and assign a degree path for a student based on their profile.
@@ -45,6 +49,14 @@ public class DegreePathEngine {
 
         // Map user fields to DYOD codes
         String deptCode = mapDepartment(student.getDepartment());
+        if (deptCode == null) {
+            String rawDept = student.getDepartment() != null ? student.getDepartment() : "MISSING";
+            enqueueUnmatchedStudent(student, "UNKNOWN_DEPARTMENT",
+                    "Unrecognized or missing department code: '" + rawDept + "'. Cannot assign curriculum without verification.");
+            throw new RuntimeException("Student " + student.getStudentId() 
+                    + " has ambiguous department '" + rawDept + "'. Routed to administrative review queue.");
+        }
+
         String typeCode = mapDegreeType(student.getSubDepartment());
         String addonCode = mapAddonType(student.getSpecializationType());
         String addonName = student.getSpecializationName();
@@ -52,7 +64,7 @@ public class DegreePathEngine {
             addonName = null;
         }
 
-        // Find the matching degree path
+        // Find the matching degree path within the student's isolated department
         DegreePath path = degreePathRepository.findByCodesAndAddonName(deptCode, typeCode, addonCode, addonName)
                 .orElse(null);
 
@@ -62,13 +74,15 @@ public class DegreePathEngine {
                     .orElse(null);
         }
 
-        // If still no match, try REGULAR + NONE as fallback
+        // If still no match, fallback to REGULAR + NONE within the student's department ONLY
         if (path == null) {
             path = degreePathRepository.findByCodesAndAddonName(deptCode, "REGULAR", "NONE", null)
                     .orElse(null);
         }
 
         if (path == null) {
+            enqueueUnmatchedStudent(student, "UNRESOLVED_PATH",
+                    "No valid degree path found for department " + deptCode + " (type=" + typeCode + ", addon=" + addonCode + ")");
             throw new RuntimeException("No matching degree path found for student " + studentId 
                 + " (dept=" + deptCode + ", type=" + typeCode + ", addon=" + addonCode + ", name=" + addonName + ")");
         }
@@ -95,7 +109,46 @@ public class DegreePathEngine {
         sdp.setAssignedBy(assignedById);
 
         studentDegreePathRepository.save(sdp);
+
+        // If student was pending in review queue, mark as RESOLVED
+        unmatchedStudentQueueRepository.findByStudentIdNumAndStatus(student.getStudentId(), "PENDING_REVIEW")
+                .ifPresent(q -> {
+                    q.setStatus("RESOLVED");
+                    q.setResolutionNotes("Resolved and assigned to path " + path.getPathCode());
+                    q.setResolvedBy(assignedById != null ? assignedById.toString() : "ADMIN");
+                    q.setResolvedAt(java.time.LocalDateTime.now());
+                    unmatchedStudentQueueRepository.save(q);
+                });
+
+        // Record audit log
+        MappingAuditLog audit = new MappingAuditLog();
+        audit.setStudent(student);
+        audit.setStudentIdNum(student.getStudentId());
+        audit.setAction("CURRICULUM_PATH_ASSIGNMENT");
+        audit.setChangedBy(assignedById != null ? assignedById.toString() : "SYSTEM");
+        audit.setNewValue(path.getPathCode());
+        audit.setReason("Degree path assigned under department " + path.getDepartment().getDeptCode());
+        mappingAuditLogRepository.save(audit);
+
         return path;
+    }
+
+    /**
+     * Helper to route ambiguous or unmapped students to the review queue.
+     */
+    public void enqueueUnmatchedStudent(Student student, String issueType, String errorMessage) {
+        if (!unmatchedStudentQueueRepository.existsByStudentIdNumAndStatus(student.getStudentId(), "PENDING_REVIEW")) {
+            UnmatchedStudentQueue queue = new UnmatchedStudentQueue();
+            queue.setStudent(student);
+            queue.setStudentIdNum(student.getStudentId());
+            queue.setStudentName(student.getName());
+            queue.setRawDepartment(student.getDepartment());
+            queue.setRawRegulation(student.getAcademicYear());
+            queue.setIssueType(issueType);
+            queue.setErrorMessage(errorMessage);
+            queue.setStatus("PENDING_REVIEW");
+            unmatchedStudentQueueRepository.save(queue);
+        }
     }
 
     /**
@@ -146,17 +199,20 @@ public class DegreePathEngine {
     // ==================== Private mapping helpers ====================
 
     private String mapDepartment(String dept) {
-        if (dept == null || dept.isEmpty()) return "CSE";
+        if (dept == null || dept.trim().isEmpty()) return null;
         String upper = dept.toUpperCase().trim();
-        // Handle common variations
-        if (upper.contains("CSE") || upper.contains("COMPUTER SCIENCE")) return "CSE";
-        if (upper.contains("AIDS") || upper.contains("AI") || upper.contains("DATA SCIENCE")) return "AIDS";
-        if (upper.contains("CSIT") || upper.contains("INFORMATION TECHNOLOGY")) return "CSIT";
+        // Exact and fuzzy match for CSE
+        if (upper.equals("CSE") || upper.equals("B.TECH CSE") || upper.contains("COMPUTER SCIENCE")) return "CSE";
+        // Exact and fuzzy match for AIDS
+        if (upper.equals("AIDS") || upper.equals("AI&DS") || upper.equals("AI & DS") || upper.equals("B.TECH AIDS") 
+                || upper.contains("ARTIFICIAL INTELLIGENCE") || upper.contains("DATA SCIENCE")) return "AIDS";
+        // Other departments
+        if (upper.equals("CSIT") || upper.contains("INFORMATION TECHNOLOGY")) return "CSIT";
         if (upper.contains("EEE") || upper.contains("ELECTRICAL")) return "EEE";
-        if (upper.contains("ECE") || upper.contains("ELECTRONICS AND COMM")) return "ECE";
+        if (upper.contains("ECE") || upper.contains("ELECTRONICS")) return "ECE";
         if (upper.contains("MECH") || upper.contains("MECHANICAL")) return "MECH";
         if (upper.contains("CIVIL")) return "CIVIL";
-        return upper;
+        return null; // Unknown / ambiguous department! Do NOT default to CSE!
     }
 
     private String mapDegreeType(String subDept) {

@@ -37,7 +37,10 @@ public class AuditService {
 
     public Map<String, Object> getStudentProgressForStudent(Student student) {
         String degreeType = "B.Tech";
-        String specialization = student.getDepartment() != null ? student.getDepartment() : "CSE";
+        String specialization = student.getDepartment();
+        if (specialization == null || specialization.trim().isEmpty()) {
+            throw new RuntimeException("Student " + student.getStudentId() + " has no assigned department.");
+        }
 
         List<Requirement> requirements = requirementRepository.findByDegreeTypeAndSpecialization(
                 degreeType, specialization);
@@ -109,32 +112,18 @@ public class AuditService {
 
     public Map<String, Object> getStudentCurriculumCourses(String username) {
         String degreeType = "B.Tech";
-        String specialization = "CSE";
-        String honorsType = "REGULAR";
-
-        Long studentDbId = null;
-        String dept = "CSE";
-        String specName = "N/A";
-        String specType = "NONE";
 
         Student s = studentRepository.findByStudentId(username)
                 .orElseThrow(() -> new RuntimeException("Student not found: " + username));
-        studentDbId = s.getId();
-        if (s.getDepartment() != null && !s.getDepartment().isEmpty()) {
-            specialization = s.getDepartment();
-            dept = s.getDepartment();
+        String specialization = s.getDepartment();
+        if (specialization == null || specialization.trim().isEmpty() || "N/A".equalsIgnoreCase(specialization)) {
+            throw new RuntimeException("Student " + username + " has no assigned department.");
         }
-        if (s.getSubDepartment() != null && !s.getSubDepartment().isEmpty()) honorsType = s.getSubDepartment();
-        if (s.getSpecializationName() != null) specName = s.getSpecializationName();
-        if (s.getSpecializationType() != null) specType = s.getSpecializationType();
-
-        // Final fallback if fields are empty
-        if ("N/A".equalsIgnoreCase(specialization) || specialization.trim().isEmpty()) {
-            specialization = "CSE";
-        }
-        if ("N/A".equalsIgnoreCase(honorsType) || honorsType.trim().isEmpty()) {
-            honorsType = "REGULAR";
-        }
+        Long studentDbId = s.getId();
+        String dept = specialization;
+        String specName = s.getSpecializationName() != null ? s.getSpecializationName() : "N/A";
+        String specType = s.getSpecializationType() != null ? s.getSpecializationType() : "NONE";
+        String honorsType = (s.getSubDepartment() != null && !s.getSubDepartment().isEmpty()) ? s.getSubDepartment() : "REGULAR";
 
         // Fetch core specialization requirements
         List<Requirement> specReqs = requirementRepository.findByDegreeTypeAndSpecialization(degreeType, specialization);

@@ -26,12 +26,17 @@ public class FacultyController {
     private com.example.demo.service.AuditService auditService;
 
     @GetMapping("/dashboard")
-    public ResponseEntity<?> getFacultyDashboard() {
+    public ResponseEntity<?> getFacultyDashboard(@RequestParam(required = false) String department) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        String dept = "CSE";
-        java.util.Optional<com.example.demo.model.Faculty> fOpt = facultyRepository.findByUsername(username);
-        if (fOpt.isPresent() && fOpt.get().getDepartment() != null && !fOpt.get().getDepartment().isEmpty()) {
-            dept = fOpt.get().getDepartment();
+        String dept = (department != null && !department.trim().isEmpty()) ? department.trim().toUpperCase() : null;
+        
+        if (dept == null) {
+            java.util.Optional<com.example.demo.model.Faculty> fOpt = facultyRepository.findByUsername(username);
+            if (fOpt.isPresent() && fOpt.get().getDepartment() != null && !fOpt.get().getDepartment().isEmpty()) {
+                dept = fOpt.get().getDepartment().toUpperCase();
+            } else {
+                dept = "CSE";
+            }
         }
         
         long totalStudents = statusRepository.countByDepartment(dept);

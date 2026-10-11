@@ -43,6 +43,12 @@ public class BulkUploadService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UnmatchedStudentQueueRepository unmatchedStudentQueueRepository;
+
+    @Autowired
+    private DegreePathEngine degreePathEngine;
+
     public List<CredentialInfo> processBulkUpload(MultipartFile file, Long uploadedBy) throws IOException {
         IOUtils.setByteArrayMaxOverride(Integer.MAX_VALUE);
         ZipSecureFile.setMinInflateRatio(0.0);
@@ -165,7 +171,35 @@ public class BulkUploadService {
                     else if (academicYear.equals("2026-2027") || academicYear.equals("2026") || academicYear.equals("26")) academicYear = "Y26";
                 }
 
-                String department = (deptCol != -1 && !getCellValue(row, deptCol).isEmpty()) ? getCellValue(row, deptCol) : "CSE";
+                String rawDept = (deptCol != -1) ? getCellValue(row, deptCol).trim() : "";
+                String normalizedDept = null;
+                if (!rawDept.isEmpty()) {
+                    String upperDept = rawDept.toUpperCase();
+                    if (upperDept.equals("CSE") || upperDept.equals("B.TECH CSE") || upperDept.contains("COMPUTER SCIENCE")) {
+                        normalizedDept = "CSE";
+                    } else if (upperDept.equals("AIDS") || upperDept.equals("AI&DS") || upperDept.equals("AI & DS") 
+                            || upperDept.equals("B.TECH AIDS") || upperDept.contains("ARTIFICIAL INTELLIGENCE") || upperDept.contains("DATA SCIENCE")) {
+                        normalizedDept = "AIDS";
+                    } else if (upperDept.equals("CSIT") || upperDept.contains("INFORMATION TECHNOLOGY")) {
+                        normalizedDept = "CSIT";
+                    }
+                }
+
+                // Strict validation: never silently default to CSE!
+                if (normalizedDept == null) {
+                    UnmatchedStudentQueue queue = new UnmatchedStudentQueue();
+                    queue.setStudentIdNum(studentId);
+                    queue.setStudentName((firstName + " " + lastName).trim());
+                    queue.setRawDepartment(rawDept.isEmpty() ? "MISSING" : rawDept);
+                    queue.setRawRegulation(academicYear);
+                    queue.setIssueType("UNKNOWN_DEPARTMENT");
+                    queue.setErrorMessage("Row " + (row.getRowNum() + 1) + ": Unrecognized or missing department '" + rawDept + "'. Cannot assign curriculum.");
+                    queue.setStatus("PENDING_REVIEW");
+                    unmatchedStudentQueueRepository.save(queue);
+
+                    throw new Exception("Unrecognized or missing department '" + rawDept + "'. Student queued for administrative review.");
+                }
+
                 String subDept = (subDeptCol != -1 && !getCellValue(row, subDeptCol).isEmpty()) ? getCellValue(row, subDeptCol) : "REGULAR";
                 String specType = (specTypeCol != -1 && !getCellValue(row, specTypeCol).isEmpty()) ? getCellValue(row, specTypeCol).toUpperCase() : "NONE";
                 String specName = (specNameCol != -1 && !getCellValue(row, specNameCol).isEmpty()) ? getCellValue(row, specNameCol) : "N/A";
@@ -186,7 +220,7 @@ public class BulkUploadService {
                 student.setFirstName(firstName);
                 student.setLastName(lastName);
                 student.setEmail(email);
-                student.setDepartment(department.isEmpty() ? "CSE" : department);
+                student.setDepartment(normalizedDept);
                 student.setSubDepartment(subDept.isEmpty() ? "REGULAR" : subDept);
                 student.setSpecializationType(specType.isEmpty() ? "NONE" : specType.toUpperCase());
                 student.setSpecializationName(specName.isEmpty() ? "N/A" : specName);
@@ -195,7 +229,14 @@ public class BulkUploadService {
                 student.setIsActive(true);
                 student.setFirstLoginCompleted(false);
 
-                studentRepository.save(student);
+                student = studentRepository.save(student);
+
+                // Auto-assign degree path within student's department
+                try {
+                    degreePathEngine.resolveAndAssignPath(student.getId());
+                } catch (Exception e) {
+                    // Log but don't fail user record creation if path needs review
+                }
 
                 String fullName = (firstName + " " + lastName).trim();
                 credentials.add(new CredentialInfo(studentId, rawPassword, email, fullName, student.getDepartment(), student.getSubDepartment(), student.getSpecializationType(), student.getSpecializationName(), student.getAcademicYear()));
