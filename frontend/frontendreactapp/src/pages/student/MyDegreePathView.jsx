@@ -1,0 +1,113 @@
+import React from 'react';
+import { useStudentData } from './StudentDataContext';
+import './student.css';
+
+export default function MyDegreePathView() {
+    const { dashboardData, loading } = useStudentData();
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#8B0000' }}>
+                <div className="spinner" style={{ width: '40px', height: '40px', borderTopColor: '#8B0000', borderWidth: '3px' }}></div>
+            </div>
+        );
+    }
+
+    const student = dashboardData?.student || {};
+    const degreePath = dashboardData?.degreePath || {};
+    const status = dashboardData?.degreeStatus || {};
+
+    const pathNodes = [
+        { label: 'Programme', value: 'B.Tech (Bachelor of Technology)', icon: '🎓', desc: 'Core 4-Year Undergraduate Degree' },
+        { label: 'Department', value: student.department || degreePath.departmentName || 'Artificial Intelligence & Data Science', icon: '🏛️', desc: 'Primary Engineering Discipline' },
+        { label: 'Curriculum Version', value: degreePath.curriculumVersion || '2023-2027 (Regulation 23)', icon: '📚', desc: 'Institutional Academic Framework' },
+        { label: 'Degree Type', value: degreePath.degreeTypeName || 'Regular B.Tech Honours Track', icon: '📜', desc: 'Degree Classification Track' },
+        { label: 'Specialization / Minor', value: degreePath.addonName || degreePath.specializationName || 'AI & Machine Learning (Integrated)', icon: '⭐', desc: 'Discipline-Specific Concentration' },
+    ];
+
+    return (
+        <div className="student-degree-path animate-fade" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem' }}>
+            <div style={{ marginBottom: '2rem' }}>
+                <h1 style={{ fontSize: '2rem', color: '#1E293B', margin: '0 0 6px', fontWeight: 800 }}>My Academic Degree Path</h1>
+                <p style={{ color: '#64748B', margin: 0, fontSize: '0.95rem' }}>
+                    Authoritative hierarchical degree structure and credit allocation applicable to your matriculation
+                </p>
+            </div>
+
+            {/* Hierarchical Flow Stepper */}
+            <div className="glass-card" style={{ padding: '2.5rem', background: 'white', marginBottom: '2.5rem' }}>
+                <h3 style={{ margin: '0 0 1.8rem', color: '#1E293B', fontSize: '1.25rem' }}>Academic Degree Structure Flow</h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', position: 'relative' }}>
+                    {pathNodes.map((node, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+                            {/* Step Indicator */}
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div style={{
+                                    width: '46px',
+                                    height: '46px',
+                                    borderRadius: '50%',
+                                    background: idx === pathNodes.length - 1 ? '#8B0000' : '#FFF5F5',
+                                    color: idx === pathNodes.length - 1 ? 'white' : '#8B0000',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '1.2rem',
+                                    border: '2px solid #8B0000',
+                                    fontWeight: 800
+                                }}>
+                                    {node.icon}
+                                </div>
+                                {idx < pathNodes.length - 1 && (
+                                    <div style={{ width: '3px', height: '40px', background: '#E2E8F0', margin: '4px 0' }}></div>
+                                )}
+                            </div>
+
+                            {/* Node Content */}
+                            <div style={{ background: '#F8FAFC', padding: '16px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', flex: 1 }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8B0000', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    Level {idx + 1}: {node.label}
+                                </span>
+                                <h4 style={{ margin: '4px 0 2px', color: '#0F172A', fontSize: '1.15rem' }}>{node.value}</h4>
+                                <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748B' }}>{node.desc}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Path Credit Specifications */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+                <div className="glass-card" style={{ padding: '2rem', background: 'white' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Total Path Credits</span>
+                    <h3 style={{ margin: '6px 0', fontSize: '2.2rem', color: '#8B0000' }}>
+                        {degreePath.totalRequiredCredits || 163} <span style={{ fontSize: '1rem', color: '#64748B' }}>Credits</span>
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.88rem', color: '#475569' }}>
+                        Required for regular degree conferral under this curriculum.
+                    </p>
+                </div>
+
+                <div className="glass-card" style={{ padding: '2rem', background: 'white' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Credits Satisfied</span>
+                    <h3 style={{ margin: '6px 0', fontSize: '2.2rem', color: '#059669' }}>
+                        {status.totalEarnedCredits || 0} <span style={{ fontSize: '1rem', color: '#64748B' }}>Credits</span>
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.88rem', color: '#475569' }}>
+                        Successfully completed and audited towards your graduation requirement.
+                    </p>
+                </div>
+
+                <div className="glass-card" style={{ padding: '2rem', background: 'white' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Path Clearance Status</span>
+                    <h3 style={{ margin: '6px 0', fontSize: '1.4rem', color: status.isDegreeEligible ? '#059669' : '#D97706' }}>
+                        {status.isDegreeEligible ? '✅ PATH COMPLIANT' : '⏳ IN PROGRESS'}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.88rem', color: '#475569' }}>
+                        Subject to passing all mandatory course clusters and minimum CGPA criteria.
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}

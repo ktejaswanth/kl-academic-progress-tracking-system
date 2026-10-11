@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      context: ./backend/Creditcore_backend
+      context: ./backend
     container_name: creditcore-backend
     ports:
       - "127.0.0.1:8086:8086"
@@ -12,11 +12,11 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider --tries=1 http://localhost:8086/api/auth/login 2>&1 | grep -q 'HTTP/' || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:8086/api/auth/health | grep -q 'UP' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
-      start_period: 45s
+      start_period: 30s
 
   frontend:
     build:
