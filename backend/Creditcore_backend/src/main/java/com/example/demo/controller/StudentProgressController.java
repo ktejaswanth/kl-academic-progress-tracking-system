@@ -22,9 +22,14 @@ public class StudentProgressController {
     @Autowired private MinorProgressEngine minorProgressEngine;
     @Autowired private SecondMajorProgressEngine secondMajorProgressEngine;
     @Autowired private StudentRepository studentRepository;
+    @Autowired private UserSecurityService userSecurityService;
 
     @GetMapping("/dashboard")
-    public ResponseEntity<Map<String, Object>> getStudentDashboard(Authentication authentication) {
+    public ResponseEntity<?> getStudentDashboard(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Full authentication required."));
+        }
         String username = authentication.getName();
         Student student = studentRepository.findByStudentId(username)
                 .orElseThrow(() -> new RuntimeException("Student not found: " + username));
@@ -33,7 +38,12 @@ public class StudentProgressController {
     }
 
     @GetMapping("/dashboard/{studentId}")
-    public ResponseEntity<Map<String, Object>> getStudentDashboardById(@PathVariable Long studentId) {
+    public ResponseEntity<?> getStudentDashboardById(@PathVariable Long studentId) {
+        if (!userSecurityService.canAccessStudentData(studentId)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: You are not authorized to view another student's progress dashboard."));
+        }
+
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found with ID: " + studentId));
 

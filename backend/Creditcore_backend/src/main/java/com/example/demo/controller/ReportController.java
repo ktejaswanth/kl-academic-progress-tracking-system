@@ -23,8 +23,15 @@ public class ReportController {
     @Autowired
     private StudentRepository studentRepository;
 
+    @Autowired
+    private com.example.demo.service.UserSecurityService userSecurityService;
+
     @GetMapping("/student/{id}")
     public ResponseEntity<?> getStudentReport(@PathVariable Long id) {
+        if (!userSecurityService.canAccessStudentData(id)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: You are not authorized to view another student's report."));
+        }
         try {
             Map<String, Object> data = reportService.getStudentReport(id);
             return ResponseEntity.ok(data);
@@ -35,7 +42,12 @@ public class ReportController {
 
     @GetMapping("/student/me")
     public ResponseEntity<?> getMyReport() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        org.springframework.security.core.Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Full authentication required."));
+        }
+        String username = auth.getName();
         Student student = studentRepository.findByStudentId(username)
                 .orElseThrow(() -> new RuntimeException("Student user not found: " + username));
 
@@ -48,7 +60,11 @@ public class ReportController {
     }
 
     @GetMapping("/student/{id}/excel")
-    public ResponseEntity<byte[]> downloadStudentReportExcel(@PathVariable Long id) {
+    public ResponseEntity<?> downloadStudentReportExcel(@PathVariable Long id) {
+        if (!userSecurityService.canAccessStudentData(id)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: You are not authorized to download another student's report."));
+        }
         try {
             byte[] fileBytes = reportService.exportStudentReportExcel(id);
             return ResponseEntity.ok()

@@ -54,13 +54,24 @@ public class BucketProgressController {
         return ResponseEntity.notFound().build();
     }
 
+    @Autowired
+    private com.example.demo.service.UserSecurityService userSecurityService;
+
     @PostMapping("/student/{studentId}/evaluate")
-    public ResponseEntity<StudentDegreeStatus> evaluateStudent(@PathVariable Long studentId) {
+    public ResponseEntity<?> evaluateStudent(@PathVariable Long studentId) {
+        if (!userSecurityService.canAccessStudentData(studentId)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: Not authorized for student ID: " + studentId));
+        }
         return ResponseEntity.ok(degreeEligibilityEngine.evaluateEligibility(studentId));
     }
 
     @GetMapping("/student/{studentId}/status")
     public ResponseEntity<?> getOverallStatus(@PathVariable Long studentId) {
+        if (!userSecurityService.canAccessStudentData(studentId)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: Not authorized for student ID: " + studentId));
+        }
         Optional<StudentDegreeStatus> status = degreeEligibilityEngine.getStudentStatus(studentId);
         if (status.isPresent()) {
             return ResponseEntity.ok(status.get());
@@ -69,7 +80,11 @@ public class BucketProgressController {
     }
 
     @GetMapping("/student/{studentId}/buckets")
-    public ResponseEntity<List<Map<String, Object>>> getDetailedBucketProgress(@PathVariable Long studentId) {
+    public ResponseEntity<?> getDetailedBucketProgress(@PathVariable Long studentId) {
+        if (!userSecurityService.canAccessStudentData(studentId)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: Not authorized for student ID: " + studentId));
+        }
         return ResponseEntity.ok(bucketSatisfactionEngine.getDetailedBucketProgress(studentId));
     }
 

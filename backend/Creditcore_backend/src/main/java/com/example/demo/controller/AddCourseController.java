@@ -108,8 +108,15 @@ public class AddCourseController {
         }
     }
 
+    @Autowired
+    private com.example.demo.service.UserSecurityService userSecurityService;
+
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<CompletedCourse>> getStudentCourses(@PathVariable Long studentId) {
+    public ResponseEntity<?> getStudentCourses(@PathVariable Long studentId) {
+        if (!userSecurityService.canAccessStudentData(studentId)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied: Not authorized for student ID: " + studentId));
+        }
         return ResponseEntity.ok(addCourseService.getStudentCourses(studentId));
     }
 
