@@ -214,17 +214,19 @@ public class StudentProgressController {
 
     private double getGradePoint(String grade) {
         if (grade == null) return 8.0;
-        return switch (grade.toUpperCase()) {
-            case "O" -> 10.0;
-            case "A+" -> 9.0;
-            case "A" -> 8.0;
-            case "B+" -> 7.0;
-            case "B" -> 6.0;
-            case "C" -> 5.0;
-            case "P", "PASS" -> 4.5;
-            case "F", "FAIL" -> 0.0;
-            default -> 8.0;
-        };
+        switch (grade.toUpperCase()) {
+            case "O": return 10.0;
+            case "A+": return 9.0;
+            case "A": return 8.0;
+            case "B+": return 7.0;
+            case "B": return 6.0;
+            case "C": return 5.0;
+            case "P":
+            case "PASS": return 4.5;
+            case "F":
+            case "FAIL": return 0.0;
+            default: return 8.0;
+        }
     }
 
     private Map<String, Object> buildAcademicNarrative(
