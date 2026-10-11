@@ -5,6 +5,7 @@ import BulkUpload from './BulkUpload';
 import UploadCourses from './UploadCourses';
 import FacultyStudentDetail from './FacultyStudentDetail';
 import AddStudent from '../../admin/AddStudent';
+import StudentLookupView from '../../components/StudentLookupView';
 import './faculty.css';
 
 export default function FacultyNavBar() {
@@ -30,6 +31,9 @@ export default function FacultyNavBar() {
                 <nav className="sidebar-nav">
                     <Link to="/faculty/home" className={location.pathname === '/faculty/home' ? 'active' : ''}>
                         <span className="icon">📊</span> Dashboard
+                    </Link>
+                    <Link to="/faculty/student-lookup" className={location.pathname.includes('/faculty/student-lookup') ? 'active' : ''}>
+                        <span className="icon">🔍</span> Student Lookup
                     </Link>
                     <Link to="/faculty/upload" className={location.pathname === '/faculty/upload' ? 'active' : ''}>
                         <span className="icon">🚀</span> Register Students (Bulk)
@@ -59,10 +63,14 @@ export default function FacultyNavBar() {
             <main className="faculty-main">
                 <Routes>
                     <Route path="home" element={<FacultyDashboard />} />
+                    <Route path="student-lookup" element={<StudentLookupView endpointPrefix="/dyod/faculty" />} />
+                    <Route path="student-lookup/:studentId" element={<StudentLookupView endpointPrefix="/dyod/faculty" />} />
+                    <Route path="viewcourses-bystudent" element={<StudentLookupView endpointPrefix="/dyod/faculty" />} />
                     <Route path="upload" element={<BulkUpload />} />
                     <Route path="addstudent" element={<AddStudent />} />
                     <Route path="upload-courses" element={<UploadCourses />} />
                     <Route path="student/:studentId" element={<FacultyStudentDetail />} />
+                    <Route index element={<FacultyDashboard />} />
                 </Routes>
             </main>
         </div>

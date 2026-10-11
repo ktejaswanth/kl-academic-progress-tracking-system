@@ -43,17 +43,21 @@ export default function ManageIssues() {
         }
     };
 
-    // Filter issues based on search (student name, email, username, title, desc) and status
+    // Filter issues based on search (student name, email, studentId, department, title, desc) and status
     const filteredIssues = issues.filter(issue => {
         const matchesStatus = statusFilter === 'ALL' || issue.status === statusFilter;
         
-        const studentInfo = issue.student 
-            ? `${issue.student.firstName} ${issue.student.lastName} ${issue.student.username} ${issue.student.email}`.toLowerCase()
-            : '';
-        const issueInfo = `${issue.title} ${issue.description}`.toLowerCase();
+        const student = issue.student;
+        const studentIdentifier = student?.studentId || student?.username || '';
+        const studentFullName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : '';
+        const studentEmail = student?.email || '';
+        const studentDept = student?.department || '';
+        const studentInfo = `${studentFullName} ${studentIdentifier} ${studentEmail} ${studentDept}`.toLowerCase();
+
+        const issueInfo = `${issue.title || ''} ${issue.description || ''}`.toLowerCase();
         const searchLower = search.toLowerCase();
 
-        const matchesSearch = studentInfo.includes(searchLower) || issueInfo.includes(searchLower);
+        const matchesSearch = !searchLower || studentInfo.includes(searchLower) || issueInfo.includes(searchLower);
 
         return matchesStatus && matchesSearch;
     });
@@ -130,9 +134,24 @@ export default function ManageIssues() {
                                     <td style={{ padding: '1.25rem 1.5rem' }}>
                                         {issue.student ? (
                                             <div>
-                                                <div style={{ fontWeight: 800, color: '#0F172A' }}>{issue.student.firstName} {issue.student.lastName}</div>
-                                                <div style={{ fontSize: '0.8rem', color: '#64748B' }}>ID: {issue.student.username}</div>
-                                                <div style={{ fontSize: '0.75rem', color: '#E11D48', fontWeight: 600 }}>{issue.student.department}</div>
+                                                <div style={{ fontWeight: 800, color: '#0F172A' }}>
+                                                    {`${issue.student.firstName || ''} ${issue.student.lastName || ''}`.trim() || issue.student.name || (issue.student.studentId ? `Student ${issue.student.studentId}` : 'Student')}
+                                                </div>
+                                                {(issue.student.studentId || issue.student.username) && (
+                                                    <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '2px' }}>
+                                                        ID: <strong style={{ color: '#1E293B' }}>{issue.student.studentId || issue.student.username}</strong>
+                                                    </div>
+                                                )}
+                                                {issue.student.email && (
+                                                    <div style={{ fontSize: '0.78rem', color: '#64748B' }}>
+                                                        {issue.student.email}
+                                                    </div>
+                                                )}
+                                                {(issue.student.department || issue.student.academicYear) && (
+                                                    <div style={{ fontSize: '0.75rem', color: '#E11D48', fontWeight: 600, marginTop: '2px' }}>
+                                                        {issue.student.department || ''} {issue.student.academicYear ? `(${issue.student.academicYear})` : ''}
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : (
                                             <span style={{ fontStyle: 'italic', color: '#94A3B8' }}>Unknown Student</span>

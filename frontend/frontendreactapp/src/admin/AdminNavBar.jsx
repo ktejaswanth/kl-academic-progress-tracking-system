@@ -186,6 +186,7 @@ export default function AdminNavBar() {
                         <Route path="viewallstudents" element={<ViewAllStudents />} />
                         <Route path="student-issues" element={<ManageIssues />} />
                         <Route path="student-lookup" element={<StudentLookupView endpointPrefix="/admin" />} />
+                        <Route path="student-lookup/:studentId" element={<StudentLookupView endpointPrefix="/admin" />} />
                         <Route path="curriculum-management" element={<CurriculumAdmin />} />
                         <Route path="curriculum-upload" element={<CurriculumUpload />} />
                         <Route path="curriculum-review/:importId" element={<CurriculumReview />} />

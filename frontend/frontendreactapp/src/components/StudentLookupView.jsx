@@ -1,28 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import api from '../api';
 
-export default function StudentLookupView({ endpointPrefix }) {
-    const [searchId, setSearchId] = useState('');
+export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) {
+    const { studentId: routeStudentId } = useParams();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const queryFromUrl = routeStudentId || searchParams.get('id') || searchParams.get('studentId') || '';
+    const [searchId, setSearchId] = useState(queryFromUrl);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [data, setData] = useState(null);
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
-        if (!searchId.trim()) return;
+    const performSearch = async (targetId) => {
+        if (!targetId || !targetId.trim()) return;
 
         setLoading(true);
         setError('');
         setData(null);
 
         try {
-            const response = await api.get(`${endpointPrefix}/students/lookup/${searchId.trim()}`);
+            const response = await api.get(`${endpointPrefix}/students/lookup/${targetId.trim()}`);
             setData(response.data);
         } catch (err) {
             setError(err.response?.data || 'Failed to locate student record. Please verify the ID number.');
         } finally {
             setLoading(false);
         }
+    };
+
+    // Auto-search on initial render and when route/query params change
+    useEffect(() => {
+        const target = routeStudentId || searchParams.get('id') || searchParams.get('studentId');
+        if (target && target.trim()) {
+            setSearchId(target.trim());
+            performSearch(target.trim());
+        }
+    }, [routeStudentId, searchParams]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        const trimmed = searchId.trim();
+        if (!trimmed) return;
+
+        setSearchParams({ id: trimmed });
+        performSearch(trimmed);
     };
 
     // UI rendering helpers (reused from student MyCourses page)
@@ -138,10 +160,14 @@ export default function StudentLookupView({ endpointPrefix }) {
     const completedCourseCodes = curriculum.completedCourseCodes || [];
 
     const studentProfile = curriculum.student || {};
-    const degreeType = studentProfile.degreeType || 'B.Tech';
-    const branch = studentProfile.branch || 'CSE';
-    const specializationName = studentProfile.specializationName || 'N/A';
-    const honorsType = studentProfile.honorsType || 'REGULAR';
+    const degreeType = curriculum.degreeType || studentProfile.degreeType || 'B.Tech';
+    const branch = curriculum.department || curriculum.specialization || studentProfile.branch || 'CSE';
+    const specializationName = curriculum.specializationName || studentProfile.specializationName || 'N/A';
+    const honorsType = curriculum.honorsType || studentProfile.honorsType || 'REGULAR';
+    const displayName = (studentProfile.firstName || studentProfile.lastName)
+        ? `${studentProfile.firstName || ''} ${studentProfile.lastName || ''}`.trim()
+        : (curriculum.studentName || curriculum.studentId || searchId);
+    const displayStudentId = curriculum.studentId || studentProfile.studentId || searchId;
 
     // Segment courses
     const departmentCourses = courses.filter(c => c.category === 'DEPARTMENT');
@@ -216,10 +242,10 @@ export default function StudentLookupView({ endpointPrefix }) {
                         <div className="hero-content">
                             <span className="welcome-tag" style={{ background: 'rgba(255, 255, 255, 0.15)', color: '#fff' }}>Academic Overview</span>
                             <h1 style={{ fontSize: '2.2rem', margin: '0.5rem 0', color: '#fff' }}>
-                                {studentProfile.firstName} {studentProfile.lastName}
+                                {displayName}
                             </h1>
                             <p style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.05rem', fontWeight: 500 }}>
-                                {degreeType} in <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{branch}</span> • Specialization: <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{specializationName !== 'N/A' ? specializationName : 'None'}</span> • Honors: <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{honorsType}</span>
+                                ID: <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{displayStudentId}</span> • {degreeType} in <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{branch}</span> • Specialization: <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{specializationName !== 'N/A' ? specializationName : 'None'}</span> • Honors: <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{honorsType}</span>
                             </p>
                         </div>
                         <div className="hero-stats">

@@ -49,4 +49,16 @@ public class FacultyStudentUploadController {
             return ResponseEntity.badRequest().body("Upload Error: " + e.getMessage());
         }
     }
+
+    @Autowired
+    private com.example.demo.service.AuditService auditService;
+
+    @GetMapping("/students/lookup/{username}")
+    public ResponseEntity<?> lookupStudentCurriculum(@PathVariable String username) {
+        try {
+            return ResponseEntity.ok(auditService.getStudentCurriculumCourses(username));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error looking up student: " + e.getMessage());
+        }
+    }
 }

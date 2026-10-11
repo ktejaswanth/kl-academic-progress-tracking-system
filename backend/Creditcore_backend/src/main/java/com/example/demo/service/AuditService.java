@@ -117,8 +117,21 @@ public class AuditService {
         String specName = "N/A";
         String specType = "NONE";
 
-        Student s = studentRepository.findByStudentId(username)
-                .orElseThrow(() -> new RuntimeException("Student not found: " + username));
+        if (username == null || username.trim().isEmpty()) {
+            throw new RuntimeException("Student identifier is required");
+        }
+        String cleanIdentifier = username.trim();
+        Optional<Student> studentOpt = studentRepository.findByStudentId(cleanIdentifier);
+        if (studentOpt.isEmpty()) {
+            studentOpt = studentRepository.findByEmail(cleanIdentifier);
+        }
+        if (studentOpt.isEmpty()) {
+            try {
+                Long id = Long.parseLong(cleanIdentifier);
+                studentOpt = studentRepository.findById(id);
+            } catch (NumberFormatException ignored) {}
+        }
+        Student s = studentOpt.orElseThrow(() -> new RuntimeException("Student not found: " + username));
         studentDbId = s.getId();
         if (s.getDepartment() != null && !s.getDepartment().isEmpty()) {
             specialization = s.getDepartment();
@@ -169,7 +182,24 @@ public class AuditService {
                 .map(CompletedCourse::getCourseCode)
                 .collect(Collectors.toSet());
 
+        Map<String, Object> studentMap = new HashMap<>();
+        studentMap.put("id", s.getId());
+        studentMap.put("studentId", s.getStudentId());
+        studentMap.put("firstName", s.getFirstName());
+        studentMap.put("lastName", s.getLastName());
+        studentMap.put("name", s.getName());
+        studentMap.put("email", s.getEmail());
+        studentMap.put("department", s.getDepartment());
+        studentMap.put("academicYear", s.getAcademicYear());
+        studentMap.put("degreeType", degreeType);
+        studentMap.put("branch", dept);
+        studentMap.put("specializationName", specName);
+        studentMap.put("honorsType", honorsType);
+
         Map<String, Object> response = new HashMap<>();
+        response.put("student", studentMap);
+        response.put("studentId", s.getStudentId());
+        response.put("studentName", s.getName());
         response.put("degreeType", degreeType);
         response.put("specialization", specialization);
         response.put("honorsType", honorsType);
