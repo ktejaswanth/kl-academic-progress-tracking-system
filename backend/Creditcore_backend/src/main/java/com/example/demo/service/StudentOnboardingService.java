@@ -249,7 +249,7 @@ public class StudentOnboardingService {
             profile.setDegreeType("B.Tech");
         }
         if (profile.getSpecialization() == null) {
-            profile.setSpecialization(student.getSpecializationName() != null ? student.getSpecializationName() : (student.getDepartment() != null ? student.getDepartment() : "CSE"));
+            profile.setSpecialization(student.getSpecializationName() != null ? student.getSpecializationName() : student.getDepartment());
         }
         if (profile.getHonorsType() == null) {
             profile.setHonorsType(student.getSubDepartment() != null ? student.getSubDepartment() : "REGULAR");
@@ -281,7 +281,7 @@ public class StudentOnboardingService {
                     StudentProfile newProfile = new StudentProfile();
                     newProfile.setUser(student);
                     newProfile.setDegreeType("B.Tech");
-                    newProfile.setSpecialization(student.getSpecializationName() != null ? student.getSpecializationName() : (student.getDepartment() != null ? student.getDepartment() : "CSE"));
+                    newProfile.setSpecialization(student.getSpecializationName() != null ? student.getSpecializationName() : student.getDepartment());
                     newProfile.setHonorsType(student.getSubDepartment() != null ? student.getSubDepartment() : "REGULAR");
                     newProfile.setCurrentYear(1);
                     newProfile.setAdmissionYear(java.time.LocalDate.now().getYear());

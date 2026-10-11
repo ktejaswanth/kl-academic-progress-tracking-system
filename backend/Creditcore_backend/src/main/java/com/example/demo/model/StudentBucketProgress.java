@@ -36,8 +36,35 @@ public class StudentBucketProgress {
     @Column(name = "earned_credits", nullable = false)
     private Integer earnedCredits = 0;
 
+    @Column(name = "counted_credits")
+    private Integer countedCredits = 0;
+
+    @Column(name = "excess_credits")
+    private Integer excessCredits = 0;
+
+    @Column(name = "remaining_credits")
+    private Integer remainingCredits = 0;
+
+    @Column(name = "min_credits")
+    private Integer minCredits = 0;
+
+    @Column(name = "max_credits")
+    private Integer maxCredits;
+
     @Column(name = "course_count", nullable = false)
     private Integer courseCount = 0;
+
+    @Column(name = "min_courses")
+    private Integer minCourses = 0;
+
+    @Column(name = "max_courses")
+    private Integer maxCourses;
+
+    @Column(name = "counted_courses")
+    private Integer countedCourses = 0;
+
+    @Column(name = "mandatory_satisfied")
+    private Boolean mandatorySatisfied = true;
 
     @Column(nullable = false)
     private String status = "PENDING";

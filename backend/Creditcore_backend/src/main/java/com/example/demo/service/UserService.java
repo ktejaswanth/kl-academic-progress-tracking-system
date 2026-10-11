@@ -148,7 +148,16 @@ public class UserService {
         String lastName = (String) payload.get("lastName");
         String email = (String) payload.get("email");
         String rawPassword = (String) payload.get("password");
-        String department = (String) payload.getOrDefault("department", "CSE");
+        String rawDept = (String) payload.get("department");
+        if (rawDept == null || rawDept.trim().isEmpty()) {
+            throw new RuntimeException("Department is required (e.g. 'CSE' or 'AIDS')");
+        }
+        String department = rawDept.trim().toUpperCase();
+        if (department.contains("AI") || department.contains("AIDS") || department.contains("DATA SCIENCE")) {
+            department = "AIDS";
+        } else if (department.contains("CSE") || department.contains("COMPUTER SCIENCE")) {
+            department = "CSE";
+        }
         String subDepartment = (String) payload.getOrDefault("subDepartment", "REGULAR");
         String specializationType = (String) payload.getOrDefault("specializationType", "NONE");
         String specializationName = (String) payload.getOrDefault("specializationName", "");

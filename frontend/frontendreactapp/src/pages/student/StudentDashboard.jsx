@@ -43,8 +43,7 @@ export default function StudentDashboard() {
     const buckets = progressData?.buckets || [];
     const specializationProgress = progressData?.specializationProgress;
 
-    const studentName = student.fullName || progressData?.studentName || 'Student';
-    const department = student.department || progressData?.department || 'AIDS';
+    const department = student.department || degreePath.department || progressData?.department || '';
     const degreeTypeName = degreePath.degreeTypeName || student.degreeType || 'Regular';
     const addonName = degreePath.addonName || student.addonName || '';
 
@@ -108,7 +107,7 @@ export default function StudentDashboard() {
                 <div className="glass-card main-progress">
                     <div className="card-header">
                         <h3>Degree Completion</h3>
-                        <span className="badge-outline">Y23 AIDS Path</span>
+                        <span className="badge-outline">{degreePath.pathCode || `${student.academicYear || 'Y23'} ${department} Path`}</span>
                     </div>
                     
                     <div className="circular-container">
@@ -142,7 +141,7 @@ export default function StudentDashboard() {
                             <span>Earned Credits</span>
                         </div>
                         <div className="pill dark">
-                            <strong>{status.totalRequiredCredits || degreePath.totalRequiredCredits || 163}</strong>
+                            <strong>{status.totalRequiredCredits || degreePath.totalRequiredCredits || (department === 'AIDS' ? 166 : 163)}</strong>
                             <span>Required Credits</span>
                         </div>
                     </div>

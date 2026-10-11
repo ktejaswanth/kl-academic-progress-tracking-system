@@ -106,7 +106,13 @@ public class AddCourseService {
                 firstName = trimmedName;
             }
         }
-        String dept = (branch != null && !branch.trim().isEmpty()) ? branch.trim() : "CSE";
+        String dept = (branch != null && !branch.trim().isEmpty()) ? branch.trim().toUpperCase() : null;
+        if (dept != null) {
+            if (dept.contains("AI") || dept.contains("AIDS") || dept.contains("DATA SCIENCE")) dept = "AIDS";
+            else if (dept.contains("CSE") || dept.contains("COMPUTER SCIENCE")) dept = "CSE";
+        } else {
+            dept = "UNASSIGNED";
+        }
         String acadYr = (academicYear != null && !academicYear.trim().isEmpty()) ? academicYear.trim() : "Y23";
         String email = cleanUnivId.toLowerCase() + "@kluniversity.in";
         String rawPassword = cleanUnivId;

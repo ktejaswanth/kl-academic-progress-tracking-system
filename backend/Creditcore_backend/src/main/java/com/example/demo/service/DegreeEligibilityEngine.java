@@ -17,14 +17,10 @@ import java.util.*;
  * Degree Eligibility Engine
  *
  * Top-level engine that evaluates overall degree eligibility for a student.
- * Aggregates results from BucketSatisfactionEngine.
- *
- * Algorithm:
- *   1. Run BucketSatisfactionEngine to update all buckets
- *   2. Sum required credits across all buckets
- *   3. Sum earned credits across all buckets
- *   4. Count completed buckets vs total buckets
- *   5. if (completedBuckets == totalBuckets && totalEarned >= totalRequired) -> ELIGIBLE
+ * Aggregates results from BucketSatisfactionEngine and validates:
+ *   1. All degree path bucket requirements satisfied (credits, courses, mandatory, grouping)
+ *   2. Total counted credits (capped per bucket) meets or exceeds degree path total requirement
+ *   3. Non-credit outcome requirements (minimum CGPA, publications, patents, consultancy, backlog rules)
  */
 @Service
 @Transactional
@@ -38,6 +34,10 @@ public class DegreeEligibilityEngine {
     private StudentDegreePathRepository studentDegreePathRepository;
     @Autowired
     private StudentRepository studentRepository;
+    @Autowired
+    private DegreeOutcomeRequirementRepository degreeOutcomeRequirementRepository;
+    @Autowired
+    private StudentOutcomeRepository studentOutcomeRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -49,6 +49,8 @@ public class DegreeEligibilityEngine {
         StudentDegreePath sdp = studentDegreePathRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new RuntimeException("Student has no assigned degree path."));
 
+        DegreePath degreePath = sdp.getDegreePath();
+
         // 2. Trigger bucket evaluation
         List<StudentBucketProgress> progressList = bucketSatisfactionEngine.evaluateBuckets(studentId);
 
@@ -56,48 +58,100 @@ public class DegreeEligibilityEngine {
             throw new RuntimeException("No bucket progress found for student");
         }
 
-        // 3. Aggregate totals
-        int totalRequired = 0;
-        int totalEarned = 0;
+        // 3. Aggregate totals using degree path total credits as source of truth
+        int totalRequired = (degreePath.getTotalCredits() != null && degreePath.getTotalCredits() > 0)
+                ? degreePath.getTotalCredits()
+                : progressList.stream().mapToInt(StudentBucketProgress::getRequiredCredits).sum();
+
+        int totalCounted = 0;
+        int totalEarnedRaw = 0;
         int bucketsTotal = progressList.size();
         int bucketsCompleted = 0;
 
         List<Map<String, Object>> failedBuckets = new ArrayList<>();
 
         for (StudentBucketProgress progress : progressList) {
-            totalRequired += progress.getRequiredCredits();
-            
-            // Only count earned credits up to the required amount for the percentage calculation
-            // to prevent one over-fulfilled bucket from hiding an under-fulfilled one
-            int effectiveEarned = Math.min(progress.getEarnedCredits(), progress.getRequiredCredits());
-            totalEarned += effectiveEarned;
+            int counted = (progress.getCountedCredits() != null) ? progress.getCountedCredits() : progress.getEarnedCredits();
+            totalCounted += counted;
+            totalEarnedRaw += progress.getEarnedCredits();
 
             if ("COMPLETED".equals(progress.getStatus())) {
                 bucketsCompleted++;
             } else {
-                Map<String, Object> failInfo = new HashMap<>();
+                Map<String, Object> failInfo = new LinkedHashMap<>();
                 failInfo.put("bucketCode", progress.getBucket().getBucketCode());
                 failInfo.put("required", progress.getRequiredCredits());
                 failInfo.put("earned", progress.getEarnedCredits());
-                failInfo.put("shortfall", progress.getRequiredCredits() - progress.getEarnedCredits());
+                failInfo.put("counted", counted);
+                failInfo.put("shortfall", progress.getRemainingCredits() != null 
+                        ? progress.getRemainingCredits() 
+                        : Math.max(0, progress.getRequiredCredits() - counted));
+                failInfo.put("minCourses", progress.getMinCourses());
+                failInfo.put("courseCount", progress.getCourseCount());
+                failInfo.put("countedCourses", progress.getCountedCourses());
+                failInfo.put("mandatorySatisfied", progress.getMandatorySatisfied());
                 failedBuckets.add(failInfo);
             }
         }
 
-        // 4. Determine overall status
-        boolean isEligible = (bucketsCompleted == bucketsTotal) && (totalEarned >= totalRequired);
+        // 4. Evaluate Outcome Requirements (CGPA, publications, patents, consultancy, backlogs)
+        boolean outcomesSatisfied = true;
+        Map<String, Object> outcomeCheckResult = new LinkedHashMap<>();
+        Optional<DegreeOutcomeRequirement> dorOpt = degreeOutcomeRequirementRepository.findByDegreePathId(degreePath.getId());
+        if (dorOpt.isPresent()) {
+            DegreeOutcomeRequirement req = dorOpt.get();
+            Optional<StudentOutcome> soOpt = studentOutcomeRepository.findByStudentId(studentId);
+            if (soOpt.isPresent()) {
+                StudentOutcome so = soOpt.get();
+                boolean cgpaOk = (req.getMinCgpa() == null || req.getMinCgpa() <= 0 || (so.getCgpa() != null && so.getCgpa() >= req.getMinCgpa()));
+                boolean scopusOk = (req.getMinScopusPublications() == null || req.getMinScopusPublications() <= 0 || (so.getScopusPublications() != null && so.getScopusPublications() >= req.getMinScopusPublications()));
+                boolean patentsOk = (req.getMinDesignPatents() == null || req.getMinDesignPatents() <= 0 || (so.getDesignPatents() != null && so.getDesignPatents() >= req.getMinDesignPatents()));
+                boolean consultOk = (req.getMinConsultancyProjects() == null || req.getMinConsultancyProjects() <= 0 || (so.getConsultancyProjects() != null && so.getConsultancyProjects() >= req.getMinConsultancyProjects()));
+                boolean backlogOk = (!Boolean.TRUE.equals(req.getNoBacklogHistory()) || !Boolean.TRUE.equals(so.getHasBacklogHistory()));
+                boolean bettermentOk = (!Boolean.TRUE.equals(req.getNoBettermentHistory()) || !Boolean.TRUE.equals(so.getHasBettermentHistory()));
+
+                outcomesSatisfied = cgpaOk && scopusOk && patentsOk && consultOk && backlogOk && bettermentOk;
+                outcomeCheckResult.put("cgpaSatisfied", cgpaOk);
+                outcomeCheckResult.put("scopusSatisfied", scopusOk);
+                outcomeCheckResult.put("patentsSatisfied", patentsOk);
+                outcomeCheckResult.put("consultancySatisfied", consultOk);
+                outcomeCheckResult.put("backlogSatisfied", backlogOk);
+                outcomeCheckResult.put("bettermentSatisfied", bettermentOk);
+                outcomeCheckResult.put("allOutcomesSatisfied", outcomesSatisfied);
+                outcomeCheckResult.put("studentCgpa", so.getCgpa());
+                outcomeCheckResult.put("minCgpaRequired", req.getMinCgpa());
+            } else {
+                // If student outcome is not entered yet, don't fail immediately but flag as pending verification
+                outcomeCheckResult.put("status", "OUTCOMES_PENDING_VERIFICATION");
+                outcomeCheckResult.put("minCgpaRequired", req.getMinCgpa());
+                outcomeCheckResult.put("minScopusRequired", req.getMinScopusPublications());
+                outcomeCheckResult.put("minPatentsRequired", req.getMinDesignPatents());
+            }
+        }
+
+        // 5. Determine overall status
+        boolean allBucketsCompleted = (bucketsCompleted == bucketsTotal);
+        boolean creditsSatisfied = (totalCounted >= totalRequired);
+        boolean isEligible = allBucketsCompleted && creditsSatisfied && outcomesSatisfied;
         String status = isEligible ? "ELIGIBLE" : "IN_PROGRESS";
 
-        // Calculate percentage
+        // Calculate percentage (effective counted capped at required total)
+        int effectiveCounted = Math.min(totalCounted, totalRequired);
         BigDecimal percentage = totalRequired > 0
-                ? new BigDecimal(totalEarned).divide(new BigDecimal(totalRequired), 4, RoundingMode.HALF_UP).multiply(new BigDecimal(100))
+                ? new BigDecimal(effectiveCounted).divide(new BigDecimal(totalRequired), 4, RoundingMode.HALF_UP).multiply(new BigDecimal(100))
                 : BigDecimal.valueOf(100.00);
 
-        // 5. Create details JSON
-        Map<String, Object> detailsMap = new HashMap<>();
+        // 6. Create details JSON
+        Map<String, Object> detailsMap = new LinkedHashMap<>();
         detailsMap.put("failedBuckets", failedBuckets);
-        detailsMap.put("totalEarnedRaw", progressList.stream().mapToInt(StudentBucketProgress::getEarnedCredits).sum());
-        
+        detailsMap.put("totalEarnedRaw", totalEarnedRaw);
+        detailsMap.put("totalCountedCredits", totalCounted);
+        detailsMap.put("totalRequiredCredits", totalRequired);
+        detailsMap.put("excessCreditsTotal", Math.max(0, totalEarnedRaw - totalCounted));
+        detailsMap.put("allBucketsCompleted", allBucketsCompleted);
+        detailsMap.put("creditsSatisfied", creditsSatisfied);
+        detailsMap.put("outcomes", outcomeCheckResult);
+
         String detailsJson;
         try {
             detailsJson = objectMapper.writeValueAsString(detailsMap);
@@ -105,15 +159,15 @@ public class DegreeEligibilityEngine {
             detailsJson = "{}";
         }
 
-        // 6. Save or update status
+        // 7. Save or update status
         Student student = studentRepository.findById(studentId).orElseThrow();
         StudentDegreeStatus degreeStatus = studentDegreeStatusRepository.findByStudentId(studentId)
                 .orElse(new StudentDegreeStatus());
 
         degreeStatus.setStudent(student);
-        degreeStatus.setDegreePath(sdp.getDegreePath());
+        degreeStatus.setDegreePath(degreePath);
         degreeStatus.setTotalRequiredCredits(totalRequired);
-        degreeStatus.setTotalEarnedCredits(progressList.stream().mapToInt(StudentBucketProgress::getEarnedCredits).sum()); // Store raw total
+        degreeStatus.setTotalEarnedCredits(totalCounted); // Official counted credits
         degreeStatus.setCompletionPercentage(percentage);
         degreeStatus.setBucketsCompleted(bucketsCompleted);
         degreeStatus.setBucketsTotal(bucketsTotal);

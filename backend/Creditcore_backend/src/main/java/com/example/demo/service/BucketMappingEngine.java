@@ -37,6 +37,8 @@ public class BucketMappingEngine {
     private CourseCatalogRepository courseCatalogRepository;
     @Autowired
     private BucketMasterRepository bucketMasterRepository;
+    @Autowired
+    private ProgramCourseEquivalenceRepository programCourseEquivalenceRepository;
 
     /**
      * Map all completed courses for a student to their respective buckets under their assigned degree path.
@@ -98,6 +100,20 @@ public class BucketMappingEngine {
             } else {
                 mappings = curriculumCourseMappingRepository
                         .findByCourseCodeAndPathOrUniversal(completed.getCourseCode(), degreePathId);
+            }
+
+            // If not found in native curriculum, check for explicitly approved cross-program course equivalence
+            if (mappings.isEmpty() && curriculumVersionId != null) {
+                List<ProgramCourseEquivalence> approvedEquivalences = programCourseEquivalenceRepository
+                        .findApprovedEquivalencesForTarget(curriculumVersionId, completed.getCourseCode());
+                for (ProgramCourseEquivalence pce : approvedEquivalences) {
+                    List<CurriculumCourseMapping> equivMappings = curriculumCourseMappingRepository
+                            .findByVersionAndCourseCodeAndPathOrUniversal(curriculumVersionId, pce.getTargetCourseCode(), degreePathId);
+                    if (!equivMappings.isEmpty()) {
+                        mappings = equivMappings;
+                        break;
+                    }
+                }
             }
 
             if (mappings.isEmpty()) {
