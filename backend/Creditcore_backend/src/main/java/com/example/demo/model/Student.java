@@ -41,9 +41,11 @@ public class Student {
         return ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim();
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @Column(nullable = false)
     private String password;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @Column(name = "raw_password")
     private String rawPassword;
 

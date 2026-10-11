@@ -127,16 +127,19 @@ export default function SecondYearSelection() {
         try {
             await api.post('/onboarding/selection', {
                 student: { id: user.userId },
+                token: user.token,
                 program: { id: Number(selection.programId) },
                 curriculumVersion: { id: Number(selection.versionId) },
                 specialization: selection.specializationId ? { id: Number(selection.specializationId) } : null,
                 honorsProgram: selection.honorsId ? { id: Number(selection.honorsId) } : null,
                 extensionType: selection.extensionType || null
             });
+            localStorage.removeItem('firstLoginUser');
             setSuccess('Selection saved successfully. You can now login to continue.');
             setTimeout(() => navigate('/login'), 1400);
         } catch (err) {
-            setError(err.response?.data || 'Failed to save selection.');
+            const msg = err.response?.data?.error || (typeof err.response?.data === 'string' ? err.response.data : 'Failed to save selection.');
+            setError(msg);
         } finally {
             setLoading(false);
         }

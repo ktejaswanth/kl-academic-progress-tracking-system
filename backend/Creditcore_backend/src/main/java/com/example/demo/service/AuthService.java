@@ -164,31 +164,31 @@ public class AuthService {
 
         String username = resetToken.getUsername();
         String encoded = passwordEncoder.encode(newPassword);
-        syncPasswordToRoleTable(username, encoded, newPassword);
+        syncPasswordToRoleTable(username, encoded);
         tokenRepository.delete(resetToken);
     }
 
     public void changePassword(String username, String newPassword) {
         String encoded = passwordEncoder.encode(newPassword);
-        syncPasswordToRoleTable(username, encoded, newPassword);
+        syncPasswordToRoleTable(username, encoded);
     }
 
-    private void syncPasswordToRoleTable(String username, String encodedPassword, String rawPassword) {
+    private void syncPasswordToRoleTable(String username, String encodedPassword) {
         studentRepository.findByStudentId(username).ifPresent(s -> {
             s.setPassword(encodedPassword);
-            s.setRawPassword(rawPassword);
+            s.setRawPassword(null);
             s.setFirstLoginCompleted(true);
             studentRepository.save(s);
         });
         facultyRepository.findByUsername(username).ifPresent(f -> {
             f.setPassword(encodedPassword);
-            f.setRawPassword(rawPassword);
+            f.setRawPassword(null);
             f.setFirstLoginCompleted(true);
             facultyRepository.save(f);
         });
         adminRepository.findByUsername(username).ifPresent(a -> {
             a.setPassword(encodedPassword);
-            a.setRawPassword(rawPassword);
+            a.setRawPassword(null);
             adminRepository.save(a);
         });
     }

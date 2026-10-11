@@ -28,7 +28,8 @@ export default function FirstLogin() {
                 navigate('/login');
             }
         } catch (err) {
-            setError(err.response?.data || 'Invalid Student ID or DOB.');
+            const msg = err.response?.data?.error || (typeof err.response?.data === 'string' ? err.response.data : 'Invalid Student ID or DOB.');
+            setError(msg);
         } finally {
             setLoading(false);
         }

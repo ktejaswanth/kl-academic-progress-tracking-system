@@ -31,15 +31,18 @@ export default function CreatePassword() {
 
         setLoading(true);
         try {
-            await api.post('/onboarding/complete-first-login', {
+            const res = await api.post('/onboarding/complete-first-login', {
                 userId: user.userId,
+                token: user.token,
                 password,
                 confirmPassword
             });
-            localStorage.setItem('firstLoginUser', JSON.stringify(user));
+            const updatedUser = { ...user, ...(res.data || {}) };
+            localStorage.setItem('firstLoginUser', JSON.stringify(updatedUser));
             navigate('/profile-setup');
         } catch (err) {
-            setError(err.response?.data || 'Failed to complete first login.');
+            const msg = err.response?.data?.error || (typeof err.response?.data === 'string' ? err.response.data : 'Failed to complete first login.');
+            setError(msg);
         } finally {
             setLoading(false);
         }

@@ -73,6 +73,7 @@ export default function ProfileSetup() {
         try {
             await api.post('/onboarding/profile-setup', {
                 studentId: user.userId,
+                token: user.token,
                 ...profile,
                 currentYear: Number(profile.currentYear)
             });
@@ -82,11 +83,13 @@ export default function ProfileSetup() {
                 if (yearValue === 2) {
                     navigate('/second-year-selection');
                 } else {
+                    localStorage.removeItem('firstLoginUser');
                     navigate('/login');
                 }
             }, 1200);
         } catch (err) {
-            setError(err.response?.data || 'Unable to save profile.');
+            const msg = err.response?.data?.error || (typeof err.response?.data === 'string' ? err.response.data : 'Unable to save profile.');
+            setError(msg);
         } finally {
             setLoading(false);
         }
