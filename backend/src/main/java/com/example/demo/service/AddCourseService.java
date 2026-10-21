@@ -74,6 +74,9 @@ public class AddCourseService {
     @Autowired
     private FacultyRepository facultyRepository;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules();
 
     /**
@@ -329,218 +332,391 @@ public class AddCourseService {
         return result;
     }
 
-    private static class ParsedCourseRow {
-        String universityId;
-        String studentName;
-        String courseCode;
-        String ltps;
-        String courseName;
-        String bucketGroup;
-        String courseType;
-        String academicYear;
-        String semester;
-        Integer studyYear;
-        String sectionNo;
-        LocalDate registerDate;
-        String courseRef;
-        String offerTo;
-        String offerBy;
-        String branch;
+    /**
+     * Retrieves all available batch tables and their row counts.
+     */
+    public List<Map<String, Object>> getAvailableBatches() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        try {
+            List<String> tables = jdbcTemplate.queryForList(
+                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE '%_students_courses' ORDER BY table_name",
+                    String.class
+            );
+            for (String tbl : tables) {
+                String batchCode = tbl.replace("_students_courses", "").toUpperCase();
+                Long count = 0L;
+                try {
+                    count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM " + tbl, Long.class);
+                } catch (Exception ignored) {}
+
+                Map<String, Object> map = new LinkedHashMap<>();
+                map.put("batch", batchCode);
+                map.put("tableName", tbl);
+                map.put("count", count != null ? count : 0L);
+                list.add(map);
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching batches: " + e.getMessage());
+        }
+        return list;
     }
 
     /**
-     * Bulk upload completed courses for students using Excel.
-     * Maps university_id to student/user table, auto-creates missing entities,
-     * updates existing or inserts new records, handling max length rows reliably.
+     * Ensures that the batch table exists (e.g. y23_students_courses, y24_students_courses, y26_students_courses).
+     * If not existing, creates it dynamically with all required columns, indexes, and constraints.
+     * Also refreshes completed_courses and student_courses views to UNION ALL all active batch tables.
      */
-    public Map<String, Object> bulkUploadCourses(MultipartFile file, Long verifiedById) throws Exception {
-        int added = 0;
-        int updated = 0;
-        int skipped = 0;
-        int failed = 0;
-        List<String> errors = new ArrayList<>();
-        Set<Long> affectedStudentIds = new HashSet<>();
-
-
-        List<ParsedCourseRow> rowList = new ArrayList<>();
-
-        try (InputStream is = file.getInputStream(); Workbook workbook = WorkbookFactory.create(is)) {
-            Sheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rowIterator = sheet.iterator();
-
-            // Skip header row
-            if (rowIterator.hasNext()) {
-                rowIterator.next();
-            }
-
-            int rowIdx = 1;
-            while (rowIterator.hasNext()) {
-                rowIdx++;
-                Row row = rowIterator.next();
-                try {
-                    String universityId = getCellString(row.getCell(0));
-                    String studentName = getCellString(row.getCell(1));
-                    String courseCode = getCellString(row.getCell(2));
-                    String ltps = getCellString(row.getCell(3));
-                    String courseName = getCellString(row.getCell(4));
-                    String bucketGroup = getCellString(row.getCell(5));
-                    String courseType = getCellString(row.getCell(6));
-                    String academicYear = getCellString(row.getCell(7));
-                    String semester = getCellString(row.getCell(8));
-                    String studyYearStr = getCellString(row.getCell(9));
-                    String sectionNo = getCellString(row.getCell(10));
-                    String dateStr = getCellString(row.getCell(11));
-                    String courseRef = getCellString(row.getCell(12));
-                    String offerTo = getCellString(row.getCell(13));
-                    String offerBy = getCellString(row.getCell(14));
-                    String branch = getCellString(row.getCell(15));
-
-                    if ((universityId == null || universityId.isEmpty()) && (courseCode == null || courseCode.isEmpty())) {
-                        continue; // skip empty line
-                    }
-
-                    if (universityId == null || universityId.isEmpty()) {
-                        throw new RuntimeException("Missing University ID at row " + rowIdx);
-                    }
-                    if (courseCode == null || courseCode.isEmpty()) {
-                        throw new RuntimeException("Missing Course Code for student " + universityId + " at row " + rowIdx);
-                    }
-
-                    ParsedCourseRow r = new ParsedCourseRow();
-                    r.universityId = universityId.trim();
-                    r.studentName = (studentName != null) ? studentName.trim() : "";
-                    r.courseCode = courseCode.trim().toUpperCase();
-                    r.ltps = (ltps != null) ? ltps.trim() : "";
-                    r.courseName = (courseName != null) ? courseName.trim() : "";
-                    r.bucketGroup = (bucketGroup != null) ? bucketGroup.trim() : "";
-                    r.courseType = (courseType != null) ? courseType.trim() : "";
-                    r.academicYear = (academicYear != null) ? academicYear.trim() : "";
-                    r.semester = (semester != null) ? semester.trim() : "ODD";
-                    if (studyYearStr != null && !studyYearStr.trim().isEmpty()) {
-                        try {
-                            r.studyYear = Integer.parseInt(studyYearStr.trim());
-                        } catch (Exception ignored) {}
-                    }
-                    r.sectionNo = (sectionNo != null) ? sectionNo.trim() : "";
-                    r.registerDate = parseDateSafely(row.getCell(11), dateStr);
-                    r.courseRef = (courseRef != null) ? courseRef.trim() : "";
-                    r.offerTo = (offerTo != null) ? offerTo.trim() : "";
-                    r.offerBy = (offerBy != null) ? offerBy.trim() : "";
-                    r.branch = (branch != null) ? branch.trim() : "";
-
-                    rowList.add(r);
-
-                } catch (Exception e) {
-                    failed++;
-                    if (errors.size() < 100) {
-                        errors.add("Row " + rowIdx + ": " + e.getMessage());
-                    }
-                }
-            }
+    public synchronized String ensureBatchTableExists(String batch) {
+        String cleanBatch = (batch != null && !batch.trim().isEmpty()) ? batch.trim().toLowerCase() : "y23";
+        if (!cleanBatch.startsWith("y")) {
+            cleanBatch = "y" + cleanBatch;
+        }
+        cleanBatch = cleanBatch.replaceAll("[^a-z0-9]", "");
+        if (!cleanBatch.matches("^y[0-9]{2,4}$")) {
+            cleanBatch = "y23";
         }
 
-        // Process all extracted course rows
-        for (ParsedCourseRow r : rowList) {
+        String tableName = cleanBatch + "_students_courses";
+
+        try {
+            String ddl = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
+                    "id BIGSERIAL PRIMARY KEY, " +
+                    "student_id BIGINT, " +
+                    "university_id VARCHAR(50) NOT NULL, " +
+                    "student_name VARCHAR(255), " +
+                    "course_code VARCHAR(50) NOT NULL, " +
+                    "course_name VARCHAR(255), " +
+                    "ltps VARCHAR(50), " +
+                    "credits INTEGER DEFAULT 0, " +
+                    "grade VARCHAR(10), " +
+                    "bucket_group VARCHAR(100), " +
+                    "course_type VARCHAR(100), " +
+                    "academic_year VARCHAR(50), " +
+                    "semester VARCHAR(20), " +
+                    "study_year INTEGER, " +
+                    "section_no VARCHAR(50), " +
+                    "register_date DATE, " +
+                    "course_ref VARCHAR(100), " +
+                    "offer_to VARCHAR(100), " +
+                    "offer_by VARCHAR(100), " +
+                    "branch VARCHAR(100), " +
+                    "category VARCHAR(100), " +
+                    "status VARCHAR(50) DEFAULT 'Completed', " +
+                    "verified_by BIGINT, " +
+                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                    ");";
+            jdbcTemplate.execute(ddl);
+
+            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_univ_course ON " + tableName + " (university_id, course_code);");
+            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_univ ON " + tableName + " (university_id);");
+            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_student_id ON " + tableName + " (student_id);");
+            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_course ON " + tableName + " (course_code);");
+            jdbcTemplate.execute("CREATE UNIQUE INDEX IF NOT EXISTS uq_" + tableName + "_record ON " + tableName + " (university_id, course_code, semester, academic_year);");
+
+            // Enforce foreign key linking to students table
             try {
-                Student student = resolveOrCreateStudent(r.universityId, r.studentName, r.branch, r.academicYear);
-                CourseCatalog catalog = resolveOrCreateCourseCatalog(r.courseCode, r.courseName, r.ltps, r.branch);
+                jdbcTemplate.execute("ALTER TABLE " + tableName + " ADD CONSTRAINT fk_" + tableName + "_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE;");
+            } catch (Exception ignored) {
+                // Constraint already exists
+            }
 
-                String finalCourseName = (catalog.getCourseName() != null && !catalog.getCourseName().isEmpty())
-                        ? catalog.getCourseName()
-                        : ((r.courseName != null && !r.courseName.isEmpty()) ? r.courseName : r.courseCode);
-                Integer finalCredits = (catalog.getCredits() != null) ? catalog.getCredits() : parseCreditsFromLtps(r.ltps);
+            // Refresh completed_courses view
+            refreshCompletedCoursesView();
+        } catch (Exception e) {
+            System.err.println("Notice ensuring batch table " + tableName + ": " + e.getMessage());
+            throw new IllegalStateException("Failed to initialize batch table " + tableName + ": " + e.getMessage(), e);
+        }
 
-                Optional<CompletedCourse> existingOpt = completedCourseRepository
-                        .findFirstByUniversityIdAndCourseCodeAndSemesterAndAcademicYear(
-                                student.getStudentId(), r.courseCode, r.semester, r.academicYear
-                        );
-                if (!existingOpt.isPresent()) {
-                    existingOpt = completedCourseRepository.findFirstByUniversityIdAndCourseCode(student.getStudentId(), r.courseCode);
-                }
+        return tableName;
+    }
 
-                CompletedCourse target;
-                boolean isNew = !existingOpt.isPresent();
-                if (isNew) {
-                    target = new CompletedCourse();
-                    target.setStudent(student);
-                    target.setUniversityId(student.getStudentId());
-                    target.setStudentName(r.studentName);
-                    target.setCourseCode(r.courseCode);
-                    target.setStatus("Completed");
-                } else {
-                    target = existingOpt.get();
-                    target.setStudent(student);
-                    target.setUniversityId(student.getStudentId());
-                    if (r.studentName != null && !r.studentName.isEmpty()) {
-                        target.setStudentName(r.studentName);
+    /**
+     * Refreshes the completed_courses and student_courses views to UNION ALL all batch tables.
+     */
+    public synchronized void refreshCompletedCoursesView() {
+        try {
+            List<String> tables = jdbcTemplate.queryForList(
+                    "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name LIKE '%_students_courses' ORDER BY table_name",
+                    String.class
+            );
+            if (tables.isEmpty()) {
+                tables = Collections.singletonList("y23_students_courses");
+            }
+
+            StringBuilder sb = new StringBuilder("CREATE OR REPLACE VIEW completed_courses AS ");
+            for (int i = 0; i < tables.size(); i++) {
+                if (i > 0) sb.append(" UNION ALL ");
+                sb.append("SELECT id, student_id, university_id, student_name, course_code, course_name, credits, grade, semester, ltps, bucket_group, course_type, academic_year, study_year, section_no, register_date, course_ref, offer_to, offer_by, branch, category, status, verified_by, created_at FROM ").append(tables.get(i));
+            }
+            jdbcTemplate.execute(sb.toString());
+
+            // Also refresh student_courses view
+            jdbcTemplate.execute("CREATE OR REPLACE VIEW student_courses AS " +
+                    "SELECT id, student_id, university_id, NULL::BIGINT AS curriculum_version_id, NULL::BIGINT AS course_id, NULL::BIGINT AS curriculum_course_id, course_code, course_name, credits::DOUBLE PRECISION AS credits, grade, status, semester, academic_year, register_date AS completed_date, created_at FROM completed_courses;");
+
+            // Re-apply trigger function and trigger
+            String triggerSql = "CREATE OR REPLACE FUNCTION trg_completed_courses_view_sync() " +
+                    "RETURNS TRIGGER AS $$ " +
+                    "DECLARE target_tbl text; batch_prefix text; rec record; " +
+                    "BEGIN " +
+                    "  IF TG_OP = 'DELETE' THEN rec := OLD; ELSE rec := NEW; END IF; " +
+                    "  IF rec.academic_year IS NOT NULL AND rec.academic_year ~* 'y[0-9]{2}' THEN " +
+                    "    batch_prefix := lower(substring(rec.academic_year from '(?i)y[0-9]{2}')); " +
+                    "  ELSIF rec.university_id IS NOT NULL AND length(rec.university_id) >= 2 AND substring(rec.university_id from 1 for 2) ~ '^[0-9]{2}$' THEN " +
+                    "    batch_prefix := 'y' || substring(rec.university_id from 1 for 2); " +
+                    "  ELSE batch_prefix := 'y23'; END IF; " +
+                    "  target_tbl := batch_prefix || '_students_courses'; " +
+                    "  IF TG_OP = 'INSERT' THEN " +
+                    "    EXECUTE format('INSERT INTO %I (student_id, university_id, student_name, course_code, course_name, credits, grade, semester, ltps, bucket_group, course_type, academic_year, study_year, section_no, register_date, course_ref, offer_to, offer_by, branch, category, status, verified_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) ON CONFLICT (university_id, course_code, semester, academic_year) DO UPDATE SET student_id=COALESCE(EXCLUDED.student_id, %I.student_id), student_name=COALESCE(EXCLUDED.student_name, %I.student_name), course_name=COALESCE(EXCLUDED.course_name, %I.course_name), credits=COALESCE(EXCLUDED.credits, %I.credits), grade=COALESCE(EXCLUDED.grade, %I.grade), ltps=EXCLUDED.ltps, bucket_group=COALESCE(EXCLUDED.bucket_group, %I.bucket_group), course_type=COALESCE(EXCLUDED.course_type, %I.course_type), study_year=COALESCE(EXCLUDED.study_year, %I.study_year), section_no=COALESCE(EXCLUDED.section_no, %I.section_no), register_date=COALESCE(EXCLUDED.register_date, %I.register_date), course_ref=COALESCE(EXCLUDED.course_ref, %I.course_ref), offer_to=COALESCE(EXCLUDED.offer_to, %I.offer_to), offer_by=COALESCE(EXCLUDED.offer_by, %I.offer_by), branch=COALESCE(EXCLUDED.branch, %I.branch), category=COALESCE(EXCLUDED.category, %I.category), status=COALESCE(EXCLUDED.status, %I.status), verified_by=COALESCE(EXCLUDED.verified_by, %I.verified_by), updated_at=NOW() RETURNING id', target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl, target_tbl) " +
+                    "    USING NEW.student_id, NEW.university_id, NEW.student_name, NEW.course_code, NEW.course_name, COALESCE(NEW.credits,0), NEW.grade, NEW.semester, NEW.ltps, NEW.bucket_group, NEW.course_type, NEW.academic_year, NEW.study_year, NEW.section_no, NEW.register_date, NEW.course_ref, NEW.offer_to, NEW.offer_by, NEW.branch, NEW.category, COALESCE(NEW.status,'Completed'), NEW.verified_by INTO NEW.id; " +
+                    "    RETURN NEW; " +
+                    "  ELSIF TG_OP = 'UPDATE' THEN " +
+                    "    EXECUTE format('UPDATE %I SET student_id=$1, student_name=$2, course_name=$3, credits=$4, grade=$5, semester=$6, ltps=$7, bucket_group=$8, course_type=$9, academic_year=$10, study_year=$11, section_no=$12, register_date=$13, course_ref=$14, offer_to=$15, offer_by=$16, branch=$17, category=$18, status=$19, verified_by=$20, updated_at=NOW() WHERE id=$21', target_tbl) " +
+                    "    USING NEW.student_id, NEW.student_name, NEW.course_name, NEW.credits, NEW.grade, NEW.semester, NEW.ltps, NEW.bucket_group, NEW.course_type, NEW.academic_year, NEW.study_year, NEW.section_no, NEW.register_date, NEW.course_ref, NEW.offer_to, NEW.offer_by, NEW.branch, NEW.category, NEW.status, NEW.verified_by, OLD.id; " +
+                    "    RETURN NEW; " +
+                    "  ELSIF TG_OP = 'DELETE' THEN " +
+                    "    EXECUTE format('DELETE FROM %I WHERE id = $1', target_tbl) USING OLD.id; " +
+                    "    RETURN OLD; " +
+                    "  END IF; " +
+                    "  RETURN NULL; " +
+                    "END; $$ LANGUAGE plpgsql; " +
+                    "DROP TRIGGER IF EXISTS trg_completed_courses_view_rw ON completed_courses; " +
+                    "CREATE TRIGGER trg_completed_courses_view_rw INSTEAD OF INSERT OR UPDATE OR DELETE ON completed_courses FOR EACH ROW EXECUTE FUNCTION trg_completed_courses_view_sync();";
+            jdbcTemplate.execute(triggerSql);
+        } catch (Exception e) {
+            System.err.println("Notice refreshing completed_courses view: " + e.getMessage());
+        }
+    }
+
+    public Map<String, Object> bulkUploadCourses(MultipartFile file, Long verifiedById) throws Exception {
+        return bulkUploadCourses(file, null, verifiedById);
+    }
+
+    /**
+     * High Performance Streaming Bulk Upload Engine.
+     * Supports files with up to 1,000,000 rows (CSV, XLSX SAX, XLS).
+     * Automatically creates dynamic batch table if not exists (e.g. y23_students_courses, y24_students_courses)
+     * and executes chunked multi-row UPSERTs with constant minimal memory usage.
+     */
+    public Map<String, Object> bulkUploadCourses(MultipartFile file, String batch, Long verifiedById) throws Exception {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty.");
+        }
+
+        long startTime = System.currentTimeMillis();
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) originalFilename = "upload.xlsx";
+
+        // Determine target batch
+        String targetBatch = (batch != null && !batch.trim().isEmpty()) ? batch.trim().toUpperCase() : null;
+        String tableName = (targetBatch != null) ? ensureBatchTableExists(targetBatch) : null;
+
+        int[] counters = new int[4]; // [0] = total, [1] = added/updated, [2] = skipped, [3] = failed
+        List<String> errors = new ArrayList<>();
+        Set<String> distinctStudentIds = new HashSet<>();
+        List<com.example.demo.utils.CourseFileStreamingParser.ParsedRow> chunk = new ArrayList<>(1000);
+        String[] detectedBatch = new String[]{targetBatch};
+        String[] targetTableHolder = new String[]{tableName};
+
+        try (InputStream is = file.getInputStream()) {
+            com.example.demo.utils.CourseFileStreamingParser.streamRows(is, originalFilename, row -> {
+                counters[0]++; // total
+
+                if (row.status != null && row.status.startsWith("FAILED")) {
+                    counters[3]++; // failed
+                    if (errors.size() < 100) {
+                        errors.add("Row missing required universityId or courseCode (student: " + (row.studentName != null ? row.studentName : "unknown") + ")");
                     }
+                    return;
                 }
 
-                target.setCourseName(finalCourseName);
-                target.setCredits(finalCredits);
-                target.setLtps(mergeLtps(target.getLtps(), r.ltps));
-                if (r.bucketGroup != null && !r.bucketGroup.isEmpty()) target.setBucketGroup(r.bucketGroup);
-                if (r.courseType != null && !r.courseType.isEmpty()) target.setCourseType(r.courseType);
-                if (r.academicYear != null && !r.academicYear.isEmpty()) target.setAcademicYear(r.academicYear);
-                if (r.semester != null && !r.semester.isEmpty()) target.setSemester(r.semester);
-                if (r.studyYear != null) target.setStudyYear(r.studyYear);
-                if (r.sectionNo != null && !r.sectionNo.isEmpty()) target.setSectionNo(r.sectionNo);
-                if (r.registerDate != null) target.setRegisterDate(r.registerDate);
-                if (r.courseRef != null && !r.courseRef.isEmpty()) target.setCourseRef(r.courseRef);
-                if (r.offerTo != null && !r.offerTo.isEmpty()) target.setOfferTo(r.offerTo);
-                if (r.offerBy != null && !r.offerBy.isEmpty()) target.setOfferBy(r.offerBy);
-                if (r.branch != null && !r.branch.isEmpty()) target.setBranch(r.branch);
-                target.setVerifiedBy(verifiedById);
-
-                CompletedCourse saved = completedCourseRepository.save(target);
-
-                // Dual-write into normalized student_courses and student_course_attempts table
-                syncStudentCourse(student, catalog, finalCourseName, finalCredits.doubleValue(),
-                        saved.getGrade(), saved.getSemester(), saved.getRegisterDate(), saved.getAcademicYear());
-
-                affectedStudentIds.add(student.getId());
-
-                if (isNew) {
-                    added++;
-                } else {
-                    updated++;
+                // If batch wasn't specified, detect from first valid row
+                if (targetTableHolder[0] == null) {
+                    String b = "Y23";
+                    if (row.academicYear != null && row.academicYear.toUpperCase().matches(".*Y[0-9]{2}.*")) {
+                        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?i)Y[0-9]{2}").matcher(row.academicYear);
+                        if (m.find()) b = m.group().toUpperCase();
+                    } else if (row.universityId != null && row.universityId.length() >= 2 && Character.isDigit(row.universityId.charAt(0)) && Character.isDigit(row.universityId.charAt(1))) {
+                        b = "Y" + row.universityId.substring(0, 2);
+                    }
+                    detectedBatch[0] = b;
+                    targetTableHolder[0] = ensureBatchTableExists(b);
                 }
 
-            } catch (Exception e) {
-                failed++;
-                if (errors.size() < 100) {
-                    errors.add("Course " + r.courseCode + " for student " + r.universityId + ": " + e.getMessage());
+                distinctStudentIds.add(row.universityId);
+                chunk.add(row);
+
+                if (chunk.size() >= 1000) {
+                    processCourseChunk(chunk, targetTableHolder[0], verifiedById, counters, errors);
+                    chunk.clear();
                 }
+            });
+
+            // Flush remaining chunk
+            if (!chunk.isEmpty()) {
+                if (targetTableHolder[0] == null) {
+                    targetTableHolder[0] = ensureBatchTableExists("Y23");
+                    detectedBatch[0] = "Y23";
+                }
+                processCourseChunk(chunk, targetTableHolder[0], verifiedById, counters, errors);
+                chunk.clear();
             }
         }
 
-        // Re-evaluate affected students: sync for small sets, background async for large sets
-        if (affectedStudentIds.size() <= 20) {
-            for (Long studentId : affectedStudentIds) {
-                try {
-                    degreeEligibilityEngine.evaluateEligibility(studentId);
-                } catch (Exception ignored) {}
-            }
-        } else {
-            Set<Long> idsToEval = new HashSet<>(affectedStudentIds);
+        String finalTable = (targetTableHolder[0] != null) ? targetTableHolder[0] : "y23_students_courses";
+        String finalBatch = (detectedBatch[0] != null) ? detectedBatch[0] : "Y23";
+
+        // Auto-register any missing students in students table
+        try {
+            String encodedDefaultPassword = passwordEncoder.encode("Password@123");
+            String syncStudentsSql = "INSERT INTO students (student_id, first_name, last_name, email, password, department, academic_year, is_active) " +
+                    "SELECT DISTINCT " +
+                    "  b.university_id, " +
+                    "  COALESCE(NULLIF(SPLIT_PART(b.student_name, ' ', 1), ''), b.university_id), " +
+                    "  COALESCE(NULLIF(SUBSTRING(b.student_name FROM POSITION(' ' IN b.student_name) + 1), ''), ''), " +
+                    "  LOWER(b.university_id) || '@kluniversity.in', " +
+                    "  ?, " +
+                    "  COALESCE(NULLIF(b.branch, ''), 'UNASSIGNED'), " +
+                    "  ?, " +
+                    "  TRUE " +
+                    "FROM " + finalTable + " b " +
+                    "WHERE b.university_id NOT IN (SELECT student_id FROM students) " +
+                    "ON CONFLICT (student_id) DO NOTHING;";
+            jdbcTemplate.update(syncStudentsSql, encodedDefaultPassword, finalBatch);
+
+            // Re-link student_id in batch table
+            jdbcTemplate.execute("UPDATE " + finalTable + " b SET student_id = s.id FROM students s WHERE b.university_id = s.student_id AND b.student_id IS NULL;");
+        } catch (Exception e) {
+            System.err.println("Notice auto-syncing students table: " + e.getMessage());
+        }
+
+        // Trigger background eligibility evaluation
+        if (!distinctStudentIds.isEmpty()) {
+            Set<String> idsCopy = new HashSet<>(distinctStudentIds);
             CompletableFuture.runAsync(() -> {
-                for (Long studentId : idsToEval) {
+                for (String uid : idsCopy) {
                     try {
-                        degreeEligibilityEngine.evaluateEligibility(studentId);
+                        studentRepository.findByStudentId(uid).ifPresent(s -> {
+                            try {
+                                degreeEligibilityEngine.evaluateEligibility(s.getId());
+                            } catch (Exception ignored) {}
+                        });
                     } catch (Exception ignored) {}
                 }
             });
         }
 
+        long elapsedMs = Math.max(1, System.currentTimeMillis() - startTime);
+        double speed = (counters[0] * 1000.0) / elapsedMs;
+
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("total", rowList.size());
-        result.put("added", added);
-        result.put("updated", updated);
-        result.put("skipped", skipped);
-        result.put("failed", failed);
+        result.put("total", counters[0]);
+        result.put("batch", finalBatch);
+        result.put("tableName", finalTable);
+        result.put("added", counters[1]);
+        result.put("updated", 0);
+        result.put("skipped", counters[2]);
+        result.put("failed", counters[3]);
         result.put("errors", errors);
-        result.put("message", "Processed " + (added + updated) + " records (" + added + " added, " + updated + " updated).");
+        result.put("executionTimeMs", elapsedMs);
+        result.put("speedRowsPerSec", Math.round(speed));
+        result.put("message", "Successfully processed " + counters[0] + " course records into " + finalTable + " (" + Math.round(speed) + " rows/sec in " + (elapsedMs / 1000.0) + "s).");
         return result;
+    }
+
+    private void processCourseChunk(
+            List<com.example.demo.utils.CourseFileStreamingParser.ParsedRow> chunk,
+            String tableName,
+            Long verifiedById,
+            int[] counters,
+            List<String> errors
+    ) {
+        if (chunk == null || chunk.isEmpty()) return;
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO ").append(tableName).append(" (")
+                .append("university_id, student_name, course_code, course_name, credits, grade, ")
+                .append("semester, ltps, bucket_group, course_type, academic_year, study_year, ")
+                .append("section_no, register_date, course_ref, offer_to, offer_by, branch, category, status, verified_by")
+                .append(") VALUES ");
+
+        for (int i = 0; i < chunk.size(); i++) {
+            if (i > 0) sql.append(", ");
+            sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        }
+
+        sql.append(" ON CONFLICT (university_id, course_code, semester, academic_year) DO UPDATE SET ")
+                .append("student_name = EXCLUDED.student_name, ")
+                .append("course_name = EXCLUDED.course_name, ")
+                .append("credits = EXCLUDED.credits, ")
+                .append("grade = COALESCE(EXCLUDED.grade, ").append(tableName).append(".grade), ")
+                .append("ltps = EXCLUDED.ltps, ")
+                .append("bucket_group = EXCLUDED.bucket_group, ")
+                .append("course_type = EXCLUDED.course_type, ")
+                .append("study_year = EXCLUDED.study_year, ")
+                .append("section_no = EXCLUDED.section_no, ")
+                .append("register_date = EXCLUDED.register_date, ")
+                .append("course_ref = EXCLUDED.course_ref, ")
+                .append("offer_to = EXCLUDED.offer_to, ")
+                .append("offer_by = EXCLUDED.offer_by, ")
+                .append("branch = EXCLUDED.branch, ")
+                .append("category = EXCLUDED.category, ")
+                .append("status = EXCLUDED.status, ")
+                .append("verified_by = EXCLUDED.verified_by, ")
+                .append("updated_at = NOW();");
+
+        try {
+            jdbcTemplate.update(sql.toString(), ps -> {
+                int p = 1;
+                for (com.example.demo.utils.CourseFileStreamingParser.ParsedRow r : chunk) {
+                    ps.setString(p++, r.universityId);
+                    ps.setString(p++, r.studentName);
+                    ps.setString(p++, r.courseCode);
+                    ps.setString(p++, r.courseName);
+                    if (r.credits != null) {
+                        ps.setInt(p++, r.credits);
+                    } else {
+                        ps.setInt(p++, 0);
+                    }
+                    ps.setString(p++, r.grade);
+                    ps.setString(p++, r.semester != null ? r.semester : "ODD");
+                    ps.setString(p++, r.ltps);
+                    ps.setString(p++, r.bucketGroup);
+                    ps.setString(p++, r.courseType);
+                    ps.setString(p++, r.academicYear);
+                    if (r.studyYear != null) {
+                        ps.setInt(p++, r.studyYear);
+                    } else {
+                        ps.setNull(p++, java.sql.Types.INTEGER);
+                    }
+                    ps.setString(p++, r.sectionNo);
+                    if (r.registerDate != null) {
+                        ps.setDate(p++, java.sql.Date.valueOf(r.registerDate));
+                    } else {
+                        ps.setNull(p++, java.sql.Types.DATE);
+                    }
+                    ps.setString(p++, r.courseRef);
+                    ps.setString(p++, r.offerTo);
+                    ps.setString(p++, r.offerBy);
+                    ps.setString(p++, r.branch);
+                    ps.setString(p++, r.category);
+                    ps.setString(p++, r.status != null ? r.status : "Completed");
+                    if (verifiedById != null) {
+                        ps.setLong(p++, verifiedById);
+                    } else {
+                        ps.setNull(p++, java.sql.Types.BIGINT);
+                    }
+                }
+            });
+            counters[1] += chunk.size();
+        } catch (Exception e) {
+            counters[3] += chunk.size();
+            if (errors.size() < 100) {
+                errors.add("Chunk error: " + e.getMessage());
+            }
+            e.printStackTrace();
+        }
     }
 
     private String mergeLtps(String oldLtps, String newLtps) {

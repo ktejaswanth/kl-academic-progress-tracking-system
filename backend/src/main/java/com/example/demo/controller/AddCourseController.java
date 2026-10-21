@@ -42,6 +42,13 @@ public class AddCourseController {
         return 1L;
     }
 
+    private Map<String, String> errorResponse(String defaultMsg, Throwable t) {
+        String msg = (t != null && t.getMessage() != null && !t.getMessage().trim().isEmpty())
+                ? t.getMessage()
+                : defaultMsg;
+        return Map.of("error", msg);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> addSingleCourse(@RequestBody AddCourseRequest request) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -51,20 +58,33 @@ public class AddCourseController {
             Map<String, Object> response = addCourseService.addSingleCourse(request, verifierId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(errorResponse("Unable to add course", e));
         }
     }
 
     @PostMapping("/bulk-upload")
-    public ResponseEntity<?> bulkUploadCourses(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> bulkUploadCourses(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "batch", required = false) String batch
+    ) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Long verifierId = getVerifierId(username);
 
         try {
-            Map<String, Object> response = addCourseService.bulkUploadCourses(file, verifierId);
+            Map<String, Object> response = addCourseService.bulkUploadCourses(file, batch, verifierId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(errorResponse("Upload failed", e));
+        }
+    }
+
+    @GetMapping("/batches")
+    public ResponseEntity<?> getAvailableBatches() {
+        try {
+            return ResponseEntity.ok(addCourseService.getAvailableBatches());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(errorResponse("Failed to fetch available batches", e));
         }
     }
 
@@ -74,7 +94,7 @@ public class AddCourseController {
             addCourseService.deleteCourse(courseId);
             return ResponseEntity.ok(Map.of("message", "Completed course entry deleted successfully."));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(errorResponse("Failed to delete course", e));
         }
     }
 
@@ -98,13 +118,13 @@ public class AddCourseController {
             Map<String, Object> response = addCourseService.updateCourse(courseId, request, verifierId);
             return ResponseEntity.ok(response);
         } catch (java.util.NoSuchElementException e) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(org.springframework.http.HttpStatus.NOT_FOUND).body(errorResponse("Course not found", e));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(errorResponse("Invalid course update request", e));
         } catch (SecurityException e) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(errorResponse("Access denied", e));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(errorResponse("Course update failed", e));
         }
     }
 
