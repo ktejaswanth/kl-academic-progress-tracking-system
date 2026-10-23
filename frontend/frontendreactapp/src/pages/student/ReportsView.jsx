@@ -43,7 +43,7 @@ export default function ReportsView() {
         setMessage('');
         try {
             const res = await api.get('/reports/student/me/excel', { responseType: 'blob' });
-            triggerDownload(new Blob([res.data]), `Academic_Progress_Report_${rollNumber}.xlsx`);
+            triggerDownload(new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `Academic_Progress_Report_${rollNumber}.xlsx`);
             setMessage('Academic Progress Report (Excel) downloaded successfully!');
         } catch (err) {
             console.error('Excel error', err);
@@ -68,6 +68,22 @@ export default function ReportsView() {
         } catch (err) {
             console.error('Course history error', err);
             setMessage('Failed to download Course History.');
+        } finally {
+            setDownloading('');
+        }
+    };
+
+    // Download Graduation Eligibility Audit Report (Official PDF)
+    const handleDownloadEligibilityReport = async () => {
+        setDownloading('eligibility-summary');
+        setMessage('');
+        try {
+            const res = await api.get('/reports/student/me/eligibility-pdf', { responseType: 'blob' });
+            triggerDownload(new Blob([res.data], { type: 'application/pdf' }), `Graduation_Eligibility_Audit_${rollNumber}.pdf`);
+            setMessage('Graduation Eligibility Audit Report downloaded successfully!');
+        } catch (err) {
+            console.error('Eligibility report error', err);
+            setMessage('Failed to download Eligibility Audit Report.');
         } finally {
             setDownloading('');
         }
@@ -107,7 +123,7 @@ export default function ReportsView() {
             desc: 'Verification report certifying degree clearance eligibility, cumulative GPA standing, and curriculum bucket compliance.',
             icon: '🎓',
             badge: 'INSTITUTIONAL AUDIT',
-            action: handleDownloadExitPdf,
+            action: handleDownloadEligibilityReport,
             btnText: 'Generate Eligibility Report'
         }
     ];

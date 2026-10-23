@@ -69,9 +69,38 @@ public class BucketSatisfactionEngine {
             throw new RuntimeException("No bucket requirements defined for degree path: " + degreePath.getPathCode());
         }
 
-        // 3. Map completed courses to buckets
+        // 3. Map completed courses to buckets (uses batch prefetching)
         Map<Long, BucketMappingEngine.BucketCreditsInfo> earnedMap = 
                 bucketMappingEngine.mapStudentCoursesToBuckets(studentId, degreePathId);
+
+        // Prefetch all existing progress records for student and degree path
+        List<StudentBucketProgress> existingProgress = studentBucketProgressRepository
+                .findByStudentIdAndDegreePathId(studentId, degreePathId);
+        Map<Long, StudentBucketProgress> progressMap = existingProgress.stream()
+                .filter(p -> p.getBucket() != null)
+                .collect(Collectors.toMap(p -> p.getBucket().getId(), p -> p, (a, b) -> a));
+
+        // Prefetch mandatory courses from curriculum version mappings
+        Long curriculumVersionId = (degreePath != null && degreePath.getCurriculumVersion() != null)
+                ? degreePath.getCurriculumVersion().getId() : null;
+        List<CurriculumCourseMapping> allPathMappings;
+        if (curriculumVersionId != null) {
+            allPathMappings = curriculumCourseMappingRepository
+                    .findAllByVersionAndPathOrUniversal(curriculumVersionId, degreePathId);
+        } else {
+            allPathMappings = curriculumCourseMappingRepository
+                    .findAllByPathOrUniversal(degreePathId);
+        }
+        Map<Long, List<String>> mandatoryCoursesByBucket = new HashMap<>();
+        for (CurriculumCourseMapping ccm : allPathMappings) {
+            if (Boolean.TRUE.equals(ccm.getIsMandatory()) && ccm.getBucket() != null 
+                    && ccm.getCurriculumCourse() != null && ccm.getCurriculumCourse().getCourse() != null) {
+                String cCode = ccm.getCurriculumCourse().getCourse().getCourseCode();
+                if (cCode != null) {
+                    mandatoryCoursesByBucket.computeIfAbsent(ccm.getBucket().getId(), k -> new ArrayList<>()).add(cCode);
+                }
+            }
+        }
 
         // 4. For each required bucket, calculate progress
         Student student = studentRepository.findById(studentId)
@@ -98,8 +127,15 @@ public class BucketSatisfactionEngine {
             // 4.1 Filter by grouping code if grouping requirement is specified
             completedCourses = filterCoursesByGrouping(completedCourses, groupingCode, degreePath, student);
 
-            // 4.2 Mandatory course check
-            List<String> missingMandatoryCourses = checkMissingMandatoryCourses(bucketId, degreePath, completedCourses);
+            // 4.2 Mandatory course check (in-memory lookup from prefetched map)
+            List<String> bucketMandatory = mandatoryCoursesByBucket.getOrDefault(bucketId, Collections.emptyList());
+            Set<String> completedCodes = completedCourses.stream()
+                    .map(c -> (String) c.get("courseCode"))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            List<String> missingMandatoryCourses = bucketMandatory.stream()
+                    .filter(code -> !completedCodes.contains(code))
+                    .collect(Collectors.toList());
             boolean mandatorySatisfied = missingMandatoryCourses.isEmpty();
 
             // 4.3 Course Count Limits (max_courses)
@@ -145,10 +181,8 @@ public class BucketSatisfactionEngine {
                 status = "PENDING";
             }
 
-            // 4.6 Upsert student_bucket_progress
-            StudentBucketProgress progress = studentBucketProgressRepository
-                    .findByStudentIdAndBucketIdAndDegreePathId(studentId, bucketId, degreePathId)
-                    .orElse(new StudentBucketProgress());
+            // 4.6 Upsert student_bucket_progress from in-memory map
+            StudentBucketProgress progress = progressMap.getOrDefault(bucketId, new StudentBucketProgress());
 
             progress.setStudent(student);
             progress.setBucket(req.getBucket());
@@ -168,9 +202,11 @@ public class BucketSatisfactionEngine {
             progress.setStatus(status);
             progress.setLastCalculated(LocalDateTime.now());
 
-            studentBucketProgressRepository.save(progress);
             progressList.add(progress);
         }
+
+        // Batch save all progress records at once
+        studentBucketProgressRepository.saveAll(progressList);
 
         return progressList;
     }
@@ -194,9 +230,12 @@ public class BucketSatisfactionEngine {
         Long degreePathId = sdp.getDegreePath().getId();
         DegreePath degreePath = sdp.getDegreePath();
 
-        // Get stored progress
+        // Get stored progress (or trigger evaluation if not yet calculated)
         List<StudentBucketProgress> progressList = studentBucketProgressRepository
                 .findByStudentIdAndDegreePathId(studentId, degreePathId);
+        if (progressList.isEmpty()) {
+            progressList = evaluateBuckets(studentId);
+        }
 
         // Get earned course details
         Map<Long, BucketMappingEngine.BucketCreditsInfo> earnedMap =
@@ -234,6 +273,17 @@ public class BucketSatisfactionEngine {
                 courseInfo.put("isMandatory", m.getIsMandatory());
                 courseInfo.put("semesterOffered", m.getSemesterOffered());
                 coursesByBucket.computeIfAbsent(bId, k -> new ArrayList<>()).add(courseInfo);
+            }
+        }
+
+        Map<Long, List<String>> mandatoryByBucket = new HashMap<>();
+        for (CurriculumCourseMapping m : allMappings) {
+            if (Boolean.TRUE.equals(m.getIsMandatory()) && m.getBucket() != null 
+                    && m.getCurriculumCourse() != null && m.getCurriculumCourse().getCourse() != null) {
+                String cCode = m.getCurriculumCourse().getCourse().getCourseCode();
+                if (cCode != null) {
+                    mandatoryByBucket.computeIfAbsent(m.getBucket().getId(), k -> new ArrayList<>()).add(cCode);
+                }
             }
         }
 
@@ -300,16 +350,20 @@ public class BucketSatisfactionEngine {
             bucketDetail.put("excludedCourses", excludedCourses);
             bucketDetail.put("excludedCoursesCount", excludedCourses.size());
 
-            // Missing mandatory courses
-            List<String> missingMandatory = checkMissingMandatoryCourses(bucketId, degreePath, allCourses);
+            // Missing mandatory courses (in-memory lookup from prefetched map)
+            List<String> bucketMandatory = mandatoryByBucket.getOrDefault(bucketId, Collections.emptyList());
+            Set<String> completedCodes = allCourses.stream()
+                    .map(c -> (String) c.get("courseCode"))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            List<String> missingMandatory = bucketMandatory.stream()
+                    .filter(code -> !completedCodes.contains(code))
+                    .collect(Collectors.toList());
             bucketDetail.put("missingMandatoryCourses", missingMandatory);
 
             // Add pending/available courses for this bucket
             if (!"COMPLETED".equals(progress.getStatus())) {
                 List<Map<String, Object>> availableCourses = coursesByBucket.getOrDefault(bucketId, Collections.emptyList());
-                Set<String> completedCodes = allCourses.stream()
-                        .map(c -> (String) c.get("courseCode"))
-                        .collect(Collectors.toSet());
                 List<Map<String, Object>> pending = new ArrayList<>();
                 for (Map<String, Object> c : availableCourses) {
                     if (!completedCodes.contains(c.get("courseCode"))) {

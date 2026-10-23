@@ -99,28 +99,43 @@ public class BucketMappingEngine {
             }
         }
 
+        // Batch prefetch all mappings for this curriculum version & degree path to eliminate N+1 queries
+        List<CurriculumCourseMapping> allPathMappings;
+        if (curriculumVersionId != null) {
+            allPathMappings = curriculumCourseMappingRepository
+                    .findAllByVersionAndPathOrUniversal(curriculumVersionId, degreePathId);
+        } else {
+            allPathMappings = curriculumCourseMappingRepository
+                    .findAllByPathOrUniversal(degreePathId);
+        }
+
+        Map<String, List<CurriculumCourseMapping>> mappingsByCode = new HashMap<>();
+        for (CurriculumCourseMapping m : allPathMappings) {
+            if (m.getCurriculumCourse() != null && m.getCurriculumCourse().getCourse() != null 
+                    && m.getCurriculumCourse().getCourse().getCourseCode() != null) {
+                String cCode = m.getCurriculumCourse().getCourse().getCourseCode().trim().toUpperCase();
+                mappingsByCode.computeIfAbsent(cCode, k -> new ArrayList<>()).add(m);
+            }
+        }
+
         Map<Long, BucketCreditsInfo> bucketCredits = new HashMap<>();
 
         for (CourseCompletionInfo completed : courseCompletions.values()) {
-            List<CurriculumCourseMapping> mappings;
-            if (curriculumVersionId != null) {
-                mappings = curriculumCourseMappingRepository
-                        .findByVersionAndCourseCodeAndPathOrUniversal(curriculumVersionId, completed.getCourseCode(), degreePathId);
-            } else {
-                mappings = curriculumCourseMappingRepository
-                        .findByCourseCodeAndPathOrUniversal(completed.getCourseCode(), degreePathId);
-            }
+            String courseCodeKey = completed.getCourseCode().trim().toUpperCase();
+            List<CurriculumCourseMapping> mappings = new ArrayList<>(mappingsByCode.getOrDefault(courseCodeKey, Collections.emptyList()));
 
             // If not found in native curriculum, check for explicitly approved cross-program course equivalence
             if (mappings.isEmpty() && curriculumVersionId != null) {
                 List<ProgramCourseEquivalence> approvedEquivalences = programCourseEquivalenceRepository
                         .findApprovedEquivalencesForTarget(curriculumVersionId, completed.getCourseCode());
                 for (ProgramCourseEquivalence pce : approvedEquivalences) {
-                    List<CurriculumCourseMapping> equivMappings = curriculumCourseMappingRepository
-                            .findByVersionAndCourseCodeAndPathOrUniversal(curriculumVersionId, pce.getTargetCourseCode(), degreePathId);
-                    if (!equivMappings.isEmpty()) {
-                        mappings = equivMappings;
-                        break;
+                    if (pce.getTargetCourseCode() != null) {
+                        String targetKey = pce.getTargetCourseCode().trim().toUpperCase();
+                        List<CurriculumCourseMapping> equivMappings = mappingsByCode.get(targetKey);
+                        if (equivMappings != null && !equivMappings.isEmpty()) {
+                            mappings.addAll(equivMappings);
+                            break;
+                        }
                     }
                 }
             }

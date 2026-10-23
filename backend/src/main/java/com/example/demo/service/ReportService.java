@@ -2,6 +2,12 @@ package com.example.demo.service;
 
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 @Service
 @Transactional(readOnly = true)
@@ -29,10 +36,16 @@ public class ReportService {
     private CompletedCourseRepository completedCourseRepository;
 
     @Autowired
+    private StudentCourseRepository studentCourseRepository;
+
+    @Autowired
     private StudentBucketProgressRepository studentBucketProgressRepository;
 
     @Autowired
     private BucketSatisfactionEngine bucketSatisfactionEngine;
+
+    @Autowired
+    private DegreeEligibilityEngine degreeEligibilityEngine;
 
     /**
      * Individual student progress report.
@@ -41,8 +54,21 @@ public class ReportService {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        StudentDegreeStatus status = studentDegreeStatusRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new RuntimeException("No degree evaluation status found for student."));
+        StudentDegreeStatus status = studentDegreeStatusRepository.findByStudentId(studentId).orElse(null);
+        if (status == null) {
+            try {
+                status = degreeEligibilityEngine.evaluateEligibility(studentId);
+            } catch (Exception e) {
+                status = new StudentDegreeStatus();
+                status.setStudent(student);
+                status.setIsDegreeEligible(false);
+                status.setCompletionPercentage(BigDecimal.ZERO);
+                status.setTotalEarnedCredits(0);
+                status.setTotalRequiredCredits(160);
+                status.setBucketsCompleted(0);
+                status.setBucketsTotal(12);
+            }
+        }
 
         List<Map<String, Object>> buckets = bucketSatisfactionEngine.getDetailedBucketProgress(studentId);
         List<CompletedCourse> courses = completedCourseRepository.findByStudentIdOrderByRegisterDateDesc(studentId);
@@ -50,7 +76,7 @@ public class ReportService {
         Map<String, Object> report = new LinkedHashMap<>();
         report.put("studentId", student.getId());
         report.put("studentUsername", student.getStudentId());
-        report.put("studentName", student.getFirstName() + " " + student.getLastName());
+        report.put("studentName", (student.getFirstName() != null ? student.getFirstName() : "") + " " + (student.getLastName() != null ? student.getLastName() : ""));
         report.put("department", student.getDepartment());
         report.put("subDepartment", student.getSubDepartment());
         report.put("specialization", student.getSpecializationName());
@@ -137,14 +163,31 @@ public class ReportService {
                 cell.setCellStyle(headerStyle);
             }
 
-            for (CompletedCourse course : courses) {
-                Row row = sheet.createRow(rowIdx++);
-                row.createCell(0).setCellValue(course.getCourseCode());
-                row.createCell(1).setCellValue(course.getCourseName());
-                row.createCell(2).setCellValue(course.getCredits());
-                row.createCell(3).setCellValue(course.getGrade());
-                row.createCell(4).setCellValue(course.getSemester());
-                row.createCell(5).setCellValue(course.getCompletedDate() != null ? course.getCompletedDate().toString() : "N/A");
+            if (courses != null && !courses.isEmpty()) {
+                for (CompletedCourse course : courses) {
+                    Row row = sheet.createRow(rowIdx++);
+                    row.createCell(0).setCellValue(course.getCourseCode() != null ? course.getCourseCode() : "");
+                    row.createCell(1).setCellValue(course.getCourseName() != null ? course.getCourseName() : "");
+                    row.createCell(2).setCellValue(course.getCredits() != null ? course.getCredits() : 0);
+                    row.createCell(3).setCellValue(course.getGrade() != null ? course.getGrade() : "-");
+                    row.createCell(4).setCellValue(course.getSemester() != null ? course.getSemester() : "-");
+                    row.createCell(5).setCellValue(course.getCompletedDate() != null ? course.getCompletedDate().toString() : "N/A");
+                }
+            } else {
+                List<StudentCourse> studentCourses = studentCourseRepository.findByStudentId(studentId);
+                if (studentCourses.isEmpty()) {
+                    String roll = (String) report.get("studentUsername");
+                    if (roll != null) studentCourses = studentCourseRepository.findByUniversityId(roll);
+                }
+                for (StudentCourse sc : studentCourses) {
+                    Row row = sheet.createRow(rowIdx++);
+                    row.createCell(0).setCellValue(sc.getCourseCode() != null ? sc.getCourseCode() : "");
+                    row.createCell(1).setCellValue(sc.getCourseName() != null ? sc.getCourseName() : "");
+                    row.createCell(2).setCellValue(sc.getCredits() != null ? sc.getCredits().intValue() : 0);
+                    row.createCell(3).setCellValue(sc.getGrade() != null ? sc.getGrade() : "-");
+                    row.createCell(4).setCellValue(sc.getSemester() != null ? sc.getSemester() : "-");
+                    row.createCell(5).setCellValue(sc.getStatus() != null ? sc.getStatus() : "COMPLETED");
+                }
             }
 
             // Adjust columns
@@ -155,6 +198,185 @@ public class ReportService {
             workbook.write(out);
             return out.toByteArray();
         }
+    }
+
+    /**
+     * Graduation Eligibility Audit Report (Official PDF)
+     */
+    public byte[] exportEligibilityAuditPdf(Long studentId) throws Exception {
+        Map<String, Object> report = getStudentReport(studentId);
+        StudentDegreeStatus status = (StudentDegreeStatus) report.get("status");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> buckets = (List<Map<String, Object>>) report.get("buckets");
+        String studentName = (String) report.get("studentName");
+        String rollNumber = (String) report.get("studentUsername");
+        String dept = (String) report.get("department");
+        String spec = (String) report.get("specialization");
+        String pathCode = (status != null && status.getDegreePath() != null) ? status.getDegreePath().getPathCode() : "REGULAR";
+
+        try (PDDocument document = new PDDocument(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
+
+            PDType1Font fontBold = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+            PDType1Font fontRegular = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+
+            try (PDPageContentStream cs = new PDPageContentStream(document, page)) {
+                // Header Banner
+                cs.setNonStrokingColor(139f / 255f, 0f / 255f, 0f / 255f); // #8B0000 Maroon
+                cs.addRect(0, 792, 595.27f, 50);
+                cs.fill();
+
+                // University Title
+                cs.setNonStrokingColor(1f, 1f, 1f);
+                cs.beginText();
+                cs.setFont(fontBold, 15f);
+                cs.newLineAtOffset(40, 816);
+                cs.showText("KL DEEMED TO BE UNIVERSITY");
+                cs.endText();
+
+                cs.beginText();
+                cs.setFont(fontRegular, 8.5f);
+                cs.newLineAtOffset(40, 802);
+                cs.showText("OFFICIAL GRADUATION ELIGIBILITY & DEGREE AUDIT REPORT");
+                cs.endText();
+
+                // Candidate Details Box
+                cs.setNonStrokingColor(248f / 255f, 250f / 255f, 252f / 255f);
+                cs.addRect(36, 680, 523, 95);
+                cs.fill();
+                cs.setStrokingColor(226f / 255f, 232f / 255f, 240f / 255f);
+                cs.addRect(36, 680, 523, 95);
+                cs.stroke();
+
+                cs.setNonStrokingColor(30f / 255f, 41f / 255f, 59f / 255f);
+                drawPdfText(cs, fontBold, 9f, 50, 755, "Student Name:");
+                drawPdfText(cs, fontRegular, 9f, 140, 755, studentName != null ? studentName : "-");
+                drawPdfText(cs, fontBold, 9f, 320, 755, "Roll Number:");
+                drawPdfText(cs, fontRegular, 9f, 410, 755, rollNumber != null ? rollNumber : "-");
+
+                drawPdfText(cs, fontBold, 9f, 50, 735, "Department:");
+                drawPdfText(cs, fontRegular, 9f, 140, 735, dept != null ? dept : "-");
+                drawPdfText(cs, fontBold, 9f, 320, 735, "Degree Path:");
+                drawPdfText(cs, fontRegular, 9f, 410, 735, pathCode != null ? pathCode : "-");
+
+                drawPdfText(cs, fontBold, 9f, 50, 715, "Specialization:");
+                drawPdfText(cs, fontRegular, 9f, 140, 715, spec != null && !spec.isBlank() ? spec : "General Track");
+                drawPdfText(cs, fontBold, 9f, 320, 715, "Date of Audit:");
+                drawPdfText(cs, fontRegular, 9f, 410, 715, LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
+
+                drawPdfText(cs, fontBold, 9f, 50, 695, "Clearance Status:");
+                boolean eligible = status != null && Boolean.TRUE.equals(status.getIsDegreeEligible());
+                if (eligible) {
+                    cs.setNonStrokingColor(22f / 255f, 101f / 255f, 52f / 255f);
+                    drawPdfText(cs, fontBold, 9.5f, 140, 695, "ELIGIBLE FOR DEGREE AWARD");
+                } else {
+                    cs.setNonStrokingColor(180f / 255f, 83f / 255f, 9f / 255f);
+                    drawPdfText(cs, fontBold, 9.5f, 140, 695, "IN PROGRESS / UNDER EVALUATION");
+                }
+                cs.setNonStrokingColor(30f / 255f, 41f / 255f, 59f / 255f);
+                drawPdfText(cs, fontBold, 9f, 320, 695, "Audit Progress:");
+                String pct = (status != null && status.getCompletionPercentage() != null) ? status.getCompletionPercentage().toString() : "0";
+                drawPdfText(cs, fontBold, 9f, 410, 695, pct + "% Completed");
+
+                // Table Header
+                float tableTop = 645;
+                cs.setNonStrokingColor(241f / 255f, 245f / 255f, 249f / 255f);
+                cs.addRect(36, tableTop - 18, 523, 20);
+                cs.fill();
+
+                cs.setNonStrokingColor(71f / 255f, 85f / 255f, 105f / 255f);
+                drawPdfText(cs, fontBold, 8f, 42, tableTop - 13, "BUCKET CODE");
+                drawPdfText(cs, fontBold, 8f, 115, tableTop - 13, "BUCKET / CATEGORY NAME");
+                drawPdfText(cs, fontBold, 8f, 325, tableTop - 13, "REQ");
+                drawPdfText(cs, fontBold, 8f, 375, tableTop - 13, "EARNED");
+                drawPdfText(cs, fontBold, 8f, 435, tableTop - 13, "COUNTED");
+                drawPdfText(cs, fontBold, 8f, 500, tableTop - 13, "STATUS");
+
+                // Table Rows
+                float y = tableTop - 34;
+                if (buckets != null) {
+                    for (Map<String, Object> b : buckets) {
+                        if (y < 130) break;
+                        cs.setStrokingColor(241f / 255f, 245f / 255f, 249f / 255f);
+                        cs.moveTo(36, y - 4);
+                        cs.lineTo(559, y - 4);
+                        cs.stroke();
+
+                        cs.setNonStrokingColor(30f / 255f, 41f / 255f, 59f / 255f);
+                        String bCode = String.valueOf(b.getOrDefault("bucketCode", ""));
+                        String bName = String.valueOf(b.getOrDefault("bucketName", ""));
+                        if (bName.length() > 32) bName = bName.substring(0, 30) + "...";
+                        String req = String.valueOf(b.getOrDefault("requiredCredits", "0"));
+                        String earned = String.valueOf(b.getOrDefault("earnedCredits", "0"));
+                        String counted = String.valueOf(b.getOrDefault("countedCredits", earned));
+                        String bStatus = String.valueOf(b.getOrDefault("status", "PENDING"));
+
+                        drawPdfText(cs, fontBold, 8f, 42, y, bCode);
+                        drawPdfText(cs, fontRegular, 8f, 115, y, bName);
+                        drawPdfText(cs, fontRegular, 8f, 330, y, req);
+                        drawPdfText(cs, fontRegular, 8f, 385, y, earned);
+                        drawPdfText(cs, fontBold, 8f, 445, y, counted);
+
+                        if ("COMPLETED".equalsIgnoreCase(bStatus)) {
+                            cs.setNonStrokingColor(22f / 255f, 101f / 255f, 52f / 255f);
+                            drawPdfText(cs, fontBold, 7.5f, 500, y, "COMPLETED");
+                        } else {
+                            cs.setNonStrokingColor(180f / 255f, 83f / 255f, 9f / 255f);
+                            drawPdfText(cs, fontBold, 7.5f, 500, y, "IN PROGRESS");
+                        }
+
+                        y -= 18;
+                    }
+                }
+
+                // Summary Totals Row
+                cs.setNonStrokingColor(241f / 255f, 245f / 255f, 249f / 255f);
+                cs.addRect(36, y - 6, 523, 18);
+                cs.fill();
+                cs.setNonStrokingColor(15f / 255f, 23f / 255f, 42f / 255f);
+                drawPdfText(cs, fontBold, 8.5f, 42, y, "TOTAL DEGREE CREDITS AUDIT");
+                int totReq = status != null ? status.getTotalRequiredCredits() : 160;
+                int totEarned = status != null ? status.getTotalEarnedCredits() : 0;
+                drawPdfText(cs, fontBold, 8.5f, 330, y, String.valueOf(totReq));
+                drawPdfText(cs, fontBold, 8.5f, 445, y, String.valueOf(totEarned));
+
+                // Certification Statement & Signatures
+                float footerY = 90;
+                cs.setNonStrokingColor(100f / 255f, 116f / 255f, 139f / 255f);
+                drawPdfText(cs, fontRegular, 7.5f, 36, footerY + 20, "This institutional audit report is electronically validated by the CreditCore Degree Audit System.");
+                drawPdfText(cs, fontRegular, 7.5f, 36, footerY + 10, "Any discrepancy should be referred to the Office of the Dean (Academics), KL Deemed to be University.");
+
+                // Signature lines
+                cs.setStrokingColor(148f / 255f, 163f / 255f, 184f / 255f);
+                cs.moveTo(50, footerY - 15);
+                cs.lineTo(170, footerY - 15);
+                cs.stroke();
+                drawPdfText(cs, fontBold, 7.5f, 65, footerY - 26, "Head of Department");
+
+                cs.moveTo(240, footerY - 15);
+                cs.lineTo(360, footerY - 15);
+                cs.stroke();
+                drawPdfText(cs, fontBold, 7.5f, 265, footerY - 26, "Dean (Academics)");
+
+                cs.moveTo(430, footerY - 15);
+                cs.lineTo(550, footerY - 15);
+                cs.stroke();
+                drawPdfText(cs, fontBold, 7.5f, 440, footerY - 26, "Controller of Examinations");
+            }
+
+            document.save(out);
+            return out.toByteArray();
+        }
+    }
+
+    private void drawPdfText(PDPageContentStream cs, PDType1Font font, float fontSize, float x, float y, String text) throws Exception {
+        if (text == null) text = "";
+        cs.beginText();
+        cs.setFont(font, fontSize);
+        cs.newLineAtOffset(x, y);
+        cs.showText(text);
+        cs.endText();
     }
 
     private void createMetaRow(Sheet sheet, int rowIdx, String lbl1, String val1, String lbl2, String val2) {

@@ -85,8 +85,43 @@ public class ReportController {
         try {
             byte[] fileBytes = reportService.exportStudentReportExcel(student.getId());
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=student_progress_report_me.xlsx")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=student_progress_report_" + student.getStudentId() + ".xlsx")
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(fileBytes);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/student/me/eligibility-pdf")
+    public ResponseEntity<byte[]> downloadMyEligibilityPdf() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        Student student = studentRepository.findByStudentId(username)
+                .orElseThrow(() -> new RuntimeException("Student user not found: " + username));
+
+        try {
+            byte[] fileBytes = reportService.exportEligibilityAuditPdf(student.getId());
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Graduation_Eligibility_Audit_" + student.getStudentId() + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(fileBytes);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/student/{id}/eligibility-pdf")
+    public ResponseEntity<byte[]> downloadStudentEligibilityPdf(@PathVariable Long id) {
+        if (!userSecurityService.canAccessStudentData(id)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
+        try {
+            Student student = studentRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Student not found: " + id));
+            byte[] fileBytes = reportService.exportEligibilityAuditPdf(id);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Graduation_Eligibility_Audit_" + student.getStudentId() + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
                     .body(fileBytes);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
