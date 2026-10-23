@@ -37,18 +37,18 @@ export default function StudentDashboard() {
     const studentName = student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.studentId || 'Student';
     const rollNumber = student.studentId || student.username || 'N/A';
     const department = student.department || degreePath.departmentName || degreePath.department || 'N/A';
-    const degreeType = degreePath.degreeTypeName || student.degreeType || 'Regular Track';
+    const degreeName = student.subDepartment || student.degreeType || degreePath.degreeTypeName || 'Regular Track';
     const curriculum = student.curriculum || degreePath.curriculumVersion || 'N/A';
-    const specialization = (degreePath.addonName && degreePath.addonName !== 'N/A' && degreePath.addonName !== 'NONE')
-        ? degreePath.addonName
-        : (student.addonName && student.addonName !== 'N/A' && student.addonName !== 'NONE')
-            ? student.addonName
-            : null;
+    const specializationType = student.specializationType || student.addonType || degreePath.addonTypeName || degreePath.addonType;
+    const specializationName = student.specializationName || student.addonName || degreePath.addonName || degreePath.specializationName;
+    const hasSpecialization = specializationName && !['N/A', 'NONE'].includes(String(specializationName).toUpperCase());
+    const hasSpecializationType = specializationType && !['N/A', 'NONE'].includes(String(specializationType).toUpperCase());
 
     const totalEarned = status.totalEarnedCredits || 0;
     const totalRequired = status.totalRequiredCredits || degreePath.totalRequiredCredits || 0;
     const remainingCredits = Math.max(0, totalRequired - totalEarned);
-    const completionPercentage = status.completionPercentage || Math.min(100, Math.round((totalEarned / totalRequired) * 100));
+    const calculatedPercentage = totalRequired > 0 ? Math.round((totalEarned / totalRequired) * 100) : 0;
+    const completionPercentage = Math.max(0, Math.min(100, Number(status.completionPercentage ?? calculatedPercentage)));
     const isEligible = status.isDegreeEligible || (totalEarned >= totalRequired);
 
     const radius = 80;
@@ -67,6 +67,21 @@ export default function StudentDashboard() {
                         <h1 style={{ fontSize: '2.4rem', margin: '10px 0 6px', fontWeight: 800 }}>
                             Welcome, <span style={{ color: '#FFD700' }}>{studentName}</span>
                         </h1>
+                        <div style={{ display: 'inline-block', background: 'rgba(255, 215, 0, 0.10)', border: '1px solid rgba(255, 215, 0, 0.38)', borderRadius: '10px', padding: '7px 12px', marginBottom: '10px', fontWeight: 800 }}>
+                            <span
+                                title={`${completionPercentage}% degree completion`}
+                                style={{
+                                    background: `linear-gradient(90deg, #FFD700 0%, #FFF3A3 ${completionPercentage}%, rgba(255,255,255,0.50) ${completionPercentage}%, rgba(255,255,255,0.50) 100%)`,
+                                    WebkitBackgroundClip: 'text',
+                                    WebkitTextFillColor: 'transparent',
+                                    backgroundClip: 'text',
+                                    textShadow: completionPercentage > 0 ? `0 0 ${Math.max(3, completionPercentage / 8)}px rgba(255, 215, 0, ${0.25 + completionPercentage / 200})` : 'none',
+                                    transition: 'background 600ms ease, text-shadow 600ms ease'
+                                }}
+                            >
+                                {degreeName} in {department}{hasSpecialization ? ` · ${hasSpecializationType ? `${specializationType}: ` : ''}${specializationName}` : ''}
+                            </span>
+                        </div>
                         <p style={{ margin: 0, opacity: 0.9, fontSize: '1rem', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
                             <span>ID: <strong>{rollNumber}</strong></span>
                             <span>•</span>
@@ -74,11 +89,11 @@ export default function StudentDashboard() {
                             <span>•</span>
                             <span>Curriculum: <strong>{curriculum}</strong></span>
                             <span>•</span>
-                            <span>Degree: <strong>{degreeType}</strong></span>
-                            {specialization && (
+                            <span>Degree: <strong>{degreeName}</strong></span>
+                            {hasSpecialization && (
                                 <>
                                     <span>•</span>
-                                    <span>Specialization: <strong style={{ color: '#FFD700' }}>{specialization}</strong></span>
+                                    <span>{hasSpecializationType ? `${specializationType}: ` : 'Specialization: '}<strong style={{ color: '#FFD700' }}>{specializationName}</strong></span>
                                 </>
                             )}
                         </p>
@@ -94,6 +109,10 @@ export default function StudentDashboard() {
                             <span style={{ fontSize: '1.05rem', fontWeight: 800, color: isEligible ? '#4ADE80' : '#FBBF24', marginTop: '4px', display: 'block' }}>
                                 {isEligible ? '✅ ELIGIBLE' : '⚠️ IN PROGRESS'}
                             </span>
+                        </div>
+                        <div style={{ background: 'rgba(255, 215, 0, 0.15)', padding: '12px 20px', borderRadius: '16px', textAlign: 'center', border: '1px solid rgba(255, 215, 0, 0.42)' }}>
+                            <span style={{ display: 'block', fontSize: '0.78rem', opacity: 0.9, fontWeight: 700 }}>DEGREE COMPLETION</span>
+                            <span style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FFD700' }}>{completionPercentage}%</span>
                         </div>
                     </div>
                 </div>

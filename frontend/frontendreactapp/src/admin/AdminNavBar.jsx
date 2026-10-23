@@ -73,6 +73,12 @@ export default function AdminNavBar() {
                 { path: '/super_admin/addadmin', label: 'Add Admin', icon: '🛡️' },
                 { path: '/super_admin/viewalladmins', label: 'View Admins', icon: '📋' },
             ]
+        },
+        {
+            label: 'Account',
+            items: [
+                { path: '/change-password', label: 'Change Password', icon: '🔐' },
+            ]
         }
     ];
 

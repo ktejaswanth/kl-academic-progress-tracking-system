@@ -4,10 +4,10 @@ import { useStudentData } from './StudentDataContext';
 import './student.css';
 
 export default function DegreeRequirementsView() {
-    const { dashboardData, loading } = useStudentData();
+    const { dashboardData, courses, loading } = useStudentData();
     const [searchParams] = useSearchParams();
     const tabParam = searchParams.get('tab');
-    const [activeTab, setActiveTab] = useState(tabParam || 'all'); // 'all' | 'bucket-progress' | 'remaining'
+    const [activeTab, setActiveTab] = useState(tabParam || 'all'); // 'all' | 'completed' | 'remaining'
 
     useEffect(() => {
         if (tabParam) {
@@ -29,9 +29,31 @@ export default function DegreeRequirementsView() {
     const completedBuckets = buckets.filter(b => b.status === 'COMPLETED' || (b.earnedCredits >= b.requiredCredits));
     const pendingBuckets = buckets.filter(b => b.status !== 'COMPLETED' && (b.earnedCredits < b.requiredCredits));
 
-    const displayedBuckets = activeTab === 'remaining' 
-        ? pendingBuckets 
-        : buckets;
+    const displayedBuckets = activeTab === 'remaining'
+        ? pendingBuckets
+        : activeTab === 'completed'
+            ? completedBuckets
+            : buckets;
+
+    const pendingCourses = Array.from(
+        pendingBuckets.reduce((courseMap, bucket) => {
+            (bucket.pendingCourses || []).forEach((course) => {
+                const courseCode = course.courseCode || course.code || course.courseName;
+                if (!courseCode) return;
+                const existing = courseMap.get(courseCode);
+                courseMap.set(courseCode, {
+                    ...course,
+                    courseCode,
+                    bucketNames: existing ? [...existing.bucketNames, bucket.bucketName] : [bucket.bucketName]
+                });
+            });
+            return courseMap;
+        }, new Map()).values()
+    );
+
+    const backlogCourses = (courses || []).filter((course) =>
+        String(course.status || '').toUpperCase() === 'FAILED' || String(course.grade || '').toUpperCase() === 'F'
+    );
 
     const getPendingReason = (b) => {
         const rem = Math.max(0, b.requiredCredits - b.earnedCredits);
@@ -43,7 +65,7 @@ export default function DegreeRequirementsView() {
     };
 
     return (
-        <div className="student-degree-requirements animate-fade" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem' }}>
+        <div className="student-degree-requirements animate-fade" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ fontSize: '2rem', color: '#1E293B', margin: '0 0 6px', fontWeight: 800 }}>Degree Requirements</h1>
                 <p style={{ color: '#64748B', margin: 0, fontSize: '0.95rem' }}>
@@ -72,7 +94,7 @@ export default function DegreeRequirementsView() {
                     📋 All Requirements ({buckets.length})
                 </button>
                 <button
-                    onClick={() => setActiveTab('bucket-progress')}
+                    onClick={() => setActiveTab('completed')}
                     style={{
                         padding: '12px 20px',
                         fontWeight: 700,
@@ -80,14 +102,14 @@ export default function DegreeRequirementsView() {
                         border: 'none',
                         background: 'transparent',
                         cursor: 'pointer',
-                        color: activeTab === 'bucket-progress' ? '#8B0000' : '#64748B',
-                        borderBottom: activeTab === 'bucket-progress' ? '3px solid #8B0000' : '3px solid transparent',
+                        color: activeTab === 'completed' ? '#8B0000' : '#64748B',
+                        borderBottom: activeTab === 'completed' ? '3px solid #8B0000' : '3px solid transparent',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px'
                     }}
                 >
-                    🪣 Bucket Progress
+                    ✅ Completed Requirements ({completedBuckets.length})
                 </button>
                 <button
                     onClick={() => setActiveTab('remaining')}
@@ -127,8 +149,64 @@ export default function DegreeRequirementsView() {
                 </span>
             </div>
 
+            {/* Actionable pending work: catalog suggestions and failed courses needing reattempt */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem', order: 3 }}>
+                <section className="glass-card" style={{ padding: '1.5rem', background: 'white', borderTop: '4px solid #F59E0B' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
+                        <div>
+                            <h3 style={{ margin: 0, color: '#1E293B', fontSize: '1.1rem' }}>Courses Still Available to Take</h3>
+                            <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '0.85rem' }}>Suggested curriculum courses for incomplete requirement buckets.</p>
+                        </div>
+                        <span style={{ background: '#FEF3C7', color: '#92400E', padding: '5px 10px', borderRadius: '14px', fontWeight: 800, whiteSpace: 'nowrap' }}>{pendingCourses.length}</span>
+                    </div>
+
+                    {pendingCourses.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', maxHeight: '265px', overflowY: 'auto' }}>
+                            {pendingCourses.map((course, index) => (
+                                <div key={`${course.courseCode}-${index}`} style={{ padding: '10px 12px', border: '1px solid #FDE68A', background: '#FFFBEB', borderRadius: '10px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', alignItems: 'start' }}>
+                                        <div>
+                                            <strong style={{ color: '#8B0000', fontFamily: 'monospace' }}>{course.courseCode}</strong>
+                                            <span style={{ color: '#334155' }}> — {course.courseName || course.courseTitle || 'Course name not available'}</span>
+                                        </div>
+                                        {course.credits != null && <span style={{ color: '#92400E', fontWeight: 700, whiteSpace: 'nowrap' }}>{course.credits} Cr</span>}
+                                    </div>
+                                    <small style={{ display: 'block', color: '#64748B', marginTop: '4px' }}>Counts toward: {course.bucketNames.join(', ')}</small>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{ padding: '1.5rem', textAlign: 'center', color: '#64748B', background: '#F8FAFC', borderRadius: '10px' }}>No pending course suggestions are currently available.</div>
+                    )}
+                </section>
+
+                <section className="glass-card" style={{ padding: '1.5rem', background: 'white', borderTop: `4px solid ${backlogCourses.length > 0 ? '#DC2626' : '#10B981'}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
+                        <div>
+                            <h3 style={{ margin: 0, color: '#1E293B', fontSize: '1.1rem' }}>Backlogs / Reattempts</h3>
+                            <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '0.85rem' }}>Failed courses that need to be cleared before degree completion.</p>
+                        </div>
+                        <span style={{ background: backlogCourses.length > 0 ? '#FEE2E2' : '#DCFCE7', color: backlogCourses.length > 0 ? '#991B1B' : '#166534', padding: '5px 10px', borderRadius: '14px', fontWeight: 800, whiteSpace: 'nowrap' }}>{backlogCourses.length}</span>
+                    </div>
+
+                    {backlogCourses.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '9px', maxHeight: '265px', overflowY: 'auto' }}>
+                            {backlogCourses.map((course, index) => (
+                                <div key={`${course.id || course.courseCode}-${index}`} style={{ padding: '10px 12px', border: '1px solid #FECACA', background: '#FFF5F5', borderRadius: '10px' }}>
+                                    <strong style={{ color: '#991B1B', fontFamily: 'monospace' }}>{course.courseCode}</strong>
+                                    <span style={{ color: '#334155' }}> — {course.courseName}</span>
+                                    <small style={{ display: 'block', color: '#B91C1C', marginTop: '4px' }}>Grade: {course.grade || 'F'} · {course.credits || 0} credits · Reattempt required</small>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div style={{ padding: '1.5rem', textAlign: 'center', color: '#166534', background: '#F0FDF4', borderRadius: '10px', fontWeight: 600 }}>No backlogs found. Keep up the good work.</div>
+                    )}
+                </section>
+            </div>
+
             {/* Requirements Cards */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', order: 2 }}>
                 {displayedBuckets.map((b, idx) => {
                     const rem = Math.max(0, b.requiredCredits - b.earnedCredits);
                     const isDone = b.status === 'COMPLETED' || rem === 0;
@@ -198,13 +276,13 @@ export default function DegreeRequirementsView() {
                             </div>
 
                             {/* Enrolled Courses in this Bucket */}
-                            {b.courses && b.courses.length > 0 && (
+                            {(b.completedCourses || b.courses)?.length > 0 && (
                                 <div style={{ marginTop: '1.2rem', borderTop: '1px solid #F1F5F9', paddingTop: '1rem' }}>
                                     <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                                        Satisfying Courses Completed ({b.courses.length}):
+                                        Satisfying Courses Completed ({(b.completedCourses || b.courses).length}):
                                     </span>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                        {b.courses.map((c, i) => (
+                                        {(b.completedCourses || b.courses).map((c, i) => (
                                             <span key={i} style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '4px 10px', borderRadius: '8px', fontSize: '0.82rem' }}>
                                                 <strong style={{ color: '#8B0000' }}>{c.courseCode}</strong> — {c.courseName} ({c.credits} Cr)
                                             </span>

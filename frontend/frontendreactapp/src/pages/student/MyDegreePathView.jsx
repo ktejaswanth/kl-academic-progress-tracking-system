@@ -16,6 +16,15 @@ export default function MyDegreePathView() {
     const student = dashboardData?.student || {};
     const degreePath = dashboardData?.degreePath || {};
     const status = dashboardData?.degreeStatus || {};
+    const department = student.department || degreePath.departmentName || degreePath.department || 'Not assigned';
+    const degreeName = student.subDepartment || student.degreeType || degreePath.degreeTypeName || 'Not assigned';
+    const specializationType = student.specializationType || student.addonType || degreePath.addonTypeName || degreePath.addonType;
+    const specializationName = student.specializationName || student.addonName || degreePath.addonName || degreePath.specializationName;
+    const hasSpecialization = specializationName && !['N/A', 'NONE'].includes(String(specializationName).toUpperCase());
+    const totalRequiredCredits = Number(status.totalRequiredCredits ?? degreePath.totalRequiredCredits ?? 0);
+    const totalEarnedCredits = Number(status.totalEarnedCredits ?? 0);
+    const calculatedPercentage = totalRequiredCredits > 0 ? Math.round((totalEarnedCredits / totalRequiredCredits) * 100) : 0;
+    const completionPercentage = Math.max(0, Math.min(100, Number(status.completionPercentage ?? calculatedPercentage)));
 
     const pathNodes = [
         { label: 'Programme', value: 'B.Tech (Bachelor of Technology)', icon: '🎓', desc: 'Core 4-Year Undergraduate Degree' },
@@ -24,6 +33,19 @@ export default function MyDegreePathView() {
         { label: 'Degree Type', value: degreePath.degreeTypeName || 'Regular B.Tech Honours Track', icon: '📜', desc: 'Degree Classification Track' },
         { label: 'Specialization / Minor', value: degreePath.addonName || degreePath.specializationName || 'AI & Machine Learning (Integrated)', icon: '⭐', desc: 'Discipline-Specific Concentration' },
     ];
+
+    const displayPathNodes = pathNodes.map((node, index) => {
+        if (index === 0) return { ...node, value: degreePath.programName || student.program || node.value };
+        if (index === 1) return { ...node, value: department };
+        if (index === 2) return { ...node, value: student.academicYear || student.curriculum || degreePath.curriculumVersion || 'Not assigned' };
+        if (index === 3) return { ...node, value: degreeName, desc: 'Student degree classification' };
+        return {
+            ...node,
+            label: specializationType || 'Specialization / Minor',
+            value: hasSpecialization ? specializationName : 'Not selected',
+            desc: hasSpecialization ? 'Student specialization selection' : 'No specialization is assigned'
+        };
+    });
 
     return (
         <div className="student-degree-path animate-fade" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem' }}>
@@ -39,7 +61,7 @@ export default function MyDegreePathView() {
                 <h3 style={{ margin: '0 0 1.8rem', color: '#1E293B', fontSize: '1.25rem' }}>Academic Degree Structure Flow</h3>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', position: 'relative' }}>
-                    {pathNodes.map((node, idx) => (
+                    {displayPathNodes.map((node, idx) => (
                         <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
                             {/* Step Indicator */}
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -81,7 +103,7 @@ export default function MyDegreePathView() {
                 <div className="glass-card" style={{ padding: '2rem', background: 'white' }}>
                     <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Total Path Credits</span>
                     <h3 style={{ margin: '6px 0', fontSize: '2.2rem', color: '#8B0000' }}>
-                        {degreePath.totalRequiredCredits || 163} <span style={{ fontSize: '1rem', color: '#64748B' }}>Credits</span>
+                        {totalRequiredCredits} <span style={{ fontSize: '1rem', color: '#64748B' }}>Credits</span>
                     </h3>
                     <p style={{ margin: 0, fontSize: '0.88rem', color: '#475569' }}>
                         Required for regular degree conferral under this curriculum.
@@ -91,10 +113,23 @@ export default function MyDegreePathView() {
                 <div className="glass-card" style={{ padding: '2rem', background: 'white' }}>
                     <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Credits Satisfied</span>
                     <h3 style={{ margin: '6px 0', fontSize: '2.2rem', color: '#059669' }}>
-                        {status.totalEarnedCredits || 0} <span style={{ fontSize: '1rem', color: '#64748B' }}>Credits</span>
+                        {totalEarnedCredits} <span style={{ fontSize: '1rem', color: '#64748B' }}>Credits</span>
                     </h3>
                     <p style={{ margin: 0, fontSize: '0.88rem', color: '#475569' }}>
                         Successfully completed and audited towards your graduation requirement.
+                    </p>
+                </div>
+
+                <div className="glass-card" style={{ padding: '2rem', background: 'white' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Degree Completion</span>
+                    <h3 style={{ margin: '6px 0', fontSize: '2.2rem', color: '#8B0000' }}>
+                        {completionPercentage}%
+                    </h3>
+                    <div style={{ width: '100%', height: '8px', background: '#E2E8F0', borderRadius: '6px', overflow: 'hidden', margin: '10px 0' }}>
+                        <div style={{ width: `${completionPercentage}%`, height: '100%', background: 'linear-gradient(90deg, #8B0000, #D4AF37)', borderRadius: '6px' }}></div>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.88rem', color: '#475569' }}>
+                        Live progress calculated from credits earned against your degree requirement.
                     </p>
                 </div>
 

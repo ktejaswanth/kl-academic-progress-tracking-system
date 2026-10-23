@@ -62,7 +62,7 @@ export default function StudentNavBar() {
             toggle: () => setReqSubmenuOpen(!reqSubmenuOpen),
             subItems: [
                 { path: '/student/requirements?tab=all', label: 'All Requirements' },
-                { path: '/student/requirements?tab=bucket-progress', label: 'Bucket Progress' },
+                { path: '/student/requirements?tab=completed', label: 'Completed Requirements' },
                 { path: '/student/requirements?tab=remaining', label: 'Remaining Requirements' },
             ]
         },
