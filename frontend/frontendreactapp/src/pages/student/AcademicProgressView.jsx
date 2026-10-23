@@ -14,10 +14,22 @@ export default function AcademicProgressView() {
         );
     }
 
+    const student = dashboardData?.student || {};
     const status = dashboardData?.degreeStatus || dashboardData?.status || {};
     const degreePath = dashboardData?.degreePath || {};
     const buckets = dashboardData?.buckets || [];
     const semesters = dashboardData?.semesterPerformance || [];
+
+    const rawDept = student.department || degreePath.department || 'Not Available';
+    const departmentDisplay = (rawDept !== 'Not Available' && !rawDept.toUpperCase().includes('DEPARTMENT')) 
+        ? `${rawDept} Department` 
+        : rawDept;
+    const curriculumDisplay = student.curriculum || degreePath.curriculum || 'Y23 Regulation';
+    const degreeTypeDisplay = student.degreeType || degreePath.degreeTypeName || 'Regular';
+    const rawSpec = student.specialization || degreePath.specialization || student.addonName || degreePath.addonName;
+    const specializationDisplay = (rawSpec && rawSpec !== 'N/A' && rawSpec !== 'NONE' && rawSpec !== 'Not Available')
+        ? rawSpec
+        : 'Not Available';
 
     const totalEarned = status.totalEarnedCredits || 0;
     const totalRequired = status.totalRequiredCredits || degreePath.totalRequiredCredits || 163;
@@ -32,9 +44,18 @@ export default function AcademicProgressView() {
         <div className="student-academic-progress animate-fade" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem' }}>
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ fontSize: '2rem', color: '#1E293B', margin: '0 0 6px', fontWeight: 800 }}>Academic Progress Audit</h1>
-                <p style={{ color: '#64748B', margin: 0, fontSize: '0.95rem' }}>
+                <p style={{ color: '#64748B', margin: '0 0 8px', fontSize: '0.95rem' }}>
                     Detailed degree trajectory across requirement buckets and academic semesters
                 </p>
+                <div style={{ fontSize: '0.9rem', color: '#8B0000', fontWeight: 700, display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                    <span>{departmentDisplay}</span>
+                    <span>•</span>
+                    <span>Curriculum: <strong>{curriculumDisplay}</strong></span>
+                    <span>•</span>
+                    <span>Degree: <strong>{degreeTypeDisplay}</strong></span>
+                    <span>•</span>
+                    <span>Specialization: <strong>{specializationDisplay}</strong></span>
+                </div>
             </div>
 
             {/* Overall Metric Cards */}

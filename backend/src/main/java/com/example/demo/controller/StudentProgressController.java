@@ -25,6 +25,7 @@ public class StudentProgressController {
     @Autowired private StudentRepository studentRepository;
     @Autowired private StudentCourseRepository studentCourseRepository;
     @Autowired private StudentDegreeStatusRepository studentDegreeStatusRepository;
+    @Autowired private SpecializationRepository specializationRepository;
     @Autowired private com.example.demo.service.UserSecurityService userSecurityService;
 
     @GetMapping("/dashboard")
@@ -46,7 +47,104 @@ public class StudentProgressController {
 
         Map<String, Object> response = new LinkedHashMap<>();
 
-        // 1. Student Identity Info
+        // 1. Resolve Assigned Degree Path and Master Table Relationships
+        Optional<StudentDegreePath> sdpOpt = degreePathEngine.getStudentPath(studentId);
+        if (sdpOpt.isEmpty()) {
+            try {
+                degreePathEngine.resolveAndAssignPath(studentId);
+                sdpOpt = degreePathEngine.getStudentPath(studentId);
+            } catch (Exception e) {
+                // Best effort path resolution
+            }
+        }
+
+        DegreePath path = sdpOpt.map(StudentDegreePath::getDegreePath).orElse(null);
+
+        // Map Department: prioritize degree_paths -> department_master, fallback to student.department
+        String resolvedDeptCode = null;
+        String resolvedDeptName = null;
+        if (path != null && path.getDepartment() != null) {
+            resolvedDeptCode = path.getDepartment().getDeptCode();
+            resolvedDeptName = path.getDepartment().getDeptName();
+        } else if (student.getDepartment() != null && !student.getDepartment().isBlank()) {
+            resolvedDeptCode = student.getDepartment().trim();
+        }
+        if (resolvedDeptCode == null || resolvedDeptCode.isBlank() || "H".equalsIgnoreCase(resolvedDeptCode)) {
+            resolvedDeptCode = "Not Available";
+        }
+        if (resolvedDeptName == null) {
+            if ("AIDS".equalsIgnoreCase(resolvedDeptCode)) {
+                resolvedDeptName = "Artificial Intelligence and Data Science";
+            } else if ("CSE".equalsIgnoreCase(resolvedDeptCode)) {
+                resolvedDeptName = "Computer Science and Engineering";
+            } else {
+                resolvedDeptName = resolvedDeptCode;
+            }
+        }
+
+        // Map Curriculum: prioritize regulation_master.reg_code, curriculum_versions, or student.academic_year
+        String resolvedCurriculum = null;
+        if (path != null && path.getRegulation() != null && path.getRegulation().getRegCode() != null) {
+            resolvedCurriculum = path.getRegulation().getRegCode().trim() + " Regulation";
+        } else if (path != null && path.getCurriculumVersion() != null && path.getCurriculumVersion().getRegulation() != null) {
+            resolvedCurriculum = path.getCurriculumVersion().getRegulation().trim() + " Regulation";
+        } else if (student.getAcademicYear() != null && !student.getAcademicYear().isBlank()) {
+            String ay = student.getAcademicYear().trim().toUpperCase();
+            resolvedCurriculum = (ay.startsWith("Y") ? ay : "Y" + ay) + " Regulation";
+        } else {
+            resolvedCurriculum = "Not Available";
+        }
+
+        // Map Degree: prioritize degree_type_master.type_name, fallback to student.sub_department
+        String resolvedDegreeType = null;
+        if (path != null && path.getDegreeType() != null && path.getDegreeType().getTypeName() != null) {
+            resolvedDegreeType = path.getDegreeType().getTypeName().trim();
+        } else if (student.getSubDepartment() != null && !student.getSubDepartment().isBlank()) {
+            String sub = student.getSubDepartment().trim().toUpperCase();
+            if (sub.contains("HONOR")) {
+                resolvedDegreeType = "Honors";
+            } else if (sub.contains("HTE")) {
+                resolvedDegreeType = "Honors through Experiential Learning";
+            } else if (sub.contains("HTI")) {
+                resolvedDegreeType = "Honors through Innovation";
+            } else if (sub.contains("HTR")) {
+                resolvedDegreeType = "Honors through Research";
+            } else if (sub.contains("REGULAR")) {
+                resolvedDegreeType = "Regular";
+            } else {
+                resolvedDegreeType = student.getSubDepartment().trim();
+            }
+        } else {
+            resolvedDegreeType = "Regular";
+        }
+
+        // Map Specialization: resolve official specialization from specializations master table
+        String rawSpec = student.getSpecializationName();
+        if (rawSpec != null) {
+            rawSpec = rawSpec.replace('\u00A0', ' ').trim();
+        }
+        Specialization studentSpec = null;
+        if (path != null && path.getSpecialization() != null) {
+            studentSpec = path.getSpecialization();
+        } else if (rawSpec != null && !rawSpec.isBlank() && !"N/A".equalsIgnoreCase(rawSpec) && !"NONE".equalsIgnoreCase(rawSpec) && !rawSpec.equalsIgnoreCase(student.getStudentId())) {
+            studentSpec = specializationRepository.findByNameIgnoreCase(rawSpec).orElse(null);
+            if (studentSpec == null) {
+                studentSpec = specializationRepository.findByCodeIgnoreCase(rawSpec).orElse(null);
+            }
+        }
+
+        String resolvedSpecialization;
+        if (studentSpec != null) {
+            resolvedSpecialization = studentSpec.getName();
+        } else if (rawSpec != null && !rawSpec.isBlank() && !"N/A".equalsIgnoreCase(rawSpec) && !"NONE".equalsIgnoreCase(rawSpec) && !rawSpec.equalsIgnoreCase(student.getStudentId())) {
+            resolvedSpecialization = rawSpec;
+        } else if (path != null && path.getAddonName() != null && !path.getAddonName().isBlank() && !"NONE".equalsIgnoreCase(path.getAddonName()) && !"N/A".equalsIgnoreCase(path.getAddonName())) {
+            resolvedSpecialization = path.getAddonName();
+        } else {
+            resolvedSpecialization = "Not Available";
+        }
+
+        // 2. Student Identity Info
         Map<String, Object> studentInfo = new LinkedHashMap<>();
         studentInfo.put("studentId", student.getId());
         studentInfo.put("username", student.getStudentId());
@@ -56,10 +154,9 @@ public class StudentProgressController {
                 : ((student.getFirstName() != null ? student.getFirstName() : "") + " " + (student.getLastName() != null ? student.getLastName() : "")).trim();
         studentInfo.put("fullName", fullName.isEmpty() ? student.getStudentId() : fullName);
         studentInfo.put("email", student.getEmail());
-        studentInfo.put("department", student.getDepartment() != null ? student.getDepartment() : "CSE");
+        studentInfo.put("department", resolvedDeptCode);
+        studentInfo.put("departmentName", resolvedDeptName);
         studentInfo.put("subDepartment", student.getSubDepartment());
-        studentInfo.put("specializationType", student.getSpecializationType());
-        studentInfo.put("specializationName", student.getSpecializationName());
         studentInfo.put("academicYear", student.getAcademicYear());
         // Fetch courses for academic calculations and semester determination
         List<StudentCourse> studentCourses = studentCourseRepository.findByStudentId(studentId);
@@ -70,41 +167,38 @@ public class StudentProgressController {
 
         studentInfo.put("program", "B.Tech");
         studentInfo.put("batch", student.getAcademicYear() != null ? student.getAcademicYear() : "N/A");
-        studentInfo.put("curriculum", "Y23 Regulation");
-        studentInfo.put("degreeType", student.getSubDepartment() != null ? student.getSubDepartment() : "REGULAR");
+        studentInfo.put("curriculum", resolvedCurriculum);
+        studentInfo.put("degreeType", resolvedDegreeType);
+        studentInfo.put("specialization", resolvedSpecialization);
+        studentInfo.put("specializationType", student.getSpecializationType() != null ? student.getSpecializationType() : "NONE");
         studentInfo.put("addonType", student.getSpecializationType() != null ? student.getSpecializationType() : "NONE");
-        studentInfo.put("addonName", student.getSpecializationName() != null && !student.getSpecializationName().isBlank() ? student.getSpecializationName() : "N/A");
+        studentInfo.put("addonName", resolvedSpecialization);
         studentInfo.put("currentSemester", currentSemester);
         response.put("student", studentInfo);
 
-        // 2. Assigned Degree Path
-        Optional<StudentDegreePath> sdpOpt = degreePathEngine.getStudentPath(studentId);
-        if (sdpOpt.isEmpty()) {
-            try {
-                degreePathEngine.resolveAndAssignPath(studentId);
-                sdpOpt = degreePathEngine.getStudentPath(studentId);
-            } catch (Exception e) {
-                response.put("error", "No degree path assigned: " + e.getMessage());
-                return ResponseEntity.ok(response);
-            }
+        // 3. Degree Path Info
+        if (path != null) {
+            Map<String, Object> pathInfo = new LinkedHashMap<>();
+            pathInfo.put("pathId", path.getId());
+            pathInfo.put("pathCode", path.getPathCode());
+            pathInfo.put("department", resolvedDeptCode);
+            pathInfo.put("departmentName", resolvedDeptName);
+            pathInfo.put("curriculum", resolvedCurriculum);
+            pathInfo.put("curriculumVersion", resolvedCurriculum);
+            pathInfo.put("degreeType", path.getDegreeType() != null ? path.getDegreeType().getTypeCode() : "REGULAR");
+            pathInfo.put("degreeTypeName", resolvedDegreeType);
+            pathInfo.put("addonType", path.getAddonType() != null ? path.getAddonType().getAddonCode() : "NONE");
+            pathInfo.put("specialization", resolvedSpecialization);
+            pathInfo.put("specializationName", resolvedSpecialization);
+            pathInfo.put("addonName", resolvedSpecialization);
+            pathInfo.put("totalRequiredCredits", path.getTotalCredits());
+            response.put("degreePath", pathInfo);
+        } else {
+            response.put("error", "No degree path assigned");
+            return ResponseEntity.ok(response);
         }
 
-        DegreePath path = sdpOpt.get().getDegreePath();
-        Map<String, Object> pathInfo = new LinkedHashMap<>();
-        pathInfo.put("pathId", path.getId());
-        pathInfo.put("pathCode", path.getPathCode());
-        pathInfo.put("department", path.getDepartment() != null ? path.getDepartment().getDeptCode() : "N/A");
-        pathInfo.put("departmentName", path.getDepartment() != null ? path.getDepartment().getDeptName() : "N/A");
-        pathInfo.put("degreeType", path.getDegreeType() != null ? path.getDegreeType().getTypeCode() : "REGULAR");
-        pathInfo.put("degreeTypeName", path.getDegreeType() != null ? path.getDegreeType().getTypeName() : "Regular");
-        pathInfo.put("addonType", path.getAddonType() != null ? path.getAddonType().getAddonCode() : "NONE");
-        pathInfo.put("addonTypeName", path.getAddonType() != null ? path.getAddonType().getAddonName() : "NONE");
-        pathInfo.put("curriculumVersion", path.getCurriculumVersion() != null ? path.getCurriculumVersion().getVersionName() : student.getAcademicYear());
-        pathInfo.put("programName", path.getCurriculumVersion() != null ? path.getCurriculumVersion().getProgramName() : "B.Tech");
-        pathInfo.put("totalRequiredCredits", path.getTotalCredits());
-        response.put("degreePath", pathInfo);
-
-        // 3. Evaluate Eligibility & Buckets
+        // 4. Evaluate Eligibility & Buckets
         StudentDegreeStatus status;
         Optional<StudentDegreeStatus> existingStatusOpt = studentDegreeStatusRepository.findByStudentId(studentId);
         if (existingStatusOpt.isPresent() && existingStatusOpt.get().getLastEvaluated() != null) {
@@ -114,16 +208,16 @@ public class StudentProgressController {
         }
         response.put("degreeStatus", status);
 
-        // 4. Bucket Progress List (with detailed courses)
+        // 5. Bucket Progress List (with detailed courses)
         List<Map<String, Object>> buckets = bucketSatisfactionEngine.getDetailedBucketProgress(studentId);
         response.put("buckets", buckets);
 
-        // 5. Academic Performance (SGPA, CGPA, Semester history)
+        // 6. Academic Performance (SGPA, CGPA, Semester history)
         Map<String, Object> perf = calculateAcademicPerformance(studentId, student.getStudentId());
         response.put("cgpa", perf.get("cgpa"));
         response.put("semesterPerformance", perf.get("semesters"));
 
-        // 6. Natural Language UX narrative & Graduation Readiness explanation
+        // 7. Natural Language UX narrative & Graduation Readiness explanation
         int totalRequired = status.getTotalRequiredCredits();
         int totalEarned = status.getTotalEarnedCredits();
         int remaining = Math.max(0, totalRequired - totalEarned);
@@ -131,16 +225,33 @@ public class StudentProgressController {
         response.put("narrative", narrative);
         response.put("graduationReadiness", narrative.get("graduationReadiness"));
 
-        // 7. Recommended Courses ("What Should I Take Next?")
+        // 8. Recommended Courses ("What Should I Take Next?")
         List<Map<String, Object>> recommendedCourses = buildRecommendedCourses(buckets);
         response.put("recommendedCourses", recommendedCourses);
 
-        // 8. Academic Notifications
+        // 9. Academic Notifications
         response.put("notifications", buildNotifications(remaining, narrative));
 
-        // 9. Specialization Progress if applicable
-        if (path.getSpecialization() != null) {
-            Map<String, Object> specProgress = specializationProgressEngine.calculateSpecializationProgress(studentId, path.getSpecialization().getId());
+        // 10. Specialization Progress from Master Table
+        Long specIdToCalculate = null;
+        if (studentSpec != null) {
+            specIdToCalculate = studentSpec.getId();
+        } else if (path.getSpecialization() != null) {
+            specIdToCalculate = path.getSpecialization().getId();
+        }
+
+        if (specIdToCalculate != null) {
+            Map<String, Object> specProgress = specializationProgressEngine.calculateSpecializationProgress(studentId, specIdToCalculate);
+            response.put("specializationProgress", specProgress);
+        } else if (!"Not Available".equalsIgnoreCase(resolvedSpecialization)) {
+            Map<String, Object> specProgress = new LinkedHashMap<>();
+            specProgress.put("status", "IN_PROGRESS");
+            specProgress.put("specializationName", resolvedSpecialization);
+            specProgress.put("requiredCredits", 20.0);
+            specProgress.put("earnedCredits", 0.0);
+            specProgress.put("remainingCredits", 20.0);
+            specProgress.put("progressPercentage", 0);
+            specProgress.put("completedCourses", Collections.emptyList());
             response.put("specializationProgress", specProgress);
         } else {
             response.put("specializationProgress", Map.of("status", "NOT_APPLICABLE"));
@@ -359,27 +470,75 @@ public class StudentProgressController {
         return narrativeMap;
     }
 
+    private String resolveBucketCategory(String bucketCode, String bucketName) {
+        String bc = bucketCode != null ? bucketCode.trim().toUpperCase() : "";
+        String bn = bucketName != null ? bucketName.trim().toUpperCase() : "";
+        String combined = bc + " " + bn;
+
+        if (combined.contains("HAS") || combined.contains("HUMANITIES") || combined.contains("MANAGEMENT")) return "HAS";
+        if (combined.contains("BSC") || combined.contains("BASIC SCIENCE") || combined.contains("MATH") || combined.contains("SCIENCE ELECTIVE")) return "BSC";
+        if (combined.contains("ESC") || combined.contains("ENGINEERING SCIENCE")) return "ESC";
+        if (bc.startsWith("FC") || combined.contains("FLEXI CORE") || combined.contains("FCC") || bc.startsWith("HFC")) return "FCC";
+        if (combined.contains("PCC") || combined.contains("PROFESSIONAL CORE")) return "PCC";
+        if (combined.contains("PEC") || combined.contains("ELECTIVE") || bc.startsWith("PE-") || bc.startsWith("PE1") || bc.startsWith("PE2") || bc.startsWith("PE3") || bc.startsWith("PE4") || bc.startsWith("PE5") || bc.startsWith("HEC")) return "PEC";
+        if (combined.contains("SDC") || combined.contains("SDP") || combined.contains("SKILL")) return "SDC";
+        if (combined.contains("PRI") || combined.contains("PROJECT") || combined.contains("INTERNSHIP") || combined.contains("RESEARCH")) return "PRI";
+        if (combined.contains("OEC") || bc.startsWith("OE") || combined.contains("OPEN ELECTIVE")) return "OEC";
+        if (combined.contains("SIL") || combined.contains("SELF") || combined.contains("IMMERSIVE")) return "SIL";
+        return "PCC";
+    }
+
+    private String getCategoryFullName(String categoryCode) {
+        if (categoryCode == null) return "General Requirement";
+        switch (categoryCode.toUpperCase()) {
+            case "HAS": return "Humanities, Arts and Social Sciences";
+            case "BSC": return "Basic Science Courses";
+            case "ESC": return "Engineering Science Courses";
+            case "FCC": return "Flexi Core Courses";
+            case "PCC": return "Professional Core Courses";
+            case "PEC": return "Professional Elective Courses";
+            case "SDC": return "Skill Development Courses";
+            case "PRI": return "Project Research and Internship";
+            case "OEC": return "Open Elective Courses";
+            case "SIL": return "Social Immersive Learning";
+            default: return categoryCode;
+        }
+    }
+
     private List<Map<String, Object>> buildRecommendedCourses(List<Map<String, Object>> buckets) {
         List<Map<String, Object>> recommendedCourses = new ArrayList<>();
         if (buckets != null) {
+            Set<String> seenCodes = new HashSet<>();
             for (Map<String, Object> b : buckets) {
                 if (!"COMPLETED".equalsIgnoreCase(String.valueOf(b.getOrDefault("status", "")))) {
+                    String bCode = String.valueOf(b.getOrDefault("bucketCode", ""));
+                    String bName = String.valueOf(b.getOrDefault("bucketName", bCode));
+                    String catCode = resolveBucketCategory(bCode, bName);
+                    String catName = getCategoryFullName(catCode);
+
                     @SuppressWarnings("unchecked")
                     List<Map<String, Object>> pending = (List<Map<String, Object>>) b.get("pendingCourses");
                     if (pending != null) {
+                        int countInThisBucket = 0;
                         for (Map<String, Object> c : pending) {
-                            Map<String, Object> rec = new LinkedHashMap<>(c);
-                            rec.put("bucketCode", b.get("bucketCode"));
-                            rec.put("bucketName", b.get("bucketName"));
-                            rec.put("eligibility", "Eligible - Recommended for upcoming registration");
-                            rec.put("recommendationRationale", "Satisfies required credits in " + b.get("bucketName"));
-                            rec.put("prerequisites", "Satisfied / None");
-                            recommendedCourses.add(rec);
-                            if (recommendedCourses.size() >= 12) break;
+                            String cCode = c.get("courseCode") != null ? String.valueOf(c.get("courseCode")).trim().toUpperCase() : "";
+                            if (!cCode.isEmpty() && seenCodes.add(cCode)) {
+                                Map<String, Object> rec = new LinkedHashMap<>(c);
+                                rec.put("bucketCode", bCode);
+                                rec.put("bucketName", bName);
+                                rec.put("categoryCode", catCode);
+                                rec.put("categoryName", catName);
+                                rec.put("eligibility", "Eligible - Recommended for upcoming registration");
+                                rec.put("recommendationRationale", "Satisfies required credits in " + bName);
+                                rec.put("recommendationReason", "Satisfies required credits in " + bName);
+                                rec.put("prerequisites", "Satisfied / None");
+                                recommendedCourses.add(rec);
+                                countInThisBucket++;
+                                if (countInThisBucket >= 8) break; // Allow up to 8 top recommended courses per bucket
+                            }
                         }
                     }
                 }
-                if (recommendedCourses.size() >= 12) break;
             }
         }
         return recommendedCourses;

@@ -1,66 +1,89 @@
 import React from 'react';
-import { useStudentData } from './StudentDataContext';
 import './student.css';
 
 export default function NotificationsView() {
-    const { dashboardData, loading } = useStudentData();
-
-    if (loading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#8B0000' }}>
-                <div className="spinner" style={{ width: '40px', height: '40px', borderTopColor: '#8B0000', borderWidth: '3px' }}></div>
-            </div>
-        );
-    }
-
-    const allNotifications = dashboardData?.notifications || [];
-
     return (
         <div className="student-notifications animate-fade" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem' }}>
             <div style={{ marginBottom: '2rem' }}>
-                <h1 style={{ fontSize: '2rem', color: '#1E293B', margin: '0 0 6px', fontWeight: 800 }}>Academic Notifications & Alerts</h1>
+                <h1 style={{ fontSize: '2rem', color: '#1E293B', margin: '0 0 6px', fontWeight: 800 }}>Notifications</h1>
                 <p style={{ color: '#64748B', margin: 0, fontSize: '0.95rem' }}>
-                    Institutional advisories, prerequisite updates, and graduation readiness notices
+                    Institutional advisories, academic deadlines, and milestone updates
                 </p>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {allNotifications.length > 0 ? (
-                    allNotifications.map((n, idx) => {
-                        const isSuccess = n.type === 'SUCCESS' || n.type === 'CLEARANCE';
-                        const isWarning = n.type === 'WARNING' || n.type === 'PENDING';
-                        return (
-                        <div key={idx} className="glass-card" style={{
-                            padding: '1.5rem',
-                            background: 'white',
-                            borderLeft: isSuccess ? '5px solid #10B981' : isWarning ? '5px solid #F59E0B' : '5px solid #3B82F6',
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            gap: '16px'
-                        }}>
-                            <span style={{ fontSize: '1.8rem' }}>
-                                {isSuccess ? '✅' : isWarning ? '⚠️' : '📢'}
-                            </span>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                                    <h3 style={{ margin: 0, color: '#1E293B', fontSize: '1.15rem' }}>{n.title}</h3>
-                                    <span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>{n.date || 'Active'}</span>
-                                </div>
-                                <p style={{ margin: 0, color: '#475569', fontSize: '0.92rem', lineHeight: '1.5' }}>
-                                    {n.message}
-                                </p>
-                            </div>
-                        </div>
-                    );
-                })
-            ) : (
-                <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center', background: 'white' }}>
-                    <p style={{ margin: 0, color: '#64748B', fontSize: '1rem', fontWeight: 600 }}>
-                        No active academic alerts or notifications at this time.
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '420px',
+                padding: '2rem 1rem'
+            }}>
+                <div className="glass-card" style={{
+                    maxWidth: '560px',
+                    width: '100%',
+                    background: 'white',
+                    borderRadius: '24px',
+                    padding: '3.5rem 2.5rem',
+                    textAlign: 'center',
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)',
+                    border: '1px solid #EDF2F7',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                }}>
+                    <div style={{
+                        width: '88px',
+                        height: '88px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%)',
+                        border: '2px solid #FECDD3',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2.5rem',
+                        marginBottom: '1.5rem',
+                        boxShadow: '0 8px 24px rgba(225, 29, 72, 0.1)'
+                    }}>
+                        🔔
+                    </div>
+
+                    <h2 style={{
+                        fontSize: '1.8rem',
+                        fontWeight: 800,
+                        color: '#1E293B',
+                        margin: '0 0 12px'
+                    }}>
+                        Coming Soon
+                    </h2>
+
+                    <p style={{
+                        color: '#64748B',
+                        fontSize: '1.02rem',
+                        lineHeight: '1.6',
+                        margin: '0 0 1.75rem',
+                        maxWidth: '430px'
+                    }}>
+                        We're working on notifications to keep you updated on your academic progress.
                     </p>
+
+                    <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 16px',
+                        borderRadius: '20px',
+                        background: '#F8FAFC',
+                        border: '1px solid #E2E8F0',
+                        color: '#475569',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.02em'
+                    }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E11D48', display: 'inline-block' }}></span>
+                        Automated Academic Alert Engine In Development
+                    </div>
                 </div>
-            )}
+            </div>
         </div>
-    </div>
-);
+    );
 }

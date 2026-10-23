@@ -26,12 +26,21 @@ export default function MyDegreePathView() {
     const calculatedPercentage = totalRequiredCredits > 0 ? Math.round((totalEarnedCredits / totalRequiredCredits) * 100) : 0;
     const completionPercentage = Math.max(0, Math.min(100, Number(status.completionPercentage ?? calculatedPercentage)));
 
+    const rawDept = student.department || degreePath.department || 'Not Available';
+    const departmentDisplay = student.departmentName || (rawDept !== 'Not Available' ? `${rawDept} Department` : 'Not Available');
+    const curriculumDisplay = student.curriculum || degreePath.curriculum || 'Y23 Regulation';
+    const degreeTypeDisplay = student.degreeType || degreePath.degreeTypeName || 'Regular';
+    const rawSpec = student.specialization || degreePath.specialization || student.addonName || degreePath.addonName;
+    const specializationDisplay = (rawSpec && rawSpec !== 'N/A' && rawSpec !== 'NONE' && rawSpec !== 'Not Available')
+        ? rawSpec
+        : 'Not Available';
+
     const pathNodes = [
         { label: 'Programme', value: 'B.Tech (Bachelor of Technology)', icon: '🎓', desc: 'Core 4-Year Undergraduate Degree' },
-        { label: 'Department', value: student.department || degreePath.departmentName || 'Artificial Intelligence & Data Science', icon: '🏛️', desc: 'Primary Engineering Discipline' },
-        { label: 'Curriculum Version', value: degreePath.curriculumVersion || '2023-2027 (Regulation 23)', icon: '📚', desc: 'Institutional Academic Framework' },
-        { label: 'Degree Type', value: degreePath.degreeTypeName || 'Regular B.Tech Honours Track', icon: '📜', desc: 'Degree Classification Track' },
-        { label: 'Specialization / Minor', value: degreePath.addonName || degreePath.specializationName || 'AI & Machine Learning (Integrated)', icon: '⭐', desc: 'Discipline-Specific Concentration' },
+        { label: 'Department', value: departmentDisplay, icon: '🏛️', desc: 'Primary Engineering Discipline' },
+        { label: 'Curriculum Version', value: curriculumDisplay, icon: '📚', desc: 'Institutional Academic Framework' },
+        { label: 'Degree Type', value: degreeTypeDisplay, icon: '📜', desc: 'Degree Classification Track' },
+        { label: 'Specialization / Minor', value: specializationDisplay, icon: '⭐', desc: 'Discipline-Specific Concentration' },
     ];
 
     const displayPathNodes = pathNodes.map((node, index) => {

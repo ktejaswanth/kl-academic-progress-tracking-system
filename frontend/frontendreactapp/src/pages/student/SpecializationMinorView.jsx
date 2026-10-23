@@ -13,9 +13,16 @@ export default function SpecializationMinorView() {
         );
     }
 
+    const student = dashboardData?.student || {};
+    const degreePath = dashboardData?.degreePath || {};
     const spec = dashboardData?.specializationProgress || {};
     const minor = dashboardData?.minorProgress || {};
     const doubleMajor = dashboardData?.secondMajorProgress || {};
+
+    const rawSpec = student.specialization || degreePath.specialization || student.addonName || degreePath.addonName;
+    const defaultSpecName = (rawSpec && rawSpec !== 'N/A' && rawSpec !== 'NONE' && rawSpec !== 'Not Available')
+        ? rawSpec
+        : 'Not Available';
 
     const renderTrackCard = (title, data, defaultName, icon) => {
         const isApplicable = data && data.status !== 'NOT_APPLICABLE';
@@ -27,21 +34,21 @@ export default function SpecializationMinorView() {
         const status = data?.status || (isApplicable ? (earned >= required ? 'COMPLETED' : 'IN_PROGRESS') : 'NOT_ENROLLED');
 
         return (
-            <div className="glass-card" style={{ padding: '2rem', background: 'white', marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px', marginBottom: '1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontSize: '2rem' }}>{icon}</span>
+            <div className="glass-card" style={{ padding: '1.8rem 2rem', background: 'white', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                        <span style={{ fontSize: '2.2rem' }}>{icon}</span>
                         <div>
-                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#8B0000', textTransform: 'uppercase' }}>{title}</span>
-                            <h3 style={{ margin: '2px 0 0', color: '#1E293B', fontSize: '1.3rem' }}>{name}</h3>
+                            <span style={{ fontSize: '0.78rem', fontWeight: 700, color: '#8B0000', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{title}</span>
+                            <h3 style={{ margin: '2px 0 0', color: '#1E293B', fontSize: '1.25rem', fontWeight: 800 }}>{name}</h3>
                         </div>
                     </div>
 
                     <div>
                         <span style={{
-                            padding: '6px 14px',
+                            padding: '6px 16px',
                             borderRadius: '20px',
-                            fontSize: '0.8rem',
+                            fontSize: '0.82rem',
                             fontWeight: 800,
                             background: status === 'COMPLETED' ? '#DCFCE7' : status === 'IN_PROGRESS' ? '#FEF3C7' : '#F1F5F9',
                             color: status === 'COMPLETED' ? '#166534' : status === 'IN_PROGRESS' ? '#92400E' : '#64748B'
@@ -51,48 +58,8 @@ export default function SpecializationMinorView() {
                     </div>
                 </div>
 
-                {isApplicable ? (
-                    <>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-                            <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                                <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>REQUIRED CREDITS</span>
-                                <strong style={{ display: 'block', fontSize: '1.4rem', color: '#1E293B' }}>{required} Cr</strong>
-                            </div>
-                            <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                                <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>COMPLETED CREDITS</span>
-                                <strong style={{ display: 'block', fontSize: '1.4rem', color: '#059669' }}>{earned} Cr</strong>
-                            </div>
-                            <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                                <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>REMAINING CREDITS</span>
-                                <strong style={{ display: 'block', fontSize: '1.4rem', color: remaining === 0 ? '#059669' : '#DC2626' }}>{remaining} Cr</strong>
-                            </div>
-                            <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                                <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>TRACK PROGRESS</span>
-                                <strong style={{ display: 'block', fontSize: '1.4rem', color: '#8B0000' }}>{percent}%</strong>
-                            </div>
-                        </div>
-
-                        <div style={{ height: '8px', background: '#E2E8F0', borderRadius: '4px', overflow: 'hidden', marginBottom: '1.5rem' }}>
-                            <div style={{ width: `${percent}%`, height: '100%', background: '#8B0000' }}></div>
-                        </div>
-
-                        {data.completedCourses && data.completedCourses.length > 0 && (
-                            <div>
-                                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                                    Completed Courses Towards Track ({data.completedCourses.length}):
-                                </span>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                    {data.completedCourses.map((c, i) => (
-                                        <span key={i} style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#1D4ED8', padding: '4px 10px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600 }}>
-                                            {c.courseCode || c} — {c.courseName || 'Track Elective'}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <p style={{ margin: 0, color: '#64748B', fontSize: '0.9rem', fontStyle: 'italic' }}>
+                {!isApplicable && (
+                    <p style={{ margin: '1rem 0 0', color: '#64748B', fontSize: '0.88rem', fontStyle: 'italic' }}>
                         You are currently not enrolled in this additional credential track. You can consult with your faculty counselor to opt-in during second-year registrations.
                     </p>
                 )}
@@ -109,7 +76,7 @@ export default function SpecializationMinorView() {
                 </p>
             </div>
 
-            {renderTrackCard('Degree Specialization', spec, 'Artificial Intelligence & Machine Learning', '🎯')}
+            {renderTrackCard('Degree Specialization', spec, defaultSpecName, '🎯')}
             {renderTrackCard('Academic Minor Track', minor, 'Data Analytics Minor', '📘')}
             {renderTrackCard('Double Major Track', doubleMajor, 'Second Major in Computer Science', '🎓')}
         </div>

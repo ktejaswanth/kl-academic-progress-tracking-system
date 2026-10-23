@@ -261,16 +261,31 @@ public class ExitRequirementPdfService {
                            (student.getLastName() != null ? student.getLastName() : "")).trim();
         }
 
-        String dept = student.getDepartment() != null ? student.getDepartment().trim() : "AI&DS";
+        DegreePath dp = degreePathEngine != null ? degreePathEngine.findMatchingDegreePath(student) : null;
+        String dept = dp != null && dp.getDepartment() != null ? dp.getDepartment().getDeptCode() : (student.getDepartment() != null ? student.getDepartment().trim() : "AIDS");
         String branch = ("AIDS".equalsIgnoreCase(dept) || "AI&DS".equalsIgnoreCase(dept)) ? "AI&DS" : dept;
 
-        String spec = (student.getSpecializationName() != null && !student.getSpecializationName().isBlank())
-                ? student.getSpecializationName() : "General Track";
+        String rawSpec = student.getSpecializationName();
+        if (rawSpec != null) rawSpec = rawSpec.replace('\u00A0', ' ').trim();
+        String spec = (rawSpec != null && !rawSpec.isBlank() && !"N/A".equalsIgnoreCase(rawSpec) && !"NONE".equalsIgnoreCase(rawSpec))
+                ? rawSpec : "General Track";
+
+        String degreeType = "Regular";
+        if (dp != null && dp.getDegreeType() != null && dp.getDegreeType().getTypeName() != null) {
+            degreeType = dp.getDegreeType().getTypeName();
+        } else if (student.getSubDepartment() != null) {
+            String sub = student.getSubDepartment().trim().toUpperCase();
+            if (sub.contains("HONOR")) degreeType = "Honors";
+            else if (sub.contains("HTE")) degreeType = "Honors through Experiential Learning";
+            else if (sub.contains("HTI")) degreeType = "Honors through Innovation";
+            else if (sub.contains("HTR")) degreeType = "Honors through Research";
+            else if (sub.contains("REGULAR")) degreeType = "Regular";
+            else degreeType = student.getSubDepartment().trim();
+        }
 
         String admYear = student.getAcademicYear() != null ? student.getAcademicYear() : "2023";
         String dateOfAdmission = "July " + (admYear.contains("-") ? admYear.split("-")[0] : admYear);
 
-        DegreePath dp = degreePathEngine != null ? degreePathEngine.findMatchingDegreePath(student) : null;
         String pathCode = dp != null ? dp.getPathCode() : (branch + "-REGULAR");
         String academicYear = dp != null && dp.getAcademicYear() != null ? dp.getAcademicYear() : (degreePathEngine != null ? degreePathEngine.resolveAcademicYear(student) : "Y23");
 
@@ -287,7 +302,7 @@ public class ExitRequirementPdfService {
         studentInfo.put("expectedGraduation", "May 2027");
         studentInfo.put("pathCode", pathCode);
         studentInfo.put("academicYear", academicYear);
-        studentInfo.put("degreeType", student.getSubDepartment() != null ? student.getSubDepartment() : "REGULAR");
+        studentInfo.put("degreeType", degreeType);
         studentInfo.put("addon", student.getSpecializationType() != null ? student.getSpecializationType() : "NONE");
         studentInfo.put("totalRequiredCredits", result.totalRequired);
 
@@ -298,7 +313,7 @@ public class ExitRequirementPdfService {
         summaryInfo.put("isEligible", result.totalObtained >= result.totalRequired);
         summaryInfo.put("pathCode", pathCode);
         summaryInfo.put("academicYear", academicYear);
-        summaryInfo.put("degreeType", student.getSubDepartment() != null ? student.getSubDepartment() : "REGULAR");
+        summaryInfo.put("degreeType", degreeType);
 
         List<Map<String, Object>> categoriesList = new ArrayList<>();
         for (CategoryData cat : result.catMap.values()) {

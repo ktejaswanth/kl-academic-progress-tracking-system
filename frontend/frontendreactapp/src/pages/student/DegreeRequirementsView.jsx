@@ -23,8 +23,20 @@ export default function DegreeRequirementsView() {
         );
     }
 
+    const student = dashboardData?.student || {};
     const degreePath = dashboardData?.degreePath || {};
     const buckets = dashboardData?.buckets || [];
+
+    const rawDept = student.department || degreePath.department || 'Not Available';
+    const departmentDisplay = (rawDept !== 'Not Available' && !rawDept.toUpperCase().includes('DEPARTMENT')) 
+        ? `${rawDept} Department` 
+        : rawDept;
+    const curriculumDisplay = student.curriculum || degreePath.curriculum || 'Y23 Regulation';
+    const degreeTypeDisplay = student.degreeType || degreePath.degreeTypeName || 'Regular';
+    const rawSpec = student.specialization || degreePath.specialization || student.addonName || degreePath.addonName;
+    const specializationDisplay = (rawSpec && rawSpec !== 'N/A' && rawSpec !== 'NONE' && rawSpec !== 'Not Available')
+        ? rawSpec
+        : 'Not Available';
 
     const completedBuckets = buckets.filter(b => b.status === 'COMPLETED' || (b.earnedCredits >= b.requiredCredits));
     const pendingBuckets = buckets.filter(b => b.status !== 'COMPLETED' && (b.earnedCredits < b.requiredCredits));
@@ -68,9 +80,18 @@ export default function DegreeRequirementsView() {
         <div className="student-degree-requirements animate-fade" style={{ maxWidth: '1400px', margin: '0 auto', paddingBottom: '3rem', display: 'flex', flexDirection: 'column' }}>
             <div style={{ marginBottom: '2rem' }}>
                 <h1 style={{ fontSize: '2rem', color: '#1E293B', margin: '0 0 6px', fontWeight: 800 }}>Degree Requirements</h1>
-                <p style={{ color: '#64748B', margin: 0, fontSize: '0.95rem' }}>
-                    Curriculum structure for <strong>{degreePath.degreeTypeName || 'B.Tech'}</strong> • {degreePath.departmentName || 'AIDS'} ({degreePath.curriculumVersion || '2023-2027'})
+                <p style={{ color: '#64748B', margin: '0 0 8px', fontSize: '0.95rem' }}>
+                    Curriculum structure for <strong>{degreeTypeDisplay}</strong> • {departmentDisplay} ({curriculumDisplay})
                 </p>
+                <div style={{ fontSize: '0.9rem', color: '#8B0000', fontWeight: 700, display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                    <span>{departmentDisplay}</span>
+                    <span>•</span>
+                    <span>Curriculum: <strong>{curriculumDisplay}</strong></span>
+                    <span>•</span>
+                    <span>Degree: <strong>{degreeTypeDisplay}</strong></span>
+                    <span>•</span>
+                    <span>Specialization: <strong>{specializationDisplay}</strong></span>
+                </div>
             </div>
 
             {/* Sub-view navigation tabs */}

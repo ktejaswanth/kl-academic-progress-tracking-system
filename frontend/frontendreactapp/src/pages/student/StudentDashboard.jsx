@@ -36,13 +36,16 @@ export default function StudentDashboard() {
 
     const studentName = student.fullName || `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.studentId || 'Student';
     const rollNumber = student.studentId || student.username || 'N/A';
-    const department = student.department || degreePath.departmentName || degreePath.department || 'N/A';
-    const degreeName = student.subDepartment || student.degreeType || degreePath.degreeTypeName || 'Regular Track';
-    const curriculum = student.curriculum || degreePath.curriculumVersion || 'N/A';
-    const specializationType = student.specializationType || student.addonType || degreePath.addonTypeName || degreePath.addonType;
-    const specializationName = student.specializationName || student.addonName || degreePath.addonName || degreePath.specializationName;
-    const hasSpecialization = specializationName && !['N/A', 'NONE'].includes(String(specializationName).toUpperCase());
-    const hasSpecializationType = specializationType && !['N/A', 'NONE'].includes(String(specializationType).toUpperCase());
+    const rawDept = student.department || degreePath.department || 'Not Available';
+    const department = (rawDept && rawDept !== 'Not Available' && !rawDept.toUpperCase().includes('DEPARTMENT')) 
+        ? `${rawDept} Department` 
+        : (rawDept || 'Not Available');
+    const degreeType = student.degreeType || degreePath.degreeTypeName || 'Regular';
+    const curriculum = student.curriculum || degreePath.curriculum || 'Y23 Regulation';
+    const rawSpec = student.specialization || degreePath.specialization || student.addonName || degreePath.addonName;
+    const specialization = (rawSpec && rawSpec !== 'N/A' && rawSpec !== 'NONE' && rawSpec !== 'Not Available')
+        ? rawSpec
+        : 'Not Available';
 
     const totalEarned = status.totalEarnedCredits || 0;
     const totalRequired = status.totalRequiredCredits || degreePath.totalRequiredCredits || 0;
@@ -65,37 +68,16 @@ export default function StudentDashboard() {
                             STUDENT ACADEMIC PORTAL
                         </span>
                         <h1 style={{ fontSize: '2.4rem', margin: '10px 0 6px', fontWeight: 800 }}>
-                            Welcome, <span style={{ color: '#FFD700' }}>{studentName}</span>
+                            Welcome, <span style={{ color: '#FFD700' }}>{studentName}</span> <span style={{ fontSize: '1.15rem', opacity: 0.85, fontWeight: 500 }}>({rollNumber})</span>
                         </h1>
-                        <div style={{ display: 'inline-block', background: 'rgba(255, 215, 0, 0.10)', border: '1px solid rgba(255, 215, 0, 0.38)', borderRadius: '10px', padding: '7px 12px', marginBottom: '10px', fontWeight: 800 }}>
-                            <span
-                                title={`${completionPercentage}% degree completion`}
-                                style={{
-                                    background: `linear-gradient(90deg, #FFD700 0%, #FFF3A3 ${completionPercentage}%, rgba(255,255,255,0.50) ${completionPercentage}%, rgba(255,255,255,0.50) 100%)`,
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    backgroundClip: 'text',
-                                    textShadow: completionPercentage > 0 ? `0 0 ${Math.max(3, completionPercentage / 8)}px rgba(255, 215, 0, ${0.25 + completionPercentage / 200})` : 'none',
-                                    transition: 'background 600ms ease, text-shadow 600ms ease'
-                                }}
-                            >
-                                {degreeName} in {department}{hasSpecialization ? ` · ${hasSpecializationType ? `${specializationType}: ` : ''}${specializationName}` : ''}
-                            </span>
-                        </div>
-                        <p style={{ margin: 0, opacity: 0.9, fontSize: '1rem', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
-                            <span>ID: <strong>{rollNumber}</strong></span>
-                            <span>•</span>
-                            <span>{department} Department</span>
+                        <p style={{ margin: 0, opacity: 0.95, fontSize: '1.05rem', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', fontWeight: 600 }}>
+                            <span>{department}</span>
                             <span>•</span>
                             <span>Curriculum: <strong>{curriculum}</strong></span>
                             <span>•</span>
-                            <span>Degree: <strong>{degreeName}</strong></span>
-                            {hasSpecialization && (
-                                <>
-                                    <span>•</span>
-                                    <span>{hasSpecializationType ? `${specializationType}: ` : 'Specialization: '}<strong style={{ color: '#FFD700' }}>{specializationName}</strong></span>
-                                </>
-                            )}
+                            <span>Degree: <strong>{degreeType}</strong></span>
+                            <span>•</span>
+                            <span>Specialization: <strong style={{ color: specialization !== 'Not Available' ? '#FFD700' : 'rgba(255,255,255,0.75)' }}>{specialization}</strong></span>
                         </p>
                     </div>
 

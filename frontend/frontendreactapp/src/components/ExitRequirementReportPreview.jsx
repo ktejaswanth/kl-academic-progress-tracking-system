@@ -132,8 +132,8 @@ export default function ExitRequirementReportPreview({ reportData, downloadUrl, 
                             <span className="info-val highlight">{student?.rollNumber || '-'}</span>
                         </div>
                         <div className="info-item">
-                            <span className="info-label">Programme</span>
-                            <span className="info-val">{student?.programme || 'B. TECH'}</span>
+                            <span className="info-label">Programme & Degree</span>
+                            <span className="info-val">{student?.programme || 'B. TECH'} ({student?.degreeType || summary?.degreeType || 'Regular'})</span>
                         </div>
                         <div className="info-item">
                             <span className="info-label">Branch & Department</span>
@@ -141,7 +141,7 @@ export default function ExitRequirementReportPreview({ reportData, downloadUrl, 
                         </div>
                         <div className="info-item">
                             <span className="info-label">Specialization Track</span>
-                            <span className="info-val">{student?.specialization || 'General Track'}</span>
+                            <span className="info-val">{(student?.specialization && student.specialization !== 'N/A' && student.specialization !== 'NONE') ? student.specialization : 'Not Available'}</span>
                         </div>
                         <div className="info-item">
                             <span className="info-label">Faculty Counsellor / Advisor</span>
