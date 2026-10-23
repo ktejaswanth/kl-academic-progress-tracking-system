@@ -62,6 +62,9 @@ export default function FacultyNavBar() {
                     <Link to="/faculty/upload-courses" className={location.pathname === '/faculty/upload-courses' ? 'active' : ''}>
                         <span className="icon">📚</span> Upload Courses
                     </Link>
+                    <Link to="/change-password" className={location.pathname === '/change-password' ? 'active' : ''}>
+                        <span className="icon">🔐</span> Change Password
+                    </Link>
                 </nav>
 
                 <div className="sidebar-footer">

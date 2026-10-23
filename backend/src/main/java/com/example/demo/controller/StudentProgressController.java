@@ -57,6 +57,10 @@ public class StudentProgressController {
         studentInfo.put("fullName", fullName.isEmpty() ? student.getStudentId() : fullName);
         studentInfo.put("email", student.getEmail());
         studentInfo.put("department", student.getDepartment() != null ? student.getDepartment() : "CSE");
+        studentInfo.put("subDepartment", student.getSubDepartment());
+        studentInfo.put("specializationType", student.getSpecializationType());
+        studentInfo.put("specializationName", student.getSpecializationName());
+        studentInfo.put("academicYear", student.getAcademicYear());
         // Fetch courses for academic calculations and semester determination
         List<StudentCourse> studentCourses = studentCourseRepository.findByStudentId(studentId);
         if (studentCourses.isEmpty()) {
@@ -90,9 +94,13 @@ public class StudentProgressController {
         pathInfo.put("pathId", path.getId());
         pathInfo.put("pathCode", path.getPathCode());
         pathInfo.put("department", path.getDepartment() != null ? path.getDepartment().getDeptCode() : "N/A");
+        pathInfo.put("departmentName", path.getDepartment() != null ? path.getDepartment().getDeptName() : "N/A");
         pathInfo.put("degreeType", path.getDegreeType() != null ? path.getDegreeType().getTypeCode() : "REGULAR");
         pathInfo.put("degreeTypeName", path.getDegreeType() != null ? path.getDegreeType().getTypeName() : "Regular");
         pathInfo.put("addonType", path.getAddonType() != null ? path.getAddonType().getAddonCode() : "NONE");
+        pathInfo.put("addonTypeName", path.getAddonType() != null ? path.getAddonType().getAddonName() : "NONE");
+        pathInfo.put("curriculumVersion", path.getCurriculumVersion() != null ? path.getCurriculumVersion().getVersionName() : student.getAcademicYear());
+        pathInfo.put("programName", path.getCurriculumVersion() != null ? path.getCurriculumVersion().getProgramName() : "B.Tech");
         pathInfo.put("totalRequiredCredits", path.getTotalCredits());
         response.put("degreePath", pathInfo);
 
