@@ -22,6 +22,9 @@ public class DegreePath {
     @Column(name = "path_code", nullable = false)
     private String pathCode;
 
+    @Column(name = "academic_year")
+    private String academicYear = "Y23";
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "curriculum_version_id")
     private CurriculumVersion curriculumVersion;

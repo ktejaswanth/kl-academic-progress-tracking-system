@@ -24,10 +24,10 @@ export default function ViewAllFaculty() {
         fetchFaculty();
     }, []);
 
-    const togglePassword = (index) => {
+    const togglePassword = (key) => {
         setVisiblePasswords(prev => ({
             ...prev,
-            [index]: !prev[index]
+            [key]: !prev[key]
         }));
     };
 
@@ -123,13 +123,13 @@ export default function ViewAllFaculty() {
                                         </td>
                                         <td>
                                             <div className="password-display">
-                                                <code>{visiblePasswords[index] ? (faculty.rawPassword || '••••••••') : '••••••••'}</code>
+                                                <code>{visiblePasswords[faculty.id || index] ? (faculty.rawPassword || '••••••••') : '••••••••'}</code>
                                                 <button
                                                     className="visibility-toggle"
-                                                    onClick={() => togglePassword(index)}
-                                                    title={visiblePasswords[index] ? "Hide Password" : "Show Password"}
+                                                    onClick={() => togglePassword(faculty.id || index)}
+                                                    title={visiblePasswords[faculty.id || index] ? "Hide Password" : "Show Password"}
                                                 >
-                                                    {visiblePasswords[index] ? '👁️‍🗨️' : '👁️'}
+                                                    {visiblePasswords[faculty.id || index] ? '👁️‍🗨️' : '👁️'}
                                                 </button>
                                             </div>
                                         </td>

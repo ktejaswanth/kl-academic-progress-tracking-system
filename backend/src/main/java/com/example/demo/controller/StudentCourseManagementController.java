@@ -147,7 +147,30 @@ public class StudentCourseManagementController {
     public ResponseEntity<?> getStudentCreditSummary(@PathVariable String studentId) {
         try {
             Map<String, Object> exitReport = exitRequirementPdfService.getStudentExitRequirementReportData(studentId);
-            return ResponseEntity.ok(exitReport);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> summary = (Map<String, Object>) exitReport.get("summary");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> student = (Map<String, Object>) exitReport.get("student");
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> categories = (List<Map<String, Object>>) exitReport.get("categories");
+            
+            Map<String, Integer> categoryCredits = new java.util.LinkedHashMap<>();
+            if (categories != null) {
+                for (Map<String, Object> cat : categories) {
+                    String code = (String) cat.get("categoryCode");
+                    Integer obtained = (Integer) cat.get("obtainedCredits");
+                    if (code != null) categoryCredits.put(code, obtained != null ? obtained : 0);
+                }
+            }
+
+            Map<String, Object> response = new java.util.LinkedHashMap<>(exitReport);
+            if (summary != null) response.putAll(summary);
+            if (student != null) response.putAll(student);
+            response.put("categoryCredits", categoryCredits);
+            if (summary != null && summary.get("totalRequiredCredits") != null) {
+                response.put("totalRequiredCredits", summary.get("totalRequiredCredits"));
+            }
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

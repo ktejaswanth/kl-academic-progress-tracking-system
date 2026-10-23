@@ -322,6 +322,7 @@ public class Y23AidsCurriculumSeeder {
                 .findFirst()
                 .map(p -> {
                     p.setTotalCredits(totalCredits);
+                    p.setAcademicYear("Y23");
                     p.setCurriculumVersion(ver);
                     p.setDepartment(dept);
                     p.setDegreeType(dt);
@@ -333,6 +334,7 @@ public class Y23AidsCurriculumSeeder {
                 .orElseGet(() -> {
                     DegreePath p = new DegreePath();
                     p.setPathCode(pathCode);
+                    p.setAcademicYear("Y23");
                     p.setCurriculumVersion(ver);
                     p.setDepartment(dept);
                     p.setDegreeType(dt);

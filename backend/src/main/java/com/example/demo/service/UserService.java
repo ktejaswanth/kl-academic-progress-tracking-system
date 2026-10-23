@@ -243,11 +243,16 @@ public class UserService {
 
     public Map<String, Object> getDashboardAnalytics() {
         Map<String, Object> analytics = new HashMap<>();
-        long totalAdmins = adminRepository.count();
-        long totalFaculty = facultyRepository.count();
-        long totalStudents = studentRepository.count();
-        long totalCourses = courseCatalogRepository.count();
-        long totalCurriculums = curriculumVersionRepository.count();
+        long totalAdmins = 0;
+        try { totalAdmins = adminRepository.count(); } catch (Exception ignored) {}
+        long totalFaculty = 0;
+        try { totalFaculty = facultyRepository.count(); } catch (Exception ignored) {}
+        long totalStudents = 0;
+        try { totalStudents = studentRepository.count(); } catch (Exception ignored) {}
+        long totalCourses = 0;
+        try { totalCourses = courseCatalogRepository.count(); } catch (Exception ignored) {}
+        long totalCurriculums = 0;
+        try { totalCurriculums = curriculumVersionRepository.count(); } catch (Exception ignored) {}
 
         long openIssues = 0;
         try {

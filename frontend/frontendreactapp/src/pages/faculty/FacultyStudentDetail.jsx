@@ -332,10 +332,87 @@ export default function FacultyStudentDetail() {
         );
     }
 
-    const studentInfo = exitSummary || {};
-    const totalEarned = studentInfo.totalObtainedCredits || 0;
-    const totalReq = studentInfo.totalRequiredCredits || 163;
-    const isEligible = studentInfo.eligibleForGraduation || (totalEarned >= totalReq);
+    // Extract & calculate student academic profile attributes
+    const studentInfo = useMemo(() => {
+        const raw = exitSummary || {};
+        const st = raw.student || {};
+        const firstCourse = courses[0] || {};
+
+        const rollNumber = st.rollNumber || raw.rollNumber || firstCourse.rollNumber || studentId;
+        const studentName = st.studentName || raw.studentName || firstCourse.studentName || 'Student Academic Profile';
+        const department = st.department || st.branch || raw.department || firstCourse.department || 'B.Tech';
+        const academicYear = raw.academicYear || st.academicYear || 'Y23';
+        const curriculum = st.curriculum || raw.curriculum || `${academicYear} B.Tech`;
+        const degreeType = st.degreeType || raw.degreeType || 'REGULAR';
+        const addon = st.addon || raw.addon || 'NONE';
+        const pathCode = raw.pathCode || st.pathCode || '';
+
+        return {
+            ...raw,
+            rollNumber,
+            studentName,
+            department,
+            curriculum,
+            academicYear,
+            degreeType,
+            addon,
+            pathCode
+        };
+    }, [exitSummary, courses, studentId]);
+
+    // Robust category credits calculation from courses + backend exitSummary
+    const categoryCreditsMap = useMemo(() => {
+        const map = {};
+        CATEGORIES.forEach(cat => { map[cat.code] = 0; });
+
+        // 1. Calculate from courses list
+        courses.forEach(c => {
+            const cat = c.category?.toUpperCase();
+            if (cat && map[cat] !== undefined) {
+                const isCompleted = c.status === 'COMPLETED' || (c.grade && c.grade !== 'F' && c.grade !== '-');
+                if (isCompleted) {
+                    map[cat] += Number(c.obtainedCredits != null ? c.obtainedCredits : (c.credits || 0));
+                }
+            }
+        });
+
+        // 2. Overlay with exitSummary.categoryCredits if provided by backend
+        if (exitSummary?.categoryCredits) {
+            Object.entries(exitSummary.categoryCredits).forEach(([catCode, cr]) => {
+                if (map[catCode] !== undefined) {
+                    map[catCode] = Math.max(map[catCode], Number(cr) || 0);
+                }
+            });
+        }
+
+        // 3. Overlay with exitSummary.categories if array
+        if (Array.isArray(exitSummary?.categories)) {
+            exitSummary.categories.forEach(cat => {
+                if (cat.categoryCode && map[cat.categoryCode] !== undefined) {
+                    map[cat.categoryCode] = Math.max(map[cat.categoryCode], Number(cat.obtainedCredits) || 0);
+                }
+            });
+        }
+
+        return map;
+    }, [courses, exitSummary]);
+
+    const totalEarned = useMemo(() => {
+        const sumFromCats = Object.values(categoryCreditsMap).reduce((a, b) => a + b, 0);
+        const sumFromCourses = courses
+            .filter(c => c.status === 'COMPLETED' || (c.grade && c.grade !== 'F' && c.grade !== '-'))
+            .reduce((sum, c) => sum + Number(c.obtainedCredits != null ? c.obtainedCredits : (c.credits || 0)), 0);
+        
+        const backendTotal = exitSummary?.summary?.totalObtainedCredits ?? exitSummary?.totalObtainedCredits;
+        if (backendTotal != null && backendTotal > 0) return backendTotal;
+        return Math.max(sumFromCats, sumFromCourses);
+    }, [categoryCreditsMap, courses, exitSummary]);
+
+    const totalReq = exitSummary?.totalRequiredCredits || 
+                     exitSummary?.summary?.totalRequiredCredits || 
+                     exitSummary?.student?.totalRequiredCredits || 
+                     (studentInfo?.department?.toUpperCase().includes('AIDS') ? 166 : 163);
+    const isEligible = exitSummary?.summary?.isEligible ?? exitSummary?.isEligible ?? (totalEarned >= totalReq);
 
     return (
         <div className="faculty-student-detail animate-fade" style={{ paddingBottom: '4rem', maxWidth: '1450px', margin: '0 auto' }}>
@@ -402,6 +479,12 @@ export default function FacultyStudentDetail() {
                         <span>Department: <strong style={{ color: '#0F172A' }}>{studentInfo.department || 'B.Tech'}</strong></span>
                         <span>•</span>
                         <span>Curriculum: <strong style={{ color: '#0F172A' }}>{studentInfo.curriculum || 'Y23 B.Tech'}</strong></span>
+                        {studentInfo.pathCode && (
+                            <>
+                                <span>•</span>
+                                <span>Degree Path: <strong style={{ color: '#8B0000' }}>{studentInfo.pathCode}</strong></span>
+                            </>
+                        )}
                         <span>•</span>
                         <span>Total Courses: <strong style={{ color: '#0F172A' }}>{courses.length}</strong></span>
                     </div>
@@ -433,7 +516,7 @@ export default function FacultyStudentDetail() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: '8px' }}>
                     {CATEGORIES.map(cat => {
-                        const catCredits = studentInfo.categoryCredits?.[cat.code] || 0;
+                        const catCredits = categoryCreditsMap[cat.code] || 0;
                         const isFiltered = filterCategory === cat.code;
                         return (
                             <button

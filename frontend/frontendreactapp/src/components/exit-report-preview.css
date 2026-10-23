@@ -487,6 +487,19 @@
     border: 1px solid #a7f3d0;
 }
 
+.subcat-badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #1e3a8a;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
 .empty-courses-state {
     padding: 1.5rem;
     text-align: center;

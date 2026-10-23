@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api';
 
 export default function AdminDashboard() {
+    const navigate = useNavigate();
     const [realStats, setRealStats] = useState({
         totalStudents: 0,
         totalFaculty: 0,
@@ -95,7 +97,12 @@ export default function AdminDashboard() {
                     <div className="promo-content">
                         <h3>Identity Management</h3>
                         <p>Generate secure credentials and manage academic audits with one click.</p>
-                        <button className="btn-reports">View Reports</button>
+                        <button 
+                            className="btn-reports"
+                            onClick={() => navigate('/super_admin/exit-requirement-reports')}
+                        >
+                            View Reports
+                        </button>
                     </div>
                 </div>
             </div>

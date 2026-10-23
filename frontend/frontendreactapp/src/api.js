@@ -31,9 +31,10 @@ api.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             const url = error.config?.url || '';
-            const isOnboarding = url.includes('/onboarding') || url.includes('/verify-first-login');
-            if (!isOnboarding) {
+            const isAuthEndpoint = url.includes('/auth/login') || url.includes('/onboarding') || url.includes('/verify-first-login');
+            if (!isAuthEndpoint && window.location.pathname !== '/login') {
                 localStorage.removeItem('token');
+                localStorage.removeItem('user');
                 window.location.href = '/login';
             }
         }

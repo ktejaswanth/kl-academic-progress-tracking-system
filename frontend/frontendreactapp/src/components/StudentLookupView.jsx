@@ -100,27 +100,30 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                 <table className="modern-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                         <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
-                            <th style={{ padding: '1rem 1.25rem', textAlign: 'left', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '50px' }}>Status</th>
-                            <th style={{ padding: '1rem 1.25rem', textAlign: 'left', color: '#64748B', fontWeight: 700, fontSize: '0.85rem' }}>Course Code</th>
+                            <th style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '60px' }}>Status</th>
+                            <th style={{ padding: '1rem 1.25rem', textAlign: 'left', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '130px' }}>Course Code</th>
                             <th style={{ padding: '1rem 1.25rem', textAlign: 'left', color: '#64748B', fontWeight: 700, fontSize: '0.85rem' }}>Course Name</th>
-                            <th style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '100px' }}>Credits</th>
-                            <th style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '100px' }}>Category</th>
+                            <th style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '90px' }}>Credits</th>
+                            <th style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '110px' }}>Semester</th>
+                            <th style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '110px' }}>Academic Yr</th>
+                            <th style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '120px' }}>Result / Grade</th>
+                            <th style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 700, fontSize: '0.85rem', width: '110px' }}>Category</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {courseList.map((course) => {
-                            const status = getCourseStatus(course.courseCode, completedCodes);
+                        {courseList.map((course, idx) => {
+                            const isCompleted = course.isCompleted || completedCodes.some(code => code && course.courseCode && code.trim().toUpperCase() === course.courseCode.trim().toUpperCase());
+                            const status = isCompleted ? 'COMPLETED' : (course.status || 'UNREGISTERED');
                             return (
                                 <tr 
-                                    key={course.id} 
+                                    key={course.courseCode || idx} 
                                     className={status === 'COMPLETED' ? 'completed-row' : ''}
                                     style={{ 
                                         borderBottom: '1px solid #F1F5F9',
                                         background: status === 'COMPLETED' ? '#F0FDF4' : '#ffffff',
-                                        opacity: status === 'COMPLETED' ? 0.9 : 1
                                     }}
                                 >
-                                    <td style={{ padding: '1rem 1.25rem', verticalAlign: 'middle' }}>
+                                    <td style={{ padding: '1rem 1.25rem', verticalAlign: 'middle', textAlign: 'center' }}>
                                         <div className="checkbox-wrapper">
                                             <input 
                                                 type="checkbox" 
@@ -130,13 +133,40 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                                             />
                                         </div>
                                     </td>
-                                    <td style={{ padding: '1rem 1.25rem', fontWeight: 700, color: '#1E293B' }}>{course.courseCode}</td>
-                                    <td style={{ padding: '1rem 1.25rem', color: '#475569', fontWeight: 500 }}>{course.courseName}</td>
-                                    <td style={{ padding: '1rem 1.25rem', textAlign: 'center', fontWeight: 700, color: '#1E293B' }}>{course.credits}</td>
+                                    <td style={{ padding: '1rem 1.25rem', fontWeight: 700, color: '#1E293B', fontFamily: 'monospace', fontSize: '0.95rem' }}>
+                                        {course.courseCode}
+                                    </td>
+                                    <td style={{ padding: '1rem 1.25rem', color: '#334155', fontWeight: 600 }}>
+                                        {course.courseName}
+                                    </td>
+                                    <td style={{ padding: '1rem 1.25rem', textAlign: 'center' }}>
+                                        <span style={{ background: '#F1F5F9', color: '#1E293B', padding: '4px 10px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
+                                            {course.credits !== undefined ? course.credits : 0} Cr
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 500, fontSize: '0.85rem' }}>
+                                        {course.semester ? course.semester : '—'}
+                                    </td>
+                                    <td style={{ padding: '1rem 1.25rem', textAlign: 'center', color: '#64748B', fontWeight: 500, fontSize: '0.85rem' }}>
+                                        {course.academicYear ? course.academicYear : '—'}
+                                    </td>
                                     <td style={{ padding: '1rem 1.25rem', textAlign: 'center' }}>
                                         <span style={{ 
-                                            background: '#F1F5F9', 
-                                            color: '#475569', 
+                                            background: status === 'COMPLETED' ? '#DCFCE7' : '#FEF2F2', 
+                                            color: status === 'COMPLETED' ? '#15803D' : '#B91C1C', 
+                                            padding: '4px 10px', 
+                                            borderRadius: '8px', 
+                                            fontSize: '0.75rem', 
+                                            fontWeight: 800,
+                                            letterSpacing: '0.5px'
+                                        }}>
+                                            {course.grade && course.grade !== 'Pass' ? `${course.grade} (${status})` : status}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '1rem 1.25rem', textAlign: 'center' }}>
+                                        <span style={{ 
+                                            background: course.category === 'DEPARTMENT' ? '#EFF6FF' : '#F1F5F9', 
+                                            color: course.category === 'DEPARTMENT' ? '#1D4ED8' : '#475569', 
                                             padding: '4px 8px', 
                                             borderRadius: '6px', 
                                             fontSize: '0.75rem', 
@@ -164,33 +194,60 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
     const branch = curriculum.department || curriculum.specialization || studentProfile.branch || 'CSE';
     const specializationName = curriculum.specializationName || studentProfile.specializationName || 'N/A';
     const honorsType = curriculum.honorsType || studentProfile.honorsType || 'REGULAR';
+    const pathCode = curriculum.pathCode || studentProfile.pathCode;
+    const requiredCredits = curriculum.totalRequiredCredits || studentProfile.totalRequiredCredits || (branch === 'AIDS' ? 166 : 163);
     const displayName = (studentProfile.firstName || studentProfile.lastName)
         ? `${studentProfile.firstName || ''} ${studentProfile.lastName || ''}`.trim()
         : (curriculum.studentName || curriculum.studentId || searchId);
     const displayStudentId = curriculum.studentId || studentProfile.studentId || searchId;
 
     // Segment courses
-    const departmentCourses = courses.filter(c => c.category === 'DEPARTMENT');
-    const specializationCourses = courses.filter(c => c.category === 'SPECIALIZATION');
-    const honorsCourses = courses.filter(c => c.category === 'HONORS');
-    const generalCourses = courses.filter(c => c.category === 'GENERAL');
+    const isDept = c => {
+        const cat = (c.category || '').toUpperCase();
+        return cat === 'DEPARTMENT';
+    };
+    const isSpec = c => {
+        const cat = (c.category || '').toUpperCase();
+        return cat === 'SPECIALIZATION';
+    };
+    const isHon = c => {
+        const cat = (c.category || '').toUpperCase();
+        return cat === 'HONORS';
+    };
+    const isGen = c => !isDept(c) && !isSpec(c) && !isHon(c);
+
+    const departmentCourses = courses.filter(isDept);
+    const specializationCourses = courses.filter(isSpec);
+    const honorsCourses = courses.filter(isHon);
+    const generalCourses = courses.filter(isGen);
 
     const deptCompleted = countCompleted(departmentCourses, completedCourseCodes);
     const deptPercent = departmentCourses.length > 0 ? Math.round((deptCompleted / departmentCourses.length) * 100) : 0;
+    const deptCredits = departmentCourses.reduce((sum, c) => sum + (c.credits || 0), 0);
 
     const specCompleted = countCompleted(specializationCourses, completedCourseCodes);
     const specPercent = specializationCourses.length > 0 ? Math.round((specCompleted / specializationCourses.length) * 100) : 0;
+    const specCredits = specializationCourses.reduce((sum, c) => sum + (c.credits || 0), 0);
 
     const honorsCompleted = countCompleted(honorsCourses, completedCourseCodes);
     const honorsPercent = honorsCourses.length > 0 ? Math.round((honorsCompleted / honorsCourses.length) * 100) : 0;
+    const honorsCredits = honorsCourses.reduce((sum, c) => sum + (c.credits || 0), 0);
 
     const generalCompleted = countCompleted(generalCourses, completedCourseCodes);
     const generalPercent = generalCourses.length > 0 ? Math.round((generalCompleted / generalCourses.length) * 100) : 0;
+    const generalCredits = generalCourses.reduce((sum, c) => sum + (c.credits || 0), 0);
 
-    const totalCredits = courses.reduce((sum, c) => sum + (c.credits || 0), 0);
-    const totalCoursesCount = courses.length;
-    const overallCompleted = countCompleted(courses, completedCourseCodes);
-    const overallPercent = totalCoursesCount > 0 ? Math.round((overallCompleted / totalCoursesCount) * 100) : 0;
+    // Real-time authoritative metrics from backend
+    const totalCoursesCount = curriculum.totalCourses !== undefined ? curriculum.totalCourses : courses.length;
+    const obtainedCredits = curriculum.totalObtainedCredits !== undefined
+        ? curriculum.totalObtainedCredits
+        : courses.filter(c => completedCourseCodes.includes(c.courseCode?.trim().toUpperCase())).reduce((sum, c) => sum + (c.credits || 0), 0);
+    const remainingCredits = curriculum.totalRemainingCredits !== undefined
+        ? curriculum.totalRemainingCredits
+        : Math.max(0, requiredCredits - obtainedCredits);
+    const overallPercent = curriculum.completionPercentage !== undefined
+        ? curriculum.completionPercentage
+        : (requiredCredits > 0 ? Math.round((obtainedCredits / requiredCredits) * 100) : 0);
 
     return (
         <div style={{ paddingBottom: '3rem' }}>
@@ -246,16 +303,25 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                             </h1>
                             <p style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.05rem', fontWeight: 500 }}>
                                 ID: <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{displayStudentId}</span> • {degreeType} in <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{branch}</span> • Specialization: <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{specializationName !== 'N/A' ? specializationName : 'None'}</span> • Honors: <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{honorsType}</span>
+                                {pathCode && <span> • Degree Path: <span style={{ color: '#FCA5A5', fontWeight: 700 }}>{pathCode}</span></span>}
                             </p>
                         </div>
-                        <div className="hero-stats">
-                            <div className="hero-stat-card" style={{ background: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                        <div className="hero-stats" style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                            <div className="hero-stat-card" style={{ background: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.1)', minWidth: '120px' }}>
                                 <span className="label" style={{ color: 'rgba(255,255,255,0.7)' }}>Total Courses</span>
                                 <span className="value" style={{ color: '#fff' }}>{totalCoursesCount}</span>
                             </div>
-                            <div className="hero-stat-card" style={{ background: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                                <span className="label" style={{ color: 'rgba(255,255,255,0.7)' }}>Total Credits</span>
-                                <span className="value" style={{ color: '#fff' }}>{totalCredits}</span>
+                            <div className="hero-stat-card" style={{ background: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.1)', minWidth: '120px' }}>
+                                <span className="label" style={{ color: 'rgba(255,255,255,0.7)' }}>Required Credits</span>
+                                <span className="value" style={{ color: '#fff' }}>{requiredCredits}</span>
+                            </div>
+                            <div className="hero-stat-card" style={{ background: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.1)', minWidth: '120px' }}>
+                                <span className="label" style={{ color: 'rgba(255,255,255,0.7)' }}>Obtained Credits</span>
+                                <span className="value" style={{ color: '#86EFAC' }}>{obtainedCredits}</span>
+                            </div>
+                            <div className="hero-stat-card" style={{ background: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.1)', minWidth: '120px' }}>
+                                <span className="label" style={{ color: 'rgba(255,255,255,0.7)' }}>Remaining Credits</span>
+                                <span className="value" style={{ color: '#FCA5A5' }}>{remainingCredits}</span>
                             </div>
                         </div>
                     </header>
@@ -264,7 +330,12 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                     <div className="analytics-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', marginBottom: '2.5rem' }}>
                         {/* Overall Progress Card */}
                         <div className="transcript-card" style={{ padding: '2rem', background: '#ffffff', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                            <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0, marginBottom: '1rem' }}>Overall Curriculum Progress</h2>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1rem', flexWrap: 'wrap', gap: '8px' }}>
+                                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>Overall Curriculum Progress</h2>
+                                <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#BE123C' }}>
+                                    {obtainedCredits} / {requiredCredits} Credits ({overallPercent}%)
+                                </span>
+                            </div>
                             <div style={{
                                 width: '100%',
                                 height: '14px',
@@ -276,21 +347,31 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                                 marginBottom: '1.5rem'
                             }}>
                                 <div style={{
-                                    width: `${overallPercent}%`,
+                                    width: `${Math.min(overallPercent, 100)}%`,
                                     height: '100%',
-                                    background: 'linear-gradient(90deg, #E11D48 0%, #BE123C 100%)',
+                                    background: 'linear-gradient(90deg, #10B981 0%, #059669 100%)',
                                     borderRadius: '20px',
                                     transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
                                 }}></div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                <div style={{ background: '#F8FAFC', padding: '10px 15px', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
-                                    <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block' }}>Department Core</span>
-                                    <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#E11D48' }}>{deptPercent}%</span>
+                                <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>Department Core</span>
+                                        <span style={{ fontSize: '0.8rem', color: '#1E293B', fontWeight: 700 }}>{deptCredits} Cr</span>
+                                    </div>
+                                    <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#2563EB' }}>
+                                        {deptCompleted} / {departmentCourses.length} Completed
+                                    </span>
                                 </div>
-                                <div style={{ background: '#F8FAFC', padding: '10px 15px', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
-                                    <span style={{ fontSize: '0.8rem', color: '#64748B', display: 'block' }}>General & Electives</span>
-                                    <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#059669' }}>{generalPercent}%</span>
+                                <div style={{ background: '#F8FAFC', padding: '12px 16px', borderRadius: '12px', border: '1px solid #F1F5F9' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>General & Electives</span>
+                                        <span style={{ fontSize: '0.8rem', color: '#1E293B', fontWeight: 700 }}>{generalCredits} Cr</span>
+                                    </div>
+                                    <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#059669' }}>
+                                        {generalCompleted} / {generalCourses.length} Completed
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -304,7 +385,7 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                                     width: '110px',
                                     height: '110px',
                                     borderRadius: '50%',
-                                    background: `conic-gradient(#10B981 0% ${overallPercent}%, #EF4444 ${overallPercent}% 100%)`,
+                                    background: `conic-gradient(#10B981 0% ${Math.min(overallPercent, 100)}%, #EF4444 ${Math.min(overallPercent, 100)}% 100%)`,
                                     boxShadow: '0 4px 15px rgba(0,0,0,0.08)',
                                     position: 'relative',
                                     flexShrink: 0
@@ -331,11 +412,11 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }}></span>
-                                        <span style={{ fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>Completed ({overallPercent}%)</span>
+                                        <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>Obtained ({obtainedCredits} Cr • {overallPercent}%)</span>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', display: 'inline-block' }}></span>
-                                        <span style={{ fontSize: '0.8rem', color: '#475569', fontWeight: 600 }}>Remaining ({100 - overallPercent}%)</span>
+                                        <span style={{ fontSize: '0.85rem', color: '#475569', fontWeight: 600 }}>Remaining ({remainingCredits} Cr • {Math.max(0, 100 - overallPercent)}%)</span>
                                     </div>
                                 </div>
                             </div>
@@ -352,15 +433,15 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                                 </div>
                                 {renderProgressBar(deptPercent, '#E11D48')}
                             </div>
-                            <span className="count-badge" style={{ background: '#FFF1F2', color: '#BE123C', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
-                                {deptCompleted} / {departmentCourses.length} Completed
+                            <span className="count-badge" style={{ background: '#FFF1F2', color: '#BE123C', padding: '6px 14px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
+                                {deptCompleted} / {departmentCourses.length} Completed • {deptCredits} Credits
                             </span>
                         </div>
-                        {renderCourseTable(departmentCourses, "Department Core", "No core department courses found in the catalog.", completedCourseCodes)}
+                        {renderCourseTable(departmentCourses, "Department Core", "No core department courses found in the academic record.", completedCourseCodes)}
                     </section>
 
                     {/* 2. Specialization Requirements */}
-                    {specializationName !== 'N/A' && (
+                    {specializationName !== 'N/A' && specializationCourses.length > 0 && (
                         <section className="curriculum-section" style={{ marginBottom: '2.5rem' }}>
                             <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '15px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -370,16 +451,16 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                                     </div>
                                     {renderProgressBar(specPercent, '#2563EB')}
                                 </div>
-                                <span className="count-badge" style={{ background: '#EFF6FF', color: '#1D4ED8', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
-                                    {specCompleted} / {specializationCourses.length} Completed
+                                <span className="count-badge" style={{ background: '#EFF6FF', color: '#1D4ED8', padding: '6px 14px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
+                                    {specCompleted} / {specializationCourses.length} Completed • {specCredits} Credits
                                 </span>
                             </div>
-                            {renderCourseTable(specializationCourses, "Specialization", "No specialization courses found in the catalog.", completedCourseCodes)}
+                            {renderCourseTable(specializationCourses, "Specialization", "No specialization courses found in the academic record.", completedCourseCodes)}
                         </section>
                     )}
 
                     {/* 3. Honors Requirements */}
-                    {honorsType !== 'REGULAR' && honorsType !== 'NONE' && (
+                    {honorsType !== 'REGULAR' && honorsType !== 'NONE' && honorsCourses.length > 0 && (
                         <section className="curriculum-section" style={{ marginBottom: '2.5rem' }}>
                             <div className="section-header-pill" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '15px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
@@ -389,11 +470,11 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                                     </div>
                                     {renderProgressBar(honorsPercent, '#7C3AED')}
                                 </div>
-                                <span className="count-badge" style={{ background: '#F5F3FF', color: '#6D28D9', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
-                                    {honorsCompleted} / {honorsCourses.length} Completed
+                                <span className="count-badge" style={{ background: '#F5F3FF', color: '#6D28D9', padding: '6px 14px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
+                                    {honorsCompleted} / {honorsCourses.length} Completed • {honorsCredits} Credits
                                 </span>
                             </div>
-                            {renderCourseTable(honorsCourses, "Honors Modules", "No honors courses found in the catalog.", completedCourseCodes)}
+                            {renderCourseTable(honorsCourses, "Honors Modules", "No honors courses found in the academic record.", completedCourseCodes)}
                         </section>
                     )}
 
@@ -407,11 +488,11 @@ export default function StudentLookupView({ endpointPrefix = '/dyod/faculty' }) 
                                 </div>
                                 {renderProgressBar(generalPercent, '#059669')}
                             </div>
-                            <span className="count-badge" style={{ background: '#ECFDF5', color: '#047857', padding: '4px 12px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
-                                {generalCompleted} / {generalCourses.length} Completed
+                            <span className="count-badge" style={{ background: '#ECFDF5', color: '#047857', padding: '6px 14px', borderRadius: '12px', fontWeight: 700, fontSize: '0.85rem' }}>
+                                {generalCompleted} / {generalCourses.length} Completed • {generalCredits} Credits
                             </span>
                         </div>
-                        {renderCourseTable(generalCourses, "General Requirements", "No general/elective requirements found in the catalog.", completedCourseCodes)}
+                        {renderCourseTable(generalCourses, "General Requirements", "No general/elective requirements found in the academic record.", completedCourseCodes)}
                     </section>
                 </div>
             )}

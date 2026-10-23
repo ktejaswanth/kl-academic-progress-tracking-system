@@ -35,6 +35,7 @@ public class ExitRequirementPdfService {
     @Autowired private StudentDegreeStatusRepository degreeStatusRepository;
     @Autowired private StudentExitSummaryRepository exitSummaryRepository;
     @Autowired private CompletedCourseRepository completedCourseRepository;
+    @Autowired private DegreePathEngine degreePathEngine;
 
     public static class CategoryData {
         public String categoryCode;
@@ -53,7 +54,9 @@ public class ExitRequirementPdfService {
 
         public void calculate() {
             this.remainingCredits = Math.max(0, this.requiredCredits - this.obtainedCredits);
-            if (this.obtainedCredits >= this.requiredCredits) {
+            if (this.requiredCredits == 0) {
+                this.status = !this.courses.isEmpty() ? "Complete" : "Pending";
+            } else if (this.obtainedCredits >= this.requiredCredits) {
                 this.status = "Complete";
             } else if (this.obtainedCredits > 0) {
                 this.status = "In Progress";
@@ -70,6 +73,7 @@ public class ExitRequirementPdfService {
         public String attempt1 = "-";
         public String attempt2 = "-";
         public String attempt3 = "-";
+        public String subCategory = "-";
 
         public CourseItem(String code, String name, int credits, String grade) {
             this.courseCode = code;
@@ -79,6 +83,13 @@ public class ExitRequirementPdfService {
                 this.attempt1 = grade.trim();
             } else {
                 this.attempt1 = "Pass";
+            }
+        }
+
+        public CourseItem(String code, String name, int credits, String grade, String subCategory) {
+            this(code, name, credits, grade);
+            if (subCategory != null && !subCategory.isBlank()) {
+                this.subCategory = subCategory.trim();
             }
         }
     }
@@ -134,6 +145,8 @@ public class ExitRequirementPdfService {
         catMap.put("PRI", new CategoryData("PRI", "Project Research and Internship (PRI)", 16));
         catMap.put("OEC", new CategoryData("OEC", "Open Elective Courses (OEC)", 12));
         catMap.put("SIL", new CategoryData("SIL", "Social Immersive Learning (SIL)", 3));
+        catMap.put("VAC", new CategoryData("VAC", "Value Added Courses (VAC)", 0));
+        catMap.put("AUC", new CategoryData("AUC", "Audit Courses (AUC)", 0));
 
         // 2. Load attempts lookup (courseCode -> attempts)
         List<StudentCourseAttempt> attempts = attemptRepository.findByUniversityId(student.getStudentId());
@@ -146,7 +159,8 @@ public class ExitRequirementPdfService {
             List<Map<String, Object>> buckets = bucketSatisfactionEngine.getDetailedBucketProgress(studentId);
             for (Map<String, Object> b : buckets) {
                 String bucketCode = String.valueOf(b.getOrDefault("bucketCode", "")).toUpperCase();
-                String targetCat = resolveCategory(bucketCode, String.valueOf(b.getOrDefault("bucketName", "")));
+                String bucketName = String.valueOf(b.getOrDefault("bucketName", ""));
+                String targetCat = resolveCategory(bucketCode, bucketName);
 
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> compCourses = (List<Map<String, Object>>) b.get("completedCourses");
@@ -163,7 +177,8 @@ public class ExitRequirementPdfService {
                         } catch (Exception ignored) {}
                         String grade = String.valueOf(c.getOrDefault("grade", "Pass"));
 
-                        CourseItem item = buildCourseItem(code, name, credits, grade, attemptMap.get(code));
+                        String subCategory = resolveSubCategory(code, targetCat, bucketCode, bucketName);
+                        CourseItem item = buildCourseItem(code, name, credits, grade, attemptMap.get(code), subCategory);
                         cat.courses.add(item);
                         cat.obtainedCredits += credits;
                         processedCourseCodes.add(code);
@@ -207,7 +222,8 @@ public class ExitRequirementPdfService {
             CategoryData cat = catMap.get(targetCat);
             if (cat != null) {
                 int cr = sc.getCredits() != null ? sc.getCredits().intValue() : 0;
-                CourseItem item = buildCourseItem(code, sc.getCourseName(), cr, sc.getGrade(), attemptMap.get(code));
+                String subCategory = resolveSubCategory(code, targetCat, null, null);
+                CourseItem item = buildCourseItem(code, sc.getCourseName(), cr, sc.getGrade(), attemptMap.get(code), subCategory);
                 cat.courses.add(item);
                 cat.obtainedCredits += cr;
                 processedCourseCodes.add(code);
@@ -221,6 +237,14 @@ public class ExitRequirementPdfService {
             cat.calculate();
             totalRequired += cat.requiredCredits;
             totalObtained += cat.obtainedCredits;
+        }
+
+        // Authoritatively resolve required credits from degree_paths matching department, addon, degree type, and academic_year
+        if (degreePathEngine != null) {
+            int pathRequired = degreePathEngine.getRequiredCreditsForStudent(student);
+            if (pathRequired > 0) {
+                totalRequired = pathRequired;
+            }
         }
         int totalRemaining = Math.max(0, totalRequired - totalObtained);
 
@@ -246,6 +270,10 @@ public class ExitRequirementPdfService {
         String admYear = student.getAcademicYear() != null ? student.getAcademicYear() : "2023";
         String dateOfAdmission = "July " + (admYear.contains("-") ? admYear.split("-")[0] : admYear);
 
+        DegreePath dp = degreePathEngine != null ? degreePathEngine.findMatchingDegreePath(student) : null;
+        String pathCode = dp != null ? dp.getPathCode() : (branch + "-REGULAR");
+        String academicYear = dp != null && dp.getAcademicYear() != null ? dp.getAcademicYear() : (degreePathEngine != null ? degreePathEngine.resolveAcademicYear(student) : "Y23");
+
         Map<String, Object> studentInfo = new LinkedHashMap<>();
         studentInfo.put("studentDbId", student.getId());
         studentInfo.put("rollNumber", student.getStudentId());
@@ -257,12 +285,20 @@ public class ExitRequirementPdfService {
         studentInfo.put("specialization", spec);
         studentInfo.put("dateOfAdmission", dateOfAdmission);
         studentInfo.put("expectedGraduation", "May 2027");
+        studentInfo.put("pathCode", pathCode);
+        studentInfo.put("academicYear", academicYear);
+        studentInfo.put("degreeType", student.getSubDepartment() != null ? student.getSubDepartment() : "REGULAR");
+        studentInfo.put("addon", student.getSpecializationType() != null ? student.getSpecializationType() : "NONE");
+        studentInfo.put("totalRequiredCredits", result.totalRequired);
 
         Map<String, Object> summaryInfo = new LinkedHashMap<>();
         summaryInfo.put("totalRequiredCredits", result.totalRequired);
         summaryInfo.put("totalObtainedCredits", result.totalObtained);
         summaryInfo.put("totalRemainingCredits", result.totalRemaining);
         summaryInfo.put("isEligible", result.totalObtained >= result.totalRequired);
+        summaryInfo.put("pathCode", pathCode);
+        summaryInfo.put("academicYear", academicYear);
+        summaryInfo.put("degreeType", student.getSubDepartment() != null ? student.getSubDepartment() : "REGULAR");
 
         List<Map<String, Object>> categoriesList = new ArrayList<>();
         for (CategoryData cat : result.catMap.values()) {
@@ -282,6 +318,7 @@ public class ExitRequirementPdfService {
                 courseMap.put("courseCode", ci.courseCode);
                 courseMap.put("courseName", ci.courseName);
                 courseMap.put("credits", ci.credits);
+                courseMap.put("subCategory", ci.subCategory);
                 courseMap.put("attempt1", ci.attempt1);
                 courseMap.put("attempt2", ci.attempt2);
                 courseMap.put("attempt3", ci.attempt3);
@@ -398,9 +435,11 @@ public class ExitRequirementPdfService {
                         315.5f, // OEC
                         294.2f  // SIL
                 };
-                int idx = 0;
-                for (CategoryData cat : catMap.values()) {
-                    float y = catRowY[idx++];
+                String[] mainPdfCategories = { "HAS", "BSC", "ESC", "FCC", "PCC", "PEC", "SDC", "PRI", "OEC", "SIL" };
+                for (int i = 0; i < mainPdfCategories.length; i++) {
+                    CategoryData cat = catMap.get(mainPdfCategories[i]);
+                    if (cat == null) continue;
+                    float y = catRowY[i];
                     // Center in Obtained column (415..485)
                     drawCenteredText(cs, fontBold, 8.5f, 415.0f, 485.0f, y, String.valueOf(cat.obtainedCredits));
                     // Center in Remaining column (485..562)
@@ -546,7 +585,11 @@ public class ExitRequirementPdfService {
     }
 
     private CourseItem buildCourseItem(String code, String name, int credits, String grade, List<StudentCourseAttempt> attempts) {
-        CourseItem item = new CourseItem(code, name, credits, grade);
+        return buildCourseItem(code, name, credits, grade, attempts, "-");
+    }
+
+    private CourseItem buildCourseItem(String code, String name, int credits, String grade, List<StudentCourseAttempt> attempts, String subCategory) {
+        CourseItem item = new CourseItem(code, name, credits, grade, subCategory);
         if (attempts != null && !attempts.isEmpty()) {
             attempts.sort(Comparator.comparing(StudentCourseAttempt::getAttemptNumber, Comparator.nullsLast(Comparator.naturalOrder())));
             if (attempts.size() >= 1 && attempts.get(0).getGrade() != null && !"null".equalsIgnoreCase(attempts.get(0).getGrade().trim())) {
@@ -697,12 +740,14 @@ public class ExitRequirementPdfService {
         if (desc == null) desc = "";
         String b = (bucketKey + " " + desc).toUpperCase();
 
+        if (b.contains("VAC") || b.contains("VALUE ADDED") || b.contains("CERTIFICATION") || b.contains("SPORTS")) return "VAC";
+        if (b.contains("AUC") || b.contains("AUDIT") || b.contains("CAREER") || b.contains("CRT")) return "AUC";
         if (b.contains("HAS") || b.contains("HUMANITIES") || b.contains("MANAGEMENT ELECTIVE")) return "HAS";
         if (b.contains("BSC") || b.contains("BASIC SCIENCE") || b.contains("MATHEMATICS ELECTIVE") || b.contains("SCIENCE ELECTIVE")) return "BSC";
         if (b.contains("ESC") || b.contains("ENGINEERING SCIENCE")) return "ESC";
         if (b.contains("FC-") || b.contains("FCC") || b.contains("FLEXI CORE")) return "FCC";
         if (b.contains("PCC") || b.contains("PROFESSIONAL CORE")) return "PCC";
-        if (b.contains("PEC") || b.contains("PROGRAM ELECTIVE") || b.contains("PE-") || b.contains("PE1") || b.contains("PE2") || b.contains("PE3") || b.contains("PE4") || b.contains("PE5") || b.contains("HEC")) return "PEC";
+        if (b.contains("PEC") || b.contains("PROGRAM ELECTIVE") || b.contains("PROFESSIONAL ELECTIVE") || b.contains("PE-") || b.contains("PE1") || b.contains("PE2") || b.contains("PE3") || b.contains("PE4") || b.contains("PE5") || b.contains("HEC")) return "PEC";
         if (b.contains("SDC") || b.contains("SDP") || b.contains("SKILL")) return "SDC";
         if (b.contains("PRI") || b.contains("PROJECT") || b.contains("INTERNSHIP") || b.contains("RESEARCH")) return "PRI";
         if (b.contains("OEC") || b.contains("OE-") || b.contains("OE1") || b.contains("OE2") || b.contains("OE3") || b.contains("OPEN ELECTIVE")) return "OEC";
@@ -713,14 +758,73 @@ public class ExitRequirementPdfService {
     private String guessCategoryFromCode(String code) {
         if (code == null) return "OEC";
         String c = code.toUpperCase();
-        if (c.startsWith("23UC") || c.startsWith("23HS") || c.startsWith("23EN")) return "HAS";
-        if (c.startsWith("23SC") || c.startsWith("23MA") || c.startsWith("23PH") || c.startsWith("23CH")) return "BSC";
-        if (c.startsWith("23EC") || c.startsWith("23EE") || c.startsWith("23ME")) return "ESC";
+        if (c.startsWith("23CC") || c.startsWith("23SP") || c.startsWith("VAC") || c.contains("CERT")) return "VAC";
+        if (c.startsWith("CRT") || c.startsWith("23UC00") || c.endsWith("L") || c.startsWith("AUC") || c.contains("PRACTICUM")) return "AUC";
+        if (c.startsWith("22UC") || c.startsWith("SIL")) return "SIL";
+        if (c.startsWith("23UC") || c.startsWith("23HS") || c.startsWith("23EN") || c.startsWith("23MG")) return "HAS";
+        if (c.endsWith("F") || c.contains("FCC") || c.contains("FC-")) return "FCC";
+        if (c.startsWith("23MT") || c.startsWith("23SC3") || c.startsWith("23MA") || c.startsWith("23PH") || c.startsWith("23CH")) return "BSC";
+        if (c.startsWith("23EC") || c.startsWith("23EE") || c.startsWith("23ME") || c.startsWith("23SC1") || "23CS1207".equalsIgnoreCase(c)) return "ESC";
+        if (c.startsWith("23SD") || c.contains("SDC") || c.contains("SDP")) return "SDC";
+        if (c.startsWith("23IE") || c.startsWith("23PR") || c.startsWith("23IN") || c.startsWith("23CP")) return "PRI";
+        if (c.startsWith("23ALT") || c.startsWith("23PE") || c.contains("PEC")) return "PEC";
         if (c.startsWith("23CS") || c.startsWith("23AD")) return "PCC";
-        if (c.startsWith("23SD")) return "SDC";
-        if (c.startsWith("23PR") || c.startsWith("23IN") || c.startsWith("23CP")) return "PRI";
         if (c.startsWith("OE")) return "OEC";
-        return "PEC";
+        return "PCC";
+    }
+
+    private String resolveSubCategory(String code, String targetCategory, String bucketCode, String bucketName) {
+        String c = code != null ? code.trim().toUpperCase() : "";
+        String bc = bucketCode != null ? bucketCode.trim().toUpperCase() : "";
+        String bn = bucketName != null ? bucketName.trim().toUpperCase() : "";
+
+        if (bc.contains("VAC-CERT") || bn.contains("CERTIFICATION") || c.startsWith("23CC") || c.contains("CERT")) {
+            return "VAC-CERT (Certification)";
+        }
+        if (bc.contains("VAC-SPORTS") || bn.contains("SPORTS") || c.startsWith("23SP")) {
+            return "VAC-SPORTS (Sports)";
+        }
+        if ("VAC".equalsIgnoreCase(targetCategory) || bc.startsWith("VAC")) {
+            return "VAC-CORE (Value Added)";
+        }
+
+        if (bc.contains("AUC-CAREER") || bn.contains("CAREER") || c.startsWith("CRT")) {
+            return "AUC-CAREER (Career Training)";
+        }
+        if (bc.contains("AUC-CORE") || bn.contains("AUDIT") || c.startsWith("23UC00") || c.endsWith("L") || c.contains("PRACTICUM")) {
+            return "AUC-CORE (Audit Core)";
+        }
+        if ("AUC".equalsIgnoreCase(targetCategory) || bc.startsWith("AUC")) {
+            return "AUC-AUDIT (Audit Course)";
+        }
+
+        if ("PEC".equalsIgnoreCase(targetCategory)) {
+            if (bc.contains("PE1") || bc.contains("PE-1") || bn.contains("ELECTIVE 1")) return "PE-1 (Program Elective)";
+            if (bc.contains("PE2") || bc.contains("PE-2") || bn.contains("ELECTIVE 2")) return "PE-2 (Program Elective)";
+            if (bc.contains("PE3") || bc.contains("PE-3") || bn.contains("ELECTIVE 3")) return "PE-3 (Program Elective)";
+            if (bc.contains("PE4") || bc.contains("PE-4") || bn.contains("ELECTIVE 4")) return "PE-4 (Program Elective)";
+            if (bc.contains("PE5") || bc.contains("PE-5") || bn.contains("ELECTIVE 5")) return "PE-5 (Program Elective)";
+            return "PE-1 (Program Elective)";
+        }
+
+        if ("HAS".equalsIgnoreCase(targetCategory)) return "HAS-CORE";
+        if ("BSC".equalsIgnoreCase(targetCategory)) {
+            if (c.startsWith("23MT") || c.startsWith("23SC3") || bn.contains("MATH")) return "BSC-ME (Math Elective)";
+            return "BSC-CORE";
+        }
+        if ("ESC".equalsIgnoreCase(targetCategory)) return "ESC-CORE";
+        if ("FCC".equalsIgnoreCase(targetCategory)) return "FC-1 (Flexi Core)";
+        if ("PCC".equalsIgnoreCase(targetCategory)) return "PCC-CORE";
+        if ("SDC".equalsIgnoreCase(targetCategory)) return "SDP (Skill Development)";
+        if ("PRI".equalsIgnoreCase(targetCategory)) {
+            if (bn.contains("INTERN") || c.startsWith("23IE") || c.startsWith("23IN")) return "PRI-INTERNSHIP";
+            return "PRI-PROJECT";
+        }
+        if ("SIL".equalsIgnoreCase(targetCategory)) return "SIL-CORE (Social Immersive)";
+        if ("OEC".equalsIgnoreCase(targetCategory)) return "OE-1 (Open Elective)";
+
+        if (!bc.isBlank()) return bc;
+        return "-";
     }
 
     public byte[] loadTemplateBytes() throws Exception {

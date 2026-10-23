@@ -43,10 +43,10 @@ export default function ViewAllStudents() {
         fetchStudents();
     }, []);
 
-    const togglePassword = (index) => {
+    const togglePassword = (key) => {
         setVisiblePasswords(prev => ({
             ...prev,
-            [index]: !prev[index]
+            [key]: !prev[key]
         }));
     };
 
@@ -231,13 +231,13 @@ export default function ViewAllStudents() {
                                         </td>
                                         <td>
                                             <div className="password-display">
-                                                <code>{visiblePasswords[index] ? (student.rawPassword || '••••••••') : '••••••••'}</code>
+                                                <code>{visiblePasswords[student.id || index] ? (student.rawPassword || student.studentId || 'Set by user') : '••••••••'}</code>
                                                 <button
                                                     className="visibility-toggle"
-                                                    onClick={() => togglePassword(index)}
-                                                    title={visiblePasswords[index] ? "Hide Password" : "Show Password"}
+                                                    onClick={() => togglePassword(student.id || index)}
+                                                    title={visiblePasswords[student.id || index] ? "Hide Password" : "Show Password"}
                                                 >
-                                                    {visiblePasswords[index] ? '👁️‍🗨️' : '👁️'}
+                                                    {visiblePasswords[student.id || index] ? '👁️‍🗨️' : '👁️'}
                                                 </button>
                                             </div>
                                         </td>

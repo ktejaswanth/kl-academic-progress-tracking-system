@@ -38,7 +38,6 @@ public class Admin {
     @Column(nullable = false)
     private String password;
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
     @Column(name = "raw_password")
     private String rawPassword;
 

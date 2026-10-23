@@ -78,7 +78,7 @@ export default function ExitRequirementReportPreview({ reportData, downloadUrl, 
                     <span className="report-badge-icon">🎓</span>
                     <div>
                         <h3>Official Exit Requirement Audit Report</h3>
-                        <span>10-Vertical DYOD Degree Audit • Verified Academic Record</span>
+                        <span>Curriculum Verticals & Mandatory Audit Requirements • Verified Academic Record</span>
                     </div>
                 </div>
                 <div className="report-buttons-group">
@@ -189,10 +189,10 @@ export default function ExitRequirementReportPreview({ reportData, downloadUrl, 
                     </div>
                 </div>
 
-                {/* Ten Categories Summary Matrix */}
+                {/* Categories Summary Matrix */}
                 <div className="matrix-section">
                     <div className="section-label-bar">
-                        <span>📊 Curriculum Verticals Summary (10 Categories)</span>
+                        <span>📊 Curriculum Verticals Summary ({categories.length} Categories)</span>
                     </div>
                     <table className="matrix-table">
                         <thead>
@@ -233,7 +233,7 @@ export default function ExitRequirementReportPreview({ reportData, downloadUrl, 
                     </table>
                 </div>
 
-                {/* Detailed Course Breakdown Across all 10 Categories */}
+                {/* Detailed Course Breakdown Across all Categories */}
                 <div className="categories-breakdown-section">
                     <div className="section-label-bar" style={{ marginBottom: '1.25rem' }}>
                         <span>📚 Detailed Course Records & Attempts by Category</span>
@@ -262,13 +262,14 @@ export default function ExitRequirementReportPreview({ reportData, downloadUrl, 
                                     <table className="category-courses-table">
                                         <thead>
                                             <tr>
-                                                <th style={{ width: '50px' }}>S.No</th>
-                                                <th style={{ width: '130px' }}>Course Code</th>
+                                                <th style={{ width: '45px' }}>S.No</th>
+                                                <th style={{ width: '120px' }}>Course Code</th>
                                                 <th>Course Title</th>
-                                                <th style={{ width: '70px', textAlign: 'center' }}>Credits</th>
-                                                <th style={{ width: '90px', textAlign: 'center' }}>Attempt 1</th>
-                                                <th style={{ width: '90px', textAlign: 'center' }}>Attempt 2</th>
-                                                <th style={{ width: '90px', textAlign: 'center' }}>Attempt 3</th>
+                                                <th style={{ width: '200px' }}>Sub-Category / Bucket</th>
+                                                <th style={{ width: '65px', textAlign: 'center' }}>Credits</th>
+                                                <th style={{ width: '85px', textAlign: 'center' }}>Attempt 1</th>
+                                                <th style={{ width: '85px', textAlign: 'center' }}>Attempt 2</th>
+                                                <th style={{ width: '85px', textAlign: 'center' }}>Attempt 3</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -277,6 +278,11 @@ export default function ExitRequirementReportPreview({ reportData, downloadUrl, 
                                                     <td>{c.sNo || idx + 1}</td>
                                                     <td className="course-code-cell">{c.courseCode}</td>
                                                     <td>{c.courseName}</td>
+                                                    <td>
+                                                        <span className="subcat-badge">
+                                                            {c.subCategory || '-'}
+                                                        </span>
+                                                    </td>
                                                     <td style={{ textAlign: 'center', fontWeight: 600 }}>{c.credits}</td>
                                                     <td style={{ textAlign: 'center' }}>
                                                         <span className="grade-pill grade-pass">{c.attempt1 || 'Pass'}</span>

@@ -196,9 +196,93 @@ public class DegreePathEngine {
         return result;
     }
 
-    // ==================== Private mapping helpers ====================
+    /**
+     * Resolve the student's cohort academic year (e.g. Y23, Y24).
+     */
+    public String resolveAcademicYear(Student student) {
+        if (student == null) return "Y23";
+        if (student.getAcademicYear() != null) {
+            String ay = student.getAcademicYear().toUpperCase().trim();
+            if (ay.startsWith("Y2") || ay.startsWith("Y1")) return ay;
+            if (ay.contains("2023") || ay.contains("23-24") || ay.contains("23")) return "Y23";
+            if (ay.contains("2024") || ay.contains("24-25") || ay.contains("24")) return "Y24";
+            if (ay.contains("2022") || ay.contains("22-23") || ay.contains("22")) return "Y22";
+        }
+        if (student.getStudentId() != null) {
+            String sid = student.getStudentId().trim();
+            if (sid.startsWith("23")) return "Y23";
+            if (sid.startsWith("24")) return "Y24";
+            if (sid.startsWith("22")) return "Y22";
+        }
+        return "Y23";
+    }
 
-    private String mapDepartment(String dept) {
+    /**
+     * Authoritative lookup: search profile department, degree type, addon type, and academic_year in degree_paths.
+     */
+    public DegreePath findMatchingDegreePath(Student student) {
+        if (student == null) return null;
+
+        // 1. Check if assigned in student_degree_path table
+        try {
+            Optional<StudentDegreePath> sdpOpt = studentDegreePathRepository.findByStudentId(student.getId());
+            if (sdpOpt.isPresent() && sdpOpt.get().getDegreePath() != null) {
+                return sdpOpt.get().getDegreePath();
+            }
+        } catch (Exception ignored) {}
+
+        // 2. Resolve department, degree type, addon type, and academic year from student profile
+        String deptCode = mapDepartment(student.getDepartment());
+        if (deptCode == null) deptCode = "AIDS";
+
+        String typeCode = mapDegreeType(student.getSubDepartment());
+        String addonCode = mapAddonType(student.getSpecializationType());
+        if ("NONE".equals(addonCode) && student.getSpecializationName() != null 
+                && !student.getSpecializationName().isBlank() 
+                && !"N/A".equalsIgnoreCase(student.getSpecializationName())
+                && !"NONE".equalsIgnoreCase(student.getSpecializationName())) {
+            addonCode = "SPECIALIZATION";
+        }
+
+        String academicYear = resolveAcademicYear(student);
+
+        // 3. Match against degree_paths table using academic_year and path_code
+        List<String> candidates = new ArrayList<>();
+        if (!"NONE".equals(addonCode)) {
+            candidates.add(deptCode + "-" + typeCode + "-" + addonCode);
+        }
+        candidates.add(deptCode + "-" + typeCode);
+        candidates.add(deptCode + "-" + typeCode + "-NONE");
+        candidates.add(deptCode + "-REGULAR");
+
+        for (String code : candidates) {
+            Optional<DegreePath> dp = degreePathRepository.findByPathCodeAndAcademicYear(code, academicYear);
+            if (dp.isPresent()) return dp.get();
+        }
+
+        for (String code : candidates) {
+            Optional<DegreePath> dp = degreePathRepository.findByPathCode(code);
+            if (dp.isPresent()) return dp.get();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get authoritative total required credits for a student by looking up degree_paths table.
+     */
+    public int getRequiredCreditsForStudent(Student student) {
+        DegreePath path = findMatchingDegreePath(student);
+        if (path != null && path.getTotalCredits() != null && path.getTotalCredits() > 0) {
+            return path.getTotalCredits();
+        }
+        String dept = student != null ? student.getDepartment() : "";
+        return ("AIDS".equalsIgnoreCase(dept) || (dept != null && dept.toUpperCase().contains("AIDS"))) ? 166 : 163;
+    }
+
+    // ==================== Public mapping helpers ====================
+
+    public String mapDepartment(String dept) {
         if (dept == null || dept.trim().isEmpty()) return null;
         String upper = dept.toUpperCase().trim();
         // Exact and fuzzy match for CSE
@@ -215,7 +299,7 @@ public class DegreePathEngine {
         return null; // Unknown / ambiguous department! Do NOT default to CSE!
     }
 
-    private String mapDegreeType(String subDept) {
+    public String mapDegreeType(String subDept) {
         if (subDept == null || subDept.isEmpty() || "REGULAR".equalsIgnoreCase(subDept)) return "REGULAR";
         String upper = subDept.toUpperCase().trim();
         if (upper.contains("HTE")) return "HTE";
@@ -225,7 +309,7 @@ public class DegreePathEngine {
         return "REGULAR";
     }
 
-    private String mapAddonType(String specType) {
+    public String mapAddonType(String specType) {
         if (specType == null || specType.isEmpty() || "NONE".equalsIgnoreCase(specType)) return "NONE";
         String upper = specType.toUpperCase().trim();
         if (upper.contains("SPECIALIZATION") || upper.contains("SPEC")) return "SPECIALIZATION";

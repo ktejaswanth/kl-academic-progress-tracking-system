@@ -25,10 +25,10 @@ export default function ViewAllAdmins() {
         fetchAdmins();
     }, []);
 
-    const togglePassword = (index) => {
+    const togglePassword = (key) => {
         setVisiblePasswords(prev => ({
             ...prev,
-            [index]: !prev[index]
+            [key]: !prev[key]
         }));
     };
 
@@ -130,13 +130,13 @@ export default function ViewAllAdmins() {
                                         </td>
                                         <td>
                                             <div className="password-display">
-                                                <code>{visiblePasswords[index] ? (admin.rawPassword || '••••••••') : '••••••••'}</code>
+                                                <code>{visiblePasswords[admin.id || index] ? (admin.rawPassword || '••••••••') : '••••••••'}</code>
                                                 <button
                                                     className="visibility-toggle"
-                                                    onClick={() => togglePassword(index)}
-                                                    title={visiblePasswords[index] ? "Hide Password" : "Show Password"}
+                                                    onClick={() => togglePassword(admin.id || index)}
+                                                    title={visiblePasswords[admin.id || index] ? "Hide Password" : "Show Password"}
                                                 >
-                                                    {visiblePasswords[index] ? '👁️‍🗨️' : '👁️'}
+                                                    {visiblePasswords[admin.id || index] ? '👁️‍🗨️' : '👁️'}
                                                 </button>
                                             </div>
                                         </td>
