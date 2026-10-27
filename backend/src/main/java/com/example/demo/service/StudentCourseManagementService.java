@@ -158,7 +158,8 @@ public class StudentCourseManagementService {
                 obtainedCredits = credits;
             }
 
-            String category = (comp != null && comp.getCategory() != null) ? comp.getCategory() : normalizeCategory(upperCode, null);
+            String rawCat = (comp != null && comp.getCategory() != null && !comp.getCategory().isBlank()) ? comp.getCategory().trim().toUpperCase() : null;
+            String category = normalizeCategory(upperCode, rawCat);
 
             StudentCourseDTO dto = StudentCourseDTO.builder()
                     .id(sc.getId())

@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class ExitRequirementPdfService {
 
     private static final Logger log = LoggerFactory.getLogger(ExitRequirementPdfService.class);
@@ -36,6 +36,7 @@ public class ExitRequirementPdfService {
     @Autowired private StudentExitSummaryRepository exitSummaryRepository;
     @Autowired private CompletedCourseRepository completedCourseRepository;
     @Autowired private DegreePathEngine degreePathEngine;
+    @Autowired private StudentDegreePathRepository studentDegreePathRepository;
 
     public static class CategoryData {
         public String categoryCode;
@@ -152,6 +153,18 @@ public class ExitRequirementPdfService {
         List<StudentCourseAttempt> attempts = attemptRepository.findByUniversityId(student.getStudentId());
         Map<String, List<StudentCourseAttempt>> attemptMap = attempts.stream()
                 .collect(Collectors.groupingBy(StudentCourseAttempt::getCourseCode));
+
+        // Ensure student has assigned degree path before bucket progress evaluation
+        if (degreePathEngine != null && !studentDegreePathRepository.existsByStudentId(studentId)) {
+            try {
+                DegreePath resolved = degreePathEngine.findMatchingDegreePath(student);
+                if (resolved != null) {
+                    degreePathEngine.assignPath(studentId, resolved.getId(), null);
+                }
+            } catch (Exception e) {
+                log.debug("Auto-assign degree path note for {}: {}", student.getStudentId(), e.getMessage());
+            }
+        }
 
         // 3. Load Courses via BucketSatisfactionEngine & CompletedCourseRepository
         Set<String> processedCourseCodes = new HashSet<>();

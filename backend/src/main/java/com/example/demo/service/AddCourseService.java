@@ -66,6 +66,9 @@ public class AddCourseService {
     private DegreeEligibilityEngine degreeEligibilityEngine;
 
     @Autowired
+    private DegreePathEngine degreePathEngine;
+
+    @Autowired
     private AuditHistoryRepository auditHistoryRepository;
 
     @Autowired
@@ -76,6 +79,8 @@ public class AddCourseService {
 
     @Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+    private final java.util.Set<String> verifiedTables = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules();
 
@@ -366,7 +371,7 @@ public class AddCourseService {
      * If not existing, creates it dynamically with all required columns, indexes, and constraints.
      * Also refreshes completed_courses and student_courses views to UNION ALL all active batch tables.
      */
-    public synchronized String ensureBatchTableExists(String batch) {
+    public String ensureBatchTableExists(String batch) {
         String cleanBatch = (batch != null && !batch.trim().isEmpty()) ? batch.trim().toLowerCase() : "y23";
         if (!cleanBatch.startsWith("y")) {
             cleanBatch = "y" + cleanBatch;
@@ -378,54 +383,85 @@ public class AddCourseService {
 
         String tableName = cleanBatch + "_students_courses";
 
-        try {
-            String ddl = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
-                    "id BIGSERIAL PRIMARY KEY, " +
-                    "student_id BIGINT, " +
-                    "university_id VARCHAR(50) NOT NULL, " +
-                    "student_name VARCHAR(255), " +
-                    "course_code VARCHAR(50) NOT NULL, " +
-                    "course_name VARCHAR(255), " +
-                    "ltps VARCHAR(50), " +
-                    "credits INTEGER DEFAULT 0, " +
-                    "grade VARCHAR(10), " +
-                    "bucket_group VARCHAR(100), " +
-                    "course_type VARCHAR(100), " +
-                    "academic_year VARCHAR(50), " +
-                    "semester VARCHAR(20), " +
-                    "study_year INTEGER, " +
-                    "section_no VARCHAR(50), " +
-                    "register_date DATE, " +
-                    "course_ref VARCHAR(100), " +
-                    "offer_to VARCHAR(100), " +
-                    "offer_by VARCHAR(100), " +
-                    "branch VARCHAR(100), " +
-                    "category VARCHAR(100), " +
-                    "status VARCHAR(50) DEFAULT 'Completed', " +
-                    "verified_by BIGINT, " +
-                    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                    "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
-                    ");";
-            jdbcTemplate.execute(ddl);
+        // Fast path: if verified in memory, return immediately without any DB query or DDL
+        if (verifiedTables.contains(tableName)) {
+            return tableName;
+        }
 
-            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_univ_course ON " + tableName + " (university_id, course_code);");
-            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_univ ON " + tableName + " (university_id);");
-            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_student_id ON " + tableName + " (student_id);");
-            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_course ON " + tableName + " (course_code);");
-            jdbcTemplate.execute("CREATE UNIQUE INDEX IF NOT EXISTS uq_" + tableName + "_record ON " + tableName + " (university_id, course_code, semester, academic_year);");
-
-            // Enforce foreign key linking to students table
-            try {
-                jdbcTemplate.execute("ALTER TABLE " + tableName + " ADD CONSTRAINT fk_" + tableName + "_student FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE;");
-            } catch (Exception ignored) {
-                // Constraint already exists
+        synchronized (this) {
+            if (verifiedTables.contains(tableName)) {
+                return tableName;
             }
 
-            // Refresh completed_courses view
-            refreshCompletedCoursesView();
-        } catch (Exception e) {
-            System.err.println("Notice ensuring batch table " + tableName + ": " + e.getMessage());
-            throw new IllegalStateException("Failed to initialize batch table " + tableName + ": " + e.getMessage(), e);
+            try {
+                // Check if table already exists in database - if so, DO NOT alter schema or refresh views during upload
+                Integer count = jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name = ?",
+                        Integer.class,
+                        tableName
+                );
+
+                if (count != null && count > 0) {
+                    verifiedTables.add(tableName);
+                    return tableName;
+                }
+
+                // Table does not exist: create it cleanly with required structure
+                String ddl = "CREATE TABLE IF NOT EXISTS " + tableName + " (" +
+                        "id BIGSERIAL PRIMARY KEY, " +
+                        "student_id BIGINT, " +
+                        "university_id VARCHAR(50) NOT NULL, " +
+                        "student_name VARCHAR(255), " +
+                        "course_code VARCHAR(50) NOT NULL, " +
+                        "course_name VARCHAR(255), " +
+                        "ltps VARCHAR(50), " +
+                        "credits INTEGER DEFAULT 0, " +
+                        "grade VARCHAR(10), " +
+                        "bucket_group VARCHAR(100), " +
+                        "course_type VARCHAR(100), " +
+                        "academic_year VARCHAR(50), " +
+                        "semester VARCHAR(20), " +
+                        "study_year INTEGER, " +
+                        "section_no VARCHAR(50), " +
+                        "register_date DATE, " +
+                        "course_ref VARCHAR(100), " +
+                        "offer_to VARCHAR(100), " +
+                        "offer_by VARCHAR(100), " +
+                        "branch VARCHAR(100), " +
+                        "category VARCHAR(100), " +
+                        "status VARCHAR(50) DEFAULT 'Completed', " +
+                        "verified_by BIGINT, " +
+                        "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                        "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP" +
+                        ");";
+                jdbcTemplate.execute(ddl);
+
+                jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_univ_course ON " + tableName + " (university_id, course_code);");
+                jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_univ ON " + tableName + " (university_id);");
+                jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_student_id ON " + tableName + " (student_id);");
+                jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_" + tableName + "_course ON " + tableName + " (course_code);");
+                jdbcTemplate.execute("CREATE UNIQUE INDEX IF NOT EXISTS uq_" + tableName + "_record ON " + tableName + " (university_id, course_code, semester, academic_year);");
+
+                // Enforce foreign key linking to students table safely without aborting transaction if already exists
+                String fkConstraintName = "fk_" + tableName + "_student";
+                String addFkSql = "DO $$ " +
+                        "BEGIN " +
+                        "    IF NOT EXISTS ( " +
+                        "        SELECT 1 FROM pg_constraint WHERE conname = '" + fkConstraintName + "' " +
+                        "    ) THEN " +
+                        "        ALTER TABLE " + tableName + " ADD CONSTRAINT " + fkConstraintName + " FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE; " +
+                        "    END IF; " +
+                        "END $$;";
+                jdbcTemplate.execute(addFkSql);
+
+                // Refresh completed_courses view
+                refreshCompletedCoursesView();
+
+                verifiedTables.add(tableName);
+            } catch (Exception e) {
+                System.err.println("Notice ensuring batch table " + tableName + ": " + e.getMessage());
+                throw new IllegalStateException("Failed to initialize batch table " + tableName + ": " + e.getMessage(), e);
+            }
         }
 
         return tableName;
@@ -433,6 +469,8 @@ public class AddCourseService {
 
     /**
      * Refreshes the completed_courses and student_courses views to UNION ALL all batch tables.
+     * Preserves all 25 columns in completed_courses and 17 columns in student_courses to prevent PostgreSQL
+     * 'cannot drop columns from view' errors.
      */
     public synchronized void refreshCompletedCoursesView() {
         try {
@@ -447,13 +485,15 @@ public class AddCourseService {
             StringBuilder sb = new StringBuilder("CREATE OR REPLACE VIEW completed_courses AS ");
             for (int i = 0; i < tables.size(); i++) {
                 if (i > 0) sb.append(" UNION ALL ");
-                sb.append("SELECT id, student_id, university_id, student_name, course_code, course_name, credits, grade, semester, ltps, bucket_group, course_type, academic_year, study_year, section_no, register_date, course_ref, offer_to, offer_by, branch, category, status, verified_by, created_at FROM ").append(tables.get(i));
+                sb.append("SELECT id, student_id, university_id, student_name, course_code, course_name, credits, grade, semester, ltps, bucket_group, course_type, academic_year, study_year, section_no, register_date, course_ref, offer_to, offer_by, branch, category, status, verified_by, created_at, register_date AS completed_date FROM ").append(tables.get(i));
             }
             jdbcTemplate.execute(sb.toString());
 
-            // Also refresh student_courses view
+            // Also refresh student_courses view with all 17 existing columns
             jdbcTemplate.execute("CREATE OR REPLACE VIEW student_courses AS " +
-                    "SELECT id, student_id, university_id, NULL::BIGINT AS curriculum_version_id, NULL::BIGINT AS course_id, NULL::BIGINT AS curriculum_course_id, course_code, course_name, credits::DOUBLE PRECISION AS credits, grade, status, semester, academic_year, register_date AS completed_date, created_at FROM completed_courses;");
+                    "SELECT id, student_id, university_id, NULL::BIGINT AS curriculum_version_id, NULL::BIGINT AS course_id, NULL::BIGINT AS curriculum_course_id, " +
+                    "course_code, course_name, credits::DOUBLE PRECISION AS credits, grade, status, semester, academic_year, completed_date, created_at, " +
+                    "NULL::BIGINT AS upload_id, NULL::INTEGER AS source_row FROM completed_courses;");
 
             // Re-apply trigger function and trigger
             String triggerSql = "CREATE OR REPLACE FUNCTION trg_completed_courses_view_sync() " +
@@ -512,7 +552,7 @@ public class AddCourseService {
         String targetBatch = (batch != null && !batch.trim().isEmpty()) ? batch.trim().toUpperCase() : null;
         String tableName = (targetBatch != null) ? ensureBatchTableExists(targetBatch) : null;
 
-        int[] counters = new int[4]; // [0] = total, [1] = added/updated, [2] = skipped, [3] = failed
+        int[] counters = new int[6]; // [0] = total, [1] = inserted, [2] = updated, [3] = skippedDuplicates, [4] = validationFailures, [5] = databaseFailures
         List<String> errors = new ArrayList<>();
         Set<String> distinctStudentIds = new HashSet<>();
         List<com.example.demo.utils.CourseFileStreamingParser.ParsedRow> chunk = new ArrayList<>(1000);
@@ -524,9 +564,10 @@ public class AddCourseService {
                 counters[0]++; // total
 
                 if (row.status != null && row.status.startsWith("FAILED")) {
-                    counters[3]++; // failed
+                    counters[4]++; // validation failure
                     if (errors.size() < 100) {
-                        errors.add("Row missing required universityId or courseCode (student: " + (row.studentName != null ? row.studentName : "unknown") + ")");
+                        String reason = row.status.contains(":") ? row.status.substring(row.status.indexOf(":") + 1).trim() : "Missing required universityId or courseCode";
+                        errors.add("Validation failure (" + reason + ") for student: " + (row.universityId != null && !row.universityId.trim().isEmpty() ? row.universityId : (row.studentName != null ? row.studentName : "unknown")) + ", course: " + (row.courseCode != null ? row.courseCode : "unknown"));
                     }
                     return;
                 }
@@ -570,14 +611,18 @@ public class AddCourseService {
         // Auto-register any missing students in students table
         try {
             String encodedDefaultPassword = passwordEncoder.encode("Password@123");
-            String syncStudentsSql = "INSERT INTO students (student_id, first_name, last_name, email, password, department, academic_year, is_active) " +
+            String syncStudentsSql = "INSERT INTO students (student_id, first_name, last_name, email, password, raw_password, department, sub_department, specialization_type, specialization_name, academic_year, is_active) " +
                     "SELECT DISTINCT " +
                     "  b.university_id, " +
                     "  COALESCE(NULLIF(SPLIT_PART(b.student_name, ' ', 1), ''), b.university_id), " +
                     "  COALESCE(NULLIF(SUBSTRING(b.student_name FROM POSITION(' ' IN b.student_name) + 1), ''), ''), " +
                     "  LOWER(b.university_id) || '@kluniversity.in', " +
                     "  ?, " +
-                    "  COALESCE(NULLIF(b.branch, ''), 'UNASSIGNED'), " +
+                    "  'Password@123', " +
+                    "  COALESCE(NULLIF(b.branch, ''), 'AIDS'), " +
+                    "  'REGULAR', " +
+                    "  'NONE', " +
+                    "  'N/A', " +
                     "  ?, " +
                     "  TRUE " +
                     "FROM " + finalTable + " b " +
@@ -587,11 +632,33 @@ public class AddCourseService {
 
             // Re-link student_id in batch table
             jdbcTemplate.execute("UPDATE " + finalTable + " b SET student_id = s.id FROM students s WHERE b.university_id = s.student_id AND b.student_id IS NULL;");
+
+            // Also auto-sync newly introduced courses into course_catalog
+            String syncCatalogSql = "INSERT INTO course_catalog (course_code, course_name, credits, category) " +
+                    "SELECT DISTINCT " +
+                    "  b.course_code, " +
+                    "  COALESCE(NULLIF(b.course_name, ''), b.course_code), " +
+                    "  COALESCE(NULLIF(b.credits, 0), 3), " +
+                    "  CASE " +
+                    "    WHEN b.category IS NOT NULL AND TRIM(b.category) <> '' THEN TRIM(b.category) " +
+                    "    WHEN b.course_code ~* '^(23CS|23AD)' THEN 'PCC' " +
+                    "    WHEN b.course_code ~* '^(OE)' THEN 'OEC' " +
+                    "    WHEN b.course_code ~* '^(23UC|23HS|23EN)' THEN 'HAS' " +
+                    "    WHEN b.course_code ~* '^(23SC|23MA|23PH|23CH|23MT)' THEN 'BSC' " +
+                    "    WHEN b.course_code ~* '^(23EC|23EE|23ME)' THEN 'ESC' " +
+                    "    WHEN b.course_code ~* '^(23SD)' THEN 'SDC' " +
+                    "    WHEN b.course_code ~* '^(23PR|23IN|23CP)' THEN 'PRI' " +
+                    "    ELSE 'PEC' " +
+                    "  END " +
+                    "FROM " + finalTable + " b " +
+                    "WHERE b.course_code NOT IN (SELECT course_code FROM course_catalog) " +
+                    "ON CONFLICT (course_code) DO NOTHING;";
+            jdbcTemplate.execute(syncCatalogSql);
         } catch (Exception e) {
             System.err.println("Notice auto-syncing students table: " + e.getMessage());
         }
 
-        // Trigger background eligibility evaluation
+        // Trigger background degree path assignment and eligibility evaluation
         if (!distinctStudentIds.isEmpty()) {
             Set<String> idsCopy = new HashSet<>(distinctStudentIds);
             CompletableFuture.runAsync(() -> {
@@ -599,6 +666,12 @@ public class AddCourseService {
                     try {
                         studentRepository.findByStudentId(uid).ifPresent(s -> {
                             try {
+                                if (degreePathEngine != null && !studentDegreePathRepository.existsByStudentId(s.getId())) {
+                                    DegreePath dp = degreePathEngine.findMatchingDegreePath(s);
+                                    if (dp != null) {
+                                        degreePathEngine.assignPath(s.getId(), dp.getId(), verifiedById);
+                                    }
+                                }
                                 degreeEligibilityEngine.evaluateEligibility(s.getId());
                             } catch (Exception ignored) {}
                         });
@@ -610,18 +683,43 @@ public class AddCourseService {
         long elapsedMs = Math.max(1, System.currentTimeMillis() - startTime);
         double speed = (counters[0] * 1000.0) / elapsedMs;
 
+        int totalRows = counters[0];
+        int inserted = counters[1];
+        int updated = counters[2];
+        int skippedDuplicates = counters[3];
+        int validationFailures = counters[4];
+        int databaseFailures = counters[5];
+        int totalProcessed = inserted + updated;
+        int totalFailed = validationFailures + databaseFailures;
+        int unprocessedRows = Math.max(0, totalRows - (totalProcessed + skippedDuplicates + totalFailed));
+
+        String summaryMessage;
+        if (totalFailed == 0) {
+            summaryMessage = "Successfully processed " + totalProcessed + " course records (" + inserted + " inserted, " + updated + " updated, " + skippedDuplicates + " duplicates skipped) into " + finalTable + " (" + Math.round(speed) + " rows/sec in " + String.format(Locale.ENGLISH, "%.2f", elapsedMs / 1000.0) + "s).";
+        } else if (totalProcessed > 0) {
+            summaryMessage = "Processed " + totalProcessed + " course records (" + inserted + " inserted, " + updated + " updated, " + skippedDuplicates + " duplicates skipped) with " + totalFailed + " failure(s) into " + finalTable + ".";
+        } else {
+            summaryMessage = "Upload failed: 0 course records processed, " + totalFailed + " failed into " + finalTable + ". See notices below.";
+        }
+
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("total", counters[0]);
+        result.put("total", totalRows);
+        result.put("totalRows", totalRows);
         result.put("batch", finalBatch);
         result.put("tableName", finalTable);
-        result.put("added", counters[1]);
-        result.put("updated", 0);
-        result.put("skipped", counters[2]);
-        result.put("failed", counters[3]);
+        result.put("inserted", inserted);
+        result.put("updated", updated);
+        result.put("added", totalProcessed);
+        result.put("skippedDuplicates", skippedDuplicates);
+        result.put("skipped", skippedDuplicates);
+        result.put("validationFailures", validationFailures);
+        result.put("databaseFailures", databaseFailures);
+        result.put("failed", totalFailed);
+        result.put("unprocessedRows", unprocessedRows);
         result.put("errors", errors);
         result.put("executionTimeMs", elapsedMs);
         result.put("speedRowsPerSec", Math.round(speed));
-        result.put("message", "Successfully processed " + counters[0] + " course records into " + finalTable + " (" + Math.round(speed) + " rows/sec in " + (elapsedMs / 1000.0) + "s).");
+        result.put("message", summaryMessage);
         return result;
     }
 
@@ -634,6 +732,26 @@ public class AddCourseService {
     ) {
         if (chunk == null || chunk.isEmpty()) return;
 
+        // Deduplicate rows within the same chunk by unique conflict key
+        // (university_id, course_code, semester, academic_year) to prevent PostgreSQL error:
+        // "ON CONFLICT DO UPDATE command cannot affect row a second time"
+        Map<String, com.example.demo.utils.CourseFileStreamingParser.ParsedRow> dedupMap = new LinkedHashMap<>();
+        for (com.example.demo.utils.CourseFileStreamingParser.ParsedRow r : chunk) {
+            String sem = (r.semester != null && !r.semester.trim().isEmpty()) ? r.semester.trim().toUpperCase() : "ODD";
+            String acad = (r.academicYear != null && !r.academicYear.trim().isEmpty()) ? r.academicYear.trim().toUpperCase() : "2023-2024";
+            r.semester = sem;
+            r.academicYear = acad;
+            String key = (r.universityId != null ? r.universityId.trim().toUpperCase() : "") + "|" +
+                         (r.courseCode != null ? r.courseCode.trim().toUpperCase() : "") + "|" +
+                         sem + "|" + acad;
+            if (dedupMap.containsKey(key)) {
+                counters[3]++; // duplicate skipped within same file
+            } else {
+                dedupMap.put(key, r);
+            }
+        }
+        List<com.example.demo.utils.CourseFileStreamingParser.ParsedRow> uniqueChunk = new ArrayList<>(dedupMap.values());
+
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO ").append(tableName).append(" (")
                 .append("university_id, student_name, course_code, course_name, credits, grade, ")
@@ -641,7 +759,7 @@ public class AddCourseService {
                 .append("section_no, register_date, course_ref, offer_to, offer_by, branch, category, status, verified_by")
                 .append(") VALUES ");
 
-        for (int i = 0; i < chunk.size(); i++) {
+        for (int i = 0; i < uniqueChunk.size(); i++) {
             if (i > 0) sql.append(", ");
             sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         }
@@ -664,12 +782,13 @@ public class AddCourseService {
                 .append("category = EXCLUDED.category, ")
                 .append("status = EXCLUDED.status, ")
                 .append("verified_by = EXCLUDED.verified_by, ")
-                .append("updated_at = NOW();");
+                .append("updated_at = NOW() ")
+                .append("RETURNING (xmax = 0) AS is_insert;");
 
         try {
-            jdbcTemplate.update(sql.toString(), ps -> {
+            List<Boolean> isInsertList = jdbcTemplate.query(sql.toString(), ps -> {
                 int p = 1;
-                for (com.example.demo.utils.CourseFileStreamingParser.ParsedRow r : chunk) {
+                for (com.example.demo.utils.CourseFileStreamingParser.ParsedRow r : uniqueChunk) {
                     ps.setString(p++, r.universityId);
                     ps.setString(p++, r.studentName);
                     ps.setString(p++, r.courseCode);
@@ -684,7 +803,7 @@ public class AddCourseService {
                     ps.setString(p++, r.ltps);
                     ps.setString(p++, r.bucketGroup);
                     ps.setString(p++, r.courseType);
-                    ps.setString(p++, r.academicYear);
+                    ps.setString(p++, r.academicYear != null ? r.academicYear : "2023-2024");
                     if (r.studyYear != null) {
                         ps.setInt(p++, r.studyYear);
                     } else {
@@ -708,15 +827,115 @@ public class AddCourseService {
                         ps.setNull(p++, java.sql.Types.BIGINT);
                     }
                 }
-            });
-            counters[1] += chunk.size();
-        } catch (Exception e) {
-            counters[3] += chunk.size();
-            if (errors.size() < 100) {
-                errors.add("Chunk error: " + e.getMessage());
+            }, (rs, rowNum) -> rs.getBoolean("is_insert"));
+
+            for (Boolean isInsert : isInsertList) {
+                if (Boolean.TRUE.equals(isInsert)) {
+                    counters[1]++; // inserted
+                } else {
+                    counters[2]++; // updated
+                }
             }
-            e.printStackTrace();
+        } catch (Exception e) {
+            String rootCause = (e instanceof org.springframework.core.NestedRuntimeException nre && nre.getMostSpecificCause() != null)
+                    ? nre.getMostSpecificCause().getMessage()
+                    : e.getMessage();
+            System.err.println("Notice: Batch multi-row insert failed (" + rootCause + "). Falling back to single-row upserts.");
+            // Fallback: upsert row-by-row to salvage valid rows and accurately log any bad rows
+            for (com.example.demo.utils.CourseFileStreamingParser.ParsedRow r : uniqueChunk) {
+                try {
+                    boolean isInsert = upsertSingleCourseRow(tableName, r, verifiedById);
+                    if (isInsert) {
+                        counters[1]++; // inserted
+                    } else {
+                        counters[2]++; // updated
+                    }
+                } catch (Exception rowEx) {
+                    counters[5]++; // databaseFailures
+                    if (errors.size() < 100) {
+                        String specificErr = (rowEx instanceof org.springframework.core.NestedRuntimeException nre && nre.getMostSpecificCause() != null)
+                                ? nre.getMostSpecificCause().getMessage()
+                                : rowEx.getMessage();
+                        errors.add("Row failed (Student: " + (r.universityId != null ? r.universityId : "unknown") + ", Course: " + (r.courseCode != null ? r.courseCode : "unknown") + "): " + specificErr);
+                    }
+                }
+            }
         }
+    }
+
+    private boolean upsertSingleCourseRow(
+            String tableName,
+            com.example.demo.utils.CourseFileStreamingParser.ParsedRow r,
+            Long verifiedById
+    ) {
+        String sql = "INSERT INTO " + tableName + " (" +
+                "university_id, student_name, course_code, course_name, credits, grade, " +
+                "semester, ltps, bucket_group, course_type, academic_year, study_year, " +
+                "section_no, register_date, course_ref, offer_to, offer_by, branch, category, status, verified_by" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT (university_id, course_code, semester, academic_year) DO UPDATE SET " +
+                "student_name = EXCLUDED.student_name, " +
+                "course_name = EXCLUDED.course_name, " +
+                "credits = EXCLUDED.credits, " +
+                "grade = COALESCE(EXCLUDED.grade, " + tableName + ".grade), " +
+                "ltps = EXCLUDED.ltps, " +
+                "bucket_group = EXCLUDED.bucket_group, " +
+                "course_type = EXCLUDED.course_type, " +
+                "study_year = EXCLUDED.study_year, " +
+                "section_no = EXCLUDED.section_no, " +
+                "register_date = EXCLUDED.register_date, " +
+                "course_ref = EXCLUDED.course_ref, " +
+                "offer_to = EXCLUDED.offer_to, " +
+                "offer_by = EXCLUDED.offer_by, " +
+                "branch = EXCLUDED.branch, " +
+                "category = EXCLUDED.category, " +
+                "status = EXCLUDED.status, " +
+                "verified_by = EXCLUDED.verified_by, " +
+                "updated_at = NOW() " +
+                "RETURNING (xmax = 0) AS is_insert;";
+
+        List<Boolean> list = jdbcTemplate.query(sql, ps -> {
+            int p = 1;
+            ps.setString(p++, r.universityId);
+            ps.setString(p++, r.studentName);
+            ps.setString(p++, r.courseCode);
+            ps.setString(p++, r.courseName);
+            if (r.credits != null) {
+                ps.setInt(p++, r.credits);
+            } else {
+                ps.setInt(p++, 0);
+            }
+            ps.setString(p++, r.grade);
+            ps.setString(p++, (r.semester != null && !r.semester.trim().isEmpty()) ? r.semester.trim() : "ODD");
+            ps.setString(p++, r.ltps);
+            ps.setString(p++, r.bucketGroup);
+            ps.setString(p++, r.courseType);
+            ps.setString(p++, (r.academicYear != null && !r.academicYear.trim().isEmpty()) ? r.academicYear.trim() : "2023-2024");
+            if (r.studyYear != null) {
+                ps.setInt(p++, r.studyYear);
+            } else {
+                ps.setNull(p++, java.sql.Types.INTEGER);
+            }
+            ps.setString(p++, r.sectionNo);
+            if (r.registerDate != null) {
+                ps.setDate(p++, java.sql.Date.valueOf(r.registerDate));
+            } else {
+                ps.setNull(p++, java.sql.Types.DATE);
+            }
+            ps.setString(p++, r.courseRef);
+            ps.setString(p++, r.offerTo);
+            ps.setString(p++, r.offerBy);
+            ps.setString(p++, r.branch);
+            ps.setString(p++, r.category);
+            ps.setString(p++, r.status != null ? r.status : "Completed");
+            if (verifiedById != null) {
+                ps.setLong(p++, verifiedById);
+            } else {
+                ps.setNull(p++, java.sql.Types.BIGINT);
+            }
+        }, (rs, rowNum) -> rs.getBoolean("is_insert"));
+
+        return !list.isEmpty() && Boolean.TRUE.equals(list.get(0));
     }
 
     private String mergeLtps(String oldLtps, String newLtps) {

@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.model.*;
 import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.*;
  *   2. Find matching DegreePath record
  *   3. Assign to student_degree_path table
  */
+@Slf4j
 @Service
 @Transactional
 public class DegreePathEngine {
@@ -80,6 +82,11 @@ public class DegreePathEngine {
                     .orElse(null);
         }
 
+        // Robust fallback matching by pathCode and academicYear
+        if (path == null) {
+            path = findMatchingDegreePath(student);
+        }
+
         if (path == null) {
             enqueueUnmatchedStudent(student, "UNRESOLVED_PATH",
                     "No valid degree path found for department " + deptCode + " (type=" + typeCode + ", addon=" + addonCode + ")");
@@ -111,24 +118,32 @@ public class DegreePathEngine {
         studentDegreePathRepository.save(sdp);
 
         // If student was pending in review queue, mark as RESOLVED
-        unmatchedStudentQueueRepository.findByStudentIdNumAndStatus(student.getStudentId(), "PENDING_REVIEW")
-                .ifPresent(q -> {
-                    q.setStatus("RESOLVED");
-                    q.setResolutionNotes("Resolved and assigned to path " + path.getPathCode());
-                    q.setResolvedBy(assignedById != null ? assignedById.toString() : "ADMIN");
-                    q.setResolvedAt(java.time.LocalDateTime.now());
-                    unmatchedStudentQueueRepository.save(q);
-                });
+        try {
+            unmatchedStudentQueueRepository.findByStudentIdNumAndStatus(student.getStudentId(), "PENDING_REVIEW")
+                    .ifPresent(q -> {
+                        q.setStatus("RESOLVED");
+                        q.setResolutionNotes("Resolved and assigned to path " + path.getPathCode());
+                        q.setResolvedBy(assignedById != null ? assignedById.toString() : "ADMIN");
+                        q.setResolvedAt(java.time.LocalDateTime.now());
+                        unmatchedStudentQueueRepository.save(q);
+                    });
+        } catch (Exception e) {
+            log.debug("Note: Unmatched queue check for {}: {}", student.getStudentId(), e.getMessage());
+        }
 
         // Record audit log
-        MappingAuditLog audit = new MappingAuditLog();
-        audit.setStudent(student);
-        audit.setStudentIdNum(student.getStudentId());
-        audit.setAction("CURRICULUM_PATH_ASSIGNMENT");
-        audit.setChangedBy(assignedById != null ? assignedById.toString() : "SYSTEM");
-        audit.setNewValue(path.getPathCode());
-        audit.setReason("Degree path assigned under department " + path.getDepartment().getDeptCode());
-        mappingAuditLogRepository.save(audit);
+        try {
+            MappingAuditLog audit = new MappingAuditLog();
+            audit.setStudent(student);
+            audit.setStudentIdNum(student.getStudentId());
+            audit.setAction("CURRICULUM_PATH_ASSIGNMENT");
+            audit.setChangedBy(assignedById != null ? assignedById.toString() : "SYSTEM");
+            audit.setNewValue(path.getPathCode());
+            audit.setReason("Degree path assigned under department " + path.getDepartment().getDeptCode());
+            mappingAuditLogRepository.save(audit);
+        } catch (Exception e) {
+            log.debug("Note: Mapping audit log for {}: {}", student.getStudentId(), e.getMessage());
+        }
 
         return path;
     }
@@ -300,7 +315,7 @@ public class DegreePathEngine {
     }
 
     public String mapDegreeType(String subDept) {
-        if (subDept == null || subDept.isEmpty() || "REGULAR".equalsIgnoreCase(subDept)) return "REGULAR";
+        if (subDept == null || subDept.trim().isEmpty() || "REGULAR".equalsIgnoreCase(subDept.trim())) return "REGULAR";
         String upper = subDept.toUpperCase().trim();
         if (upper.contains("HTE")) return "HTE";
         if (upper.contains("HTI")) return "HTI";

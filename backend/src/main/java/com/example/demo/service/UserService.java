@@ -285,8 +285,17 @@ public class UserService {
                     .limit(5)
                     .forEach(uh -> {
                         Map<String, Object> act = new java.util.LinkedHashMap<>();
+                        String title = "Course File Upload";
+                        if (uh.getFileName() != null) {
+                            String fn = uh.getFileName().toLowerCase();
+                            if (fn.contains("student") || fn.contains("registration") || fn.contains("aids student")) {
+                                title = "Student Bulk Registration";
+                            } else if (fn.contains("curriculum")) {
+                                title = "Curriculum Upload";
+                            }
+                        }
                         act.put("type", "UPLOAD");
-                        act.put("title", "Course File Upload");
+                        act.put("title", title);
                         act.put("description", "File '" + uh.getFileName() + "' processed (" + (uh.getSuccessCount() != null ? uh.getSuccessCount() : 0) + " records synced)");
                         act.put("status", uh.getStatus());
                         act.put("time", uh.getCreatedAt() != null ? uh.getCreatedAt().toString() : "Recent");

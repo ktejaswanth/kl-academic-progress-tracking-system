@@ -57,6 +57,7 @@ export default function UploadCourses() {
 
     const handleUpload = async (e) => {
         e.preventDefault();
+        if (uploading) return;
         if (!file) {
             setError('Please select an Excel or CSV file first.');
             return;
@@ -76,7 +77,13 @@ export default function UploadCourses() {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             setResults(response.data);
-            setMessage(response.data?.message || `Bulk upload completed successfully!`);
+            const totalFailed = (response.data?.failed || 0) + (response.data?.validationFailures || 0) + (response.data?.databaseFailures || 0);
+            const totalProcessed = response.data?.added || ((response.data?.inserted || 0) + (response.data?.updated || 0));
+            if (totalFailed > 0 && totalProcessed === 0) {
+                setError(response.data?.message || 'Bulk upload failed. Please review error notices below.');
+            } else {
+                setMessage(response.data?.message || `Bulk upload completed successfully!`);
+            }
             setFile(null);
             if (document.getElementById('courses-excel-upload')) {
                 document.getElementById('courses-excel-upload').value = '';
@@ -286,42 +293,99 @@ export default function UploadCourses() {
                 <div className="results-card animate-fade">
                     <div className="results-header">
                         <div>
-                            <h3 style={{ margin: 0, fontSize: '1.3rem', color: '#0F172A' }}>Batch Processing Summary</h3>
+                            <h3 style={{ margin: 0, fontSize: '1.35rem', color: '#0F172A', fontWeight: '800' }}>
+                                Batch Processing Summary
+                            </h3>
                             <p style={{ margin: '4px 0 0 0', color: '#64748B', fontSize: '0.9rem' }}>
-                                Destination Table: <code className="table-code">{results.tableName}</code> (Batch: {results.batch})
+                                Target Table: <code className="table-code">{results.tableName}</code> &bull; Batch: <strong>{results.batch}</strong>
                             </p>
                         </div>
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                            <span className="status-tag success">Total: {results.total?.toLocaleString()}</span>
-                            <span className="status-tag success">Processed: {results.added?.toLocaleString()}</span>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             {results.speedRowsPerSec > 0 && (
                                 <span className="status-tag speed">⚡ {results.speedRowsPerSec?.toLocaleString()} rows/sec</span>
                             )}
                             {results.executionTimeMs > 0 && (
                                 <span className="status-tag time">⏱️ {(results.executionTimeMs / 1000).toFixed(2)}s</span>
                             )}
-                            {results.failed > 0 && (
-                                <span className="status-tag danger">Failed: {results.failed?.toLocaleString()}</span>
+                            {(results.failed > 0 || (results.validationFailures || 0) + (results.databaseFailures || 0) > 0) ? (
+                                <span className="status-tag danger">Issues Detected</span>
+                            ) : (
+                                <span className="status-tag success">Ingestion Complete</span>
                             )}
                         </div>
                     </div>
 
+                    {/* Accurate 7-Metric Breakdown Grid */}
+                    <div className="stats-summary-grid">
+                        <div className="stat-box neutral">
+                            <div className="stat-num">{(results.totalRows ?? results.total ?? 0).toLocaleString()}</div>
+                            <div className="stat-label">Total Rows</div>
+                        </div>
+                        <div className="stat-box success">
+                            <div className="stat-num">{(results.inserted ?? results.added ?? 0).toLocaleString()}</div>
+                            <div className="stat-label">Newly Inserted</div>
+                        </div>
+                        <div className="stat-box info">
+                            <div className="stat-num">{(results.updated ?? 0).toLocaleString()}</div>
+                            <div className="stat-label">Records Updated</div>
+                        </div>
+                        <div className="stat-box warning">
+                            <div className="stat-num">{(results.skippedDuplicates ?? results.skipped ?? 0).toLocaleString()}</div>
+                            <div className="stat-label">Duplicates Skipped</div>
+                        </div>
+                        <div className={`stat-box ${(results.validationFailures || 0) > 0 ? 'danger' : 'neutral'}`}>
+                            <div className="stat-num">{(results.validationFailures ?? 0).toLocaleString()}</div>
+                            <div className="stat-label">Validation Failures</div>
+                        </div>
+                        <div className={`stat-box ${(results.databaseFailures || 0) > 0 ? 'danger' : 'neutral'}`}>
+                            <div className="stat-num">{(results.databaseFailures ?? 0).toLocaleString()}</div>
+                            <div className="stat-label">Database Failures</div>
+                        </div>
+                        <div className="stat-box neutral">
+                            <div className="stat-num">{(results.unprocessedRows ?? 0).toLocaleString()}</div>
+                            <div className="stat-label">Unprocessed Rows</div>
+                        </div>
+                    </div>
+
+                    {results.message && (
+                        <div style={{
+                            padding: '12px 16px',
+                            borderRadius: '12px',
+                            background: results.failed > 0 && results.added === 0 ? '#FEF2F2' : '#F0FDF4',
+                            border: `1px solid ${results.failed > 0 && results.added === 0 ? '#FECACA' : '#BBF7D0'}`,
+                            color: results.failed > 0 && results.added === 0 ? '#991B1B' : '#166534',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            marginTop: '0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px'
+                        }}>
+                            <span>{results.failed > 0 && results.added === 0 ? '❌' : 'ℹ️'}</span>
+                            <span>{results.message}</span>
+                        </div>
+                    )}
+
                     {results.errors && results.errors.length > 0 && (
                         <div className="errors-log-container" style={{ marginTop: '1.5rem' }}>
-                            <h4 style={{ color: '#991B1B', marginBottom: '8px' }}>Processing Notices / Errors:</h4>
+                            <h4 style={{ color: '#991B1B', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span>⚠️</span> Row-Specific Notices & Errors ({results.errors.length}):
+                            </h4>
                             <div className="errors-log" style={{
-                                maxHeight: '200px',
+                                maxHeight: '220px',
                                 overflowY: 'auto',
                                 background: '#FEF2F2',
                                 padding: '1rem',
-                                borderRadius: '10px',
+                                borderRadius: '12px',
                                 border: '1px solid #FECACA',
                                 fontFamily: 'monospace',
                                 fontSize: '0.85rem',
                                 color: '#991B1B'
                             }}>
                                 {results.errors.map((err, idx) => (
-                                    <div key={idx} style={{ marginBottom: '4px' }}>• {err}</div>
+                                    <div key={idx} style={{ marginBottom: '6px', borderBottom: idx < results.errors.length - 1 ? '1px dashed #FECACA' : 'none', paddingBottom: '4px' }}>
+                                        &bull; {err}
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -628,6 +692,73 @@ export default function UploadCourses() {
                 .status-tag.speed { background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE; }
                 .status-tag.time { background: #F1F5F9; color: #334155; border: 1px solid #CBD5E1; }
                 .status-tag.danger { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+
+                .stats-summary-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+                    gap: 12px;
+                    margin-top: 1.25rem;
+                    margin-bottom: 1rem;
+                }
+                .stat-box {
+                    background: #F8FAFC;
+                    border: 1px solid #E2E8F0;
+                    border-radius: 14px;
+                    padding: 12px 14px;
+                    text-align: center;
+                    transition: transform 0.2s ease;
+                }
+                .stat-box:hover {
+                    transform: translateY(-2px);
+                }
+                .stat-box.neutral {
+                    background: #F8FAFC;
+                    border-color: #E2E8F0;
+                }
+                .stat-box.neutral .stat-num {
+                    color: #0F172A;
+                }
+                .stat-box.success {
+                    background: #F0FDF4;
+                    border-color: #BBF7D0;
+                }
+                .stat-box.success .stat-num {
+                    color: #166534;
+                }
+                .stat-box.info {
+                    background: #EFF6FF;
+                    border-color: #BFDBFE;
+                }
+                .stat-box.info .stat-num {
+                    color: #1D4ED8;
+                }
+                .stat-box.warning {
+                    background: #FFFBEB;
+                    border-color: #FDE68A;
+                }
+                .stat-box.warning .stat-num {
+                    color: #B45309;
+                }
+                .stat-box.danger {
+                    background: #FEF2F2;
+                    border-color: #FECACA;
+                }
+                .stat-box.danger .stat-num {
+                    color: #B91C1C;
+                }
+                .stat-box .stat-num {
+                    font-size: 1.45rem;
+                    font-weight: 800;
+                    line-height: 1.2;
+                }
+                .stat-box .stat-label {
+                    font-size: 0.72rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.04em;
+                    color: #64748B;
+                    margin-top: 5px;
+                }
 
                 .alert {
                     padding: 1rem 1.25rem;
