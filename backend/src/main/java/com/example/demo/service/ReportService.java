@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class ReportService {
 
     @Autowired
@@ -47,12 +47,27 @@ public class ReportService {
     @Autowired
     private DegreeEligibilityEngine degreeEligibilityEngine;
 
+    @Autowired
+    private StudentDegreePathRepository studentDegreePathRepository;
+
+    @Autowired
+    private DegreePathEngine degreePathEngine;
+
     /**
      * Individual student progress report.
      */
     public Map<String, Object> getStudentReport(Long studentId) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        // Ensure student has assigned degree path before progress evaluation
+        if (studentDegreePathRepository.findByStudentId(studentId).isEmpty() && degreePathEngine != null) {
+            try {
+                degreePathEngine.resolveAndAssignPath(studentId);
+            } catch (Exception ignored) {
+                // Resolution error handled in downstream evaluations
+            }
+        }
 
         StudentDegreeStatus status = studentDegreeStatusRepository.findByStudentId(studentId).orElse(null);
         if (status == null) {

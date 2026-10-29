@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,6 +36,10 @@ public class ExitRequirementReportRegressionTest {
     @Autowired private CurriculumCourseMappingRepository curriculumCourseMappingRepository;
     @Autowired private BucketMasterRepository bucketMasterRepository;
     @Autowired private Y23AidsCurriculumSeeder y23AidsCurriculumSeeder;
+    @Autowired private com.example.demo.service.ExitRequirementService exitRequirementService;
+    @Autowired private com.example.demo.service.ReportService reportService;
+    @Autowired private com.example.demo.service.DegreePathEngine degreePathEngine;
+    @Autowired private StudentDegreeStatusRepository studentDegreeStatusRepository;
 
     private Student testStudent;
     private DegreePath testPath;
@@ -317,6 +322,243 @@ public class ExitRequirementReportRegressionTest {
         Transactional tx = ExitRequirementPdfService.class.getAnnotation(Transactional.class);
         assertNotNull(tx, "ExitRequirementPdfService must be annotated with @Transactional");
         assertFalse(tx.readOnly(), "ExitRequirementPdfService @Transactional must NOT be readOnly = true");
+
+        Transactional reportTx = com.example.demo.service.ReportService.class.getAnnotation(Transactional.class);
+        assertNotNull(reportTx, "ReportService must be annotated with @Transactional");
+        assertFalse(reportTx.readOnly(), "ReportService @Transactional must NOT be readOnly = true");
+    }
+
+    @Test
+    @DisplayName("Regression Test 7: Student who has never logged in (firstLoginCompleted=false, no degree path) can view report without transaction abort")
+    public void testNeverLoggedInStudentReportGeneration() {
+        // Create student who has never logged in and has NO assigned degree path
+        String studentRoll = "TEST_NEVER_LOGGED_IN_01";
+        Student freshStudent = studentRepository.findByStudentId(studentRoll).orElseGet(() -> {
+            Student s = new Student();
+            s.setStudentId(studentRoll);
+            s.setFirstName("NeverLoggedIn");
+            s.setLastName("Student");
+            s.setEmail("never.logged.in@example.com");
+            s.setPassword("secret");
+            s.setDepartment("CSE");
+            s.setAcademicYear("2023-2027");
+            s.setFirstLoginCompleted(false);
+            return studentRepository.save(s);
+        });
+
+        // Ensure NO degree path and NO bucket progress exist initially
+        studentDegreePathRepository.findByStudentId(freshStudent.getId())
+                .ifPresent(sdp -> studentDegreePathRepository.delete(sdp));
+        List<StudentBucketProgress> initialProgress = studentBucketProgressRepository.findAll().stream()
+                .filter(p -> p.getStudent() != null && freshStudent.getId().equals(p.getStudent().getId()))
+                .toList();
+        if (!initialProgress.isEmpty()) {
+            studentBucketProgressRepository.deleteAll(initialProgress);
+        }
+
+        assertTrue(studentDegreePathRepository.findByStudentId(freshStudent.getId()).isEmpty(),
+                "Student must initially have NO degree path assigned");
+        assertEquals(false, freshStudent.getFirstLoginCompleted(),
+                "firstLoginCompleted must initially be false");
+
+        // Add a course for this student
+        addCourse(freshStudent, "23CS2101", "Data Structures", 4.0, "PCC");
+
+        // Generate report for this student who has never logged in
+        Map<String, Object> reportData = exitRequirementPdfService.getStudentExitRequirementReportData(freshStudent.getStudentId());
+
+        assertNotNull(reportData, "Report data must be returned");
+        assertTrue(reportData.containsKey("student"));
+        assertTrue(reportData.containsKey("summary"));
+        assertTrue(reportData.containsKey("categories"));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> summary = (Map<String, Object>) reportData.get("summary");
+        int totalObtained = (int) summary.get("totalObtainedCredits");
+        assertEquals(4, totalObtained, "Obtained credits must be 4");
+
+        // Verify that degree path was safely auto-assigned
+        Optional<StudentDegreePath> assignedPath = studentDegreePathRepository.findByStudentId(freshStudent.getId());
+        assertTrue(assignedPath.isPresent(), "Degree path must be safely auto-assigned during report generation");
+        assertNotNull(assignedPath.get().getDegreePath(), "Assigned degree path must not be null");
+
+        // Verify bucket progress rows were safely persisted
+        List<StudentBucketProgress> savedProgress = studentBucketProgressRepository
+                .findByStudentIdAndDegreePathId(freshStudent.getId(), assignedPath.get().getDegreePath().getId());
+        assertFalse(savedProgress.isEmpty(), "Bucket progress rows must be initialized and persisted");
+
+        // Verify firstLoginCompleted was NOT modified (remains false)
+        Student reloaded = studentRepository.findById(freshStudent.getId()).orElseThrow();
+        assertEquals(false, reloaded.getFirstLoginCompleted(),
+                "firstLoginCompleted must remain false even after admin viewed report");
+
+        // Verify downstream studentCourseRepository.findByStudentId executes without transaction abort
+        List<StudentCourse> courses = studentCourseRepository.findByStudentId(freshStudent.getId());
+        assertFalse(courses.isEmpty(), "Downstream query must succeed on clean transaction");
+    }
+
+    @Test
+    @DisplayName("Regression Test 8: Repeated report requests for never-logged-in student are idempotent without duplicate rows")
+    public void testNeverLoggedInStudentIdempotency() {
+        String studentRoll = "TEST_NEVER_LOGGED_IN_02";
+        Student student = studentRepository.findByStudentId(studentRoll).orElseGet(() -> {
+            Student s = new Student();
+            s.setStudentId(studentRoll);
+            s.setFirstName("Idempotent");
+            s.setLastName("Student");
+            s.setEmail("idempotent.student@example.com");
+            s.setPassword("secret");
+            s.setDepartment("CSE");
+            s.setAcademicYear("2023-2027");
+            s.setFirstLoginCompleted(false);
+            return studentRepository.save(s);
+        });
+
+        studentDegreePathRepository.findByStudentId(student.getId())
+                .ifPresent(sdp -> studentDegreePathRepository.delete(sdp));
+
+        addCourse(student, "23CS2101", "Data Structures", 4.0, "PCC");
+
+        // First call
+        Map<String, Object> report1 = exitRequirementPdfService.getStudentExitRequirementReportData(student.getStudentId());
+        assertNotNull(report1);
+
+        Optional<StudentDegreePath> path1 = studentDegreePathRepository.findByStudentId(student.getId());
+        assertTrue(path1.isPresent());
+        List<StudentBucketProgress> progress1 = studentBucketProgressRepository
+                .findByStudentIdAndDegreePathId(student.getId(), path1.get().getDegreePath().getId());
+        assertFalse(progress1.isEmpty());
+        int progressCount1 = progress1.size();
+
+        // Second call (repeated)
+        Map<String, Object> report2 = exitRequirementPdfService.getStudentExitRequirementReportData(student.getStudentId());
+        assertNotNull(report2);
+
+        // Verify exactly one degree path and consistent progress count (no duplicate rows)
+        Optional<StudentDegreePath> path2 = studentDegreePathRepository.findByStudentId(student.getId());
+        assertTrue(path2.isPresent());
+        assertEquals(path1.get().getId(), path2.get().getId(), "Degree path ID must remain identical");
+
+        List<StudentBucketProgress> progress2 = studentBucketProgressRepository
+                .findByStudentIdAndDegreePathId(student.getId(), path2.get().getDegreePath().getId());
+        assertEquals(progressCount1, progress2.size(), "Bucket progress row count must remain consistent (no duplicates)");
+
+        Student reloaded = studentRepository.findById(student.getId()).orElseThrow();
+        assertEquals(false, reloaded.getFirstLoginCompleted(), "firstLoginCompleted must remain false");
+    }
+
+    @Test
+    @DisplayName("Regression Test 9: Admin exit clearance and controller endpoints work for never-logged-in student")
+    public void testAdminExitClearanceEndpointsForNeverLoggedInStudent() {
+        String studentRoll = "TEST_NEVER_LOGGED_IN_03";
+        Student student = studentRepository.findByStudentId(studentRoll).orElseGet(() -> {
+            Student s = new Student();
+            s.setStudentId(studentRoll);
+            s.setFirstName("Clearance");
+            s.setLastName("Student");
+            s.setEmail("clearance.student@example.com");
+            s.setPassword("secret");
+            s.setDepartment("CSE");
+            s.setAcademicYear("2023-2027");
+            s.setFirstLoginCompleted(false);
+            return studentRepository.save(s);
+        });
+
+        studentDegreePathRepository.findByStudentId(student.getId())
+                .ifPresent(sdp -> studentDegreePathRepository.delete(sdp));
+
+        addCourse(student, "23CS2101", "Data Structures", 4.0, "PCC");
+
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        "superadmin", "pass",
+                        List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_SUPER_ADMIN"))
+                )
+        );
+
+        // Admin report endpoint
+        ResponseEntity<?> reportResp = exitRequirementController.getAdminExitReport(student.getStudentId());
+        assertEquals(HttpStatus.OK, reportResp.getStatusCode());
+        assertNotNull(reportResp.getBody());
+
+        // Admin PDF endpoint
+        ResponseEntity<byte[]> pdfResp = exitRequirementController.downloadAdminExitPdf(student.getStudentId());
+        assertEquals(HttpStatus.OK, pdfResp.getStatusCode());
+        assertNotNull(pdfResp.getBody());
+        assertEquals("%PDF-", new String(pdfResp.getBody(), 0, 5));
+
+        // Admin clearance detail endpoint
+        ResponseEntity<?> detailResp = exitRequirementController.getStudentExitDetailForAdmin(student.getId());
+        assertEquals(HttpStatus.OK, detailResp.getStatusCode());
+        assertNotNull(detailResp.getBody());
+
+        // Student firstLoginCompleted must still be false
+        Student reloaded = studentRepository.findById(student.getId()).orElseThrow();
+        assertEquals(false, reloaded.getFirstLoginCompleted(), "firstLoginCompleted must remain false");
+
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    @DisplayName("Regression Test 10: ReportService read-write transaction executes without transaction abort for never-logged-in student")
+    public void testReportServiceForNeverLoggedInStudent() {
+        String studentRoll = "TEST_NEVER_LOGGED_IN_04";
+        Student student = studentRepository.findByStudentId(studentRoll).orElseGet(() -> {
+            Student s = new Student();
+            s.setStudentId(studentRoll);
+            s.setFirstName("ReportService");
+            s.setLastName("Student");
+            s.setEmail("reportservice.student@example.com");
+            s.setPassword("secret");
+            s.setDepartment("CSE");
+            s.setAcademicYear("2023-2027");
+            s.setFirstLoginCompleted(false);
+            return studentRepository.save(s);
+        });
+
+        studentDegreePathRepository.findByStudentId(student.getId())
+                .ifPresent(sdp -> studentDegreePathRepository.delete(sdp));
+
+        addCourse(student, "23CS2101", "Data Structures", 4.0, "PCC");
+
+        Map<String, Object> report = reportService.getStudentReport(student.getId());
+        assertNotNull(report, "Student report must not be null");
+        assertTrue(report.containsKey("status"));
+        assertTrue(report.containsKey("buckets"));
+
+        Student reloaded = studentRepository.findById(student.getId()).orElseThrow();
+        assertEquals(false, reloaded.getFirstLoginCompleted(), "firstLoginCompleted must remain false");
+    }
+
+    @Test
+    @DisplayName("Regression Test 11: Ambiguous or unknown department student is not silently assigned an arbitrary degree path")
+    public void testAmbiguousDepartmentNotSilentlyAssigned() {
+        String studentRoll = "TEST_AMBIGUOUS_DEPT_01";
+        Student student = studentRepository.findByStudentId(studentRoll).orElseGet(() -> {
+            Student s = new Student();
+            s.setStudentId(studentRoll);
+            s.setFirstName("Ambiguous");
+            s.setLastName("Student");
+            s.setEmail("ambiguous@example.com");
+            s.setPassword("secret");
+            s.setDepartment("UNKNOWN_DEP_XYZ");
+            s.setAcademicYear("2023-2027");
+            s.setFirstLoginCompleted(false);
+            return studentRepository.save(s);
+        });
+
+        studentDegreePathRepository.findByStudentId(student.getId())
+                .ifPresent(sdp -> studentDegreePathRepository.delete(sdp));
+
+        // Attempting to resolve and assign must throw an actionable exception and route to review queue
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
+            degreePathEngine.resolveAndAssignPath(student.getId());
+        });
+        assertTrue(ex.getMessage().contains("ambiguous department") || ex.getMessage().contains("review queue"));
+
+        // Must NOT silently assign any degree path
+        Optional<StudentDegreePath> sdp = studentDegreePathRepository.findByStudentId(student.getId());
+        assertTrue(sdp.isEmpty(), "Ambiguous student must NOT have any degree path assigned");
     }
 
     private void addCourse(Student student, String code, String name, double credits, String bucketCode) {

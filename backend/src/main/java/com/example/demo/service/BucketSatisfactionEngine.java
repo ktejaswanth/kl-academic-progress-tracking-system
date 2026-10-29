@@ -49,6 +49,24 @@ public class BucketSatisfactionEngine {
     private SpecializationCourseRepository specializationCourseRepository;
     @Autowired
     private SecondMajorCourseRepository secondMajorCourseRepository;
+    @Autowired
+    private DegreePathEngine degreePathEngine;
+
+    private StudentDegreePath resolveStudentDegreePath(Long studentId) {
+        StudentDegreePath sdp = studentDegreePathRepository.findByStudentId(studentId).orElse(null);
+        if (sdp != null) {
+            return sdp;
+        }
+        if (degreePathEngine != null) {
+            try {
+                degreePathEngine.resolveAndAssignPath(studentId);
+                sdp = studentDegreePathRepository.findByStudentId(studentId).orElse(null);
+            } catch (Exception ignored) {
+                // Resolution error handled when sdp is null downstream
+            }
+        }
+        return sdp;
+    }
 
     /**
      * Evaluate all bucket satisfaction for a student.
@@ -56,8 +74,10 @@ public class BucketSatisfactionEngine {
      */
     public List<StudentBucketProgress> evaluateBuckets(Long studentId) {
         // 1. Get the student's degree path
-        StudentDegreePath sdp = studentDegreePathRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new RuntimeException("Student has no assigned degree path. Please assign one first."));
+        StudentDegreePath sdp = resolveStudentDegreePath(studentId);
+        if (sdp == null) {
+            throw new RuntimeException("Student has no assigned degree path. Please assign one first.");
+        }
 
         Long degreePathId = sdp.getDegreePath().getId();
         DegreePath degreePath = sdp.getDegreePath();
@@ -106,7 +126,7 @@ public class BucketSatisfactionEngine {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        List<StudentBucketProgress> progressList = new ArrayList<>();
+        Map<Long, StudentBucketProgress> toSaveMap = new LinkedHashMap<>();
 
         for (PathBucketRequirement req : requirements) {
             Long bucketId = req.getBucket().getId();
@@ -202,10 +222,11 @@ public class BucketSatisfactionEngine {
             progress.setStatus(status);
             progress.setLastCalculated(LocalDateTime.now());
 
-            progressList.add(progress);
+            toSaveMap.put(bucketId, progress);
         }
 
-        // Batch save all progress records at once
+        // Batch save all progress records at once (guaranteed unique per bucketId)
+        List<StudentBucketProgress> progressList = new ArrayList<>(toSaveMap.values());
         studentBucketProgressRepository.saveAll(progressList);
 
         return progressList;
@@ -224,8 +245,10 @@ public class BucketSatisfactionEngine {
      * Get detailed progress report per bucket including course lists, credit capping, and limits.
      */
     public List<Map<String, Object>> getDetailedBucketProgress(Long studentId) {
-        StudentDegreePath sdp = studentDegreePathRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new RuntimeException("Student has no assigned degree path"));
+        StudentDegreePath sdp = resolveStudentDegreePath(studentId);
+        if (sdp == null) {
+            throw new RuntimeException("Student has no assigned degree path");
+        }
 
         Long degreePathId = sdp.getDegreePath().getId();
         DegreePath degreePath = sdp.getDegreePath();

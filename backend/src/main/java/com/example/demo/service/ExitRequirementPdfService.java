@@ -36,6 +36,7 @@ public class ExitRequirementPdfService {
     @Autowired private StudentExitSummaryRepository exitSummaryRepository;
     @Autowired private CompletedCourseRepository completedCourseRepository;
     @Autowired private DegreePathEngine degreePathEngine;
+    @Autowired private StudentDegreePathRepository studentDegreePathRepository;
 
     public static class CategoryData {
         public String categoryCode;
@@ -156,6 +157,15 @@ public class ExitRequirementPdfService {
         // 3. Load Courses via BucketSatisfactionEngine & CompletedCourseRepository
         Set<String> processedCourseCodes = new HashSet<>();
         try {
+            // Ensure student has assigned degree path before detailed progress query
+            if (studentDegreePathRepository.findByStudentId(studentId).isEmpty() && degreePathEngine != null) {
+                try {
+                    degreePathEngine.resolveAndAssignPath(studentId);
+                } catch (Exception ex) {
+                    log.warn("Could not auto-assign degree path for student {}: {}", student.getStudentId(), ex.getMessage());
+                }
+            }
+
             List<Map<String, Object>> buckets = bucketSatisfactionEngine.getDetailedBucketProgress(studentId);
             for (Map<String, Object> b : buckets) {
                 String bucketCode = String.valueOf(b.getOrDefault("bucketCode", "")).toUpperCase();

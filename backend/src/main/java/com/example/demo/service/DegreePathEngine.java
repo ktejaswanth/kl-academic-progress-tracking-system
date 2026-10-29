@@ -44,6 +44,12 @@ public class DegreePathEngine {
      * Uses the user's department, subDepartment (degree type), specializationType, and specializationName.
      */
     public DegreePath resolveAndAssignPath(Long studentId) {
+        // If already assigned and confirmed, return existing path idempotently
+        Optional<StudentDegreePath> existingOpt = studentDegreePathRepository.findByStudentId(studentId);
+        if (existingOpt.isPresent() && existingOpt.get().getDegreePath() != null) {
+            return existingOpt.get().getDegreePath();
+        }
+
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found: " + studentId));
 
@@ -80,6 +86,11 @@ public class DegreePathEngine {
                     .orElse(null);
         }
 
+        // Additional fallback: match by regulation academic year and path code candidates
+        if (path == null) {
+            path = findMatchingDegreePath(student);
+        }
+
         if (path == null) {
             enqueueUnmatchedStudent(student, "UNRESOLVED_PATH",
                     "No valid degree path found for department " + deptCode + " (type=" + typeCode + ", addon=" + addonCode + ")");
@@ -100,8 +111,16 @@ public class DegreePathEngine {
         DegreePath path = degreePathRepository.findById(degreePathId)
                 .orElseThrow(() -> new RuntimeException("Degree path not found"));
 
-        StudentDegreePath sdp = studentDegreePathRepository.findByStudentId(studentId)
-                .orElse(new StudentDegreePath());
+        Optional<StudentDegreePath> existingSdp = studentDegreePathRepository.findByStudentId(studentId);
+        StudentDegreePath sdp = existingSdp.orElse(new StudentDegreePath());
+
+        boolean alreadyAssigned = sdp.getDegreePath() != null
+                && sdp.getDegreePath().getId().equals(degreePathId)
+                && Boolean.TRUE.equals(sdp.getIsConfirmed());
+
+        if (alreadyAssigned) {
+            return path;
+        }
 
         sdp.setStudent(student);
         sdp.setDegreePath(path);
@@ -127,7 +146,7 @@ public class DegreePathEngine {
         audit.setAction("CURRICULUM_PATH_ASSIGNMENT");
         audit.setChangedBy(assignedById != null ? assignedById.toString() : "SYSTEM");
         audit.setNewValue(path.getPathCode());
-        audit.setReason("Degree path assigned under department " + path.getDepartment().getDeptCode());
+        audit.setReason("Degree path assigned under department " + (path.getDepartment() != null ? path.getDepartment().getDeptCode() : "N/A"));
         mappingAuditLogRepository.save(audit);
 
         return path;
@@ -233,7 +252,7 @@ public class DegreePathEngine {
 
         // 2. Resolve department, degree type, addon type, and academic year from student profile
         String deptCode = mapDepartment(student.getDepartment());
-        if (deptCode == null) deptCode = "AIDS";
+        if (deptCode == null) return null; // Ambiguous department must return null, never default to AIDS
 
         String typeCode = mapDegreeType(student.getSubDepartment());
         String addonCode = mapAddonType(student.getSpecializationType());

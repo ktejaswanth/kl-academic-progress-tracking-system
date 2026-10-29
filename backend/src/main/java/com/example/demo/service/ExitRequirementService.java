@@ -32,6 +32,8 @@ public class ExitRequirementService {
     @Autowired private StudentDegreeStatusRepository degreeStatusRepo;
     @Autowired private StudentCourseRepository studentCourseRepo;
     @Autowired private DegreeEligibilityEngine degreeEligibilityEngine;
+    @Autowired private StudentDegreePathRepository studentDegreePathRepo;
+    @Autowired private DegreePathEngine degreePathEngine;
 
     /**
      * Get or initialize all exit clearances and summary for a student.
@@ -68,6 +70,15 @@ public class ExitRequirementService {
 
         if (newlyCreated) {
             clearances = exitClearanceRepo.findByStudentIdOrderByRequirement_DisplayOrderAsc(studentId);
+        }
+
+        // Ensure student has assigned degree path
+        if (studentDegreePathRepo.findByStudentId(studentId).isEmpty() && degreePathEngine != null) {
+            try {
+                degreePathEngine.resolveAndAssignPath(studentId);
+            } catch (Exception ignored) {
+                // Resolution error handled in downstream evaluations
+            }
         }
 
         // 2. Auto-evaluate SYSTEM_AUTO rules

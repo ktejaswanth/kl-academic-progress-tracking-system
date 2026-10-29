@@ -38,6 +38,8 @@ public class DegreeEligibilityEngine {
     private DegreeOutcomeRequirementRepository degreeOutcomeRequirementRepository;
     @Autowired
     private StudentOutcomeRepository studentOutcomeRepository;
+    @Autowired
+    private DegreePathEngine degreePathEngine;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -46,8 +48,18 @@ public class DegreeEligibilityEngine {
      */
     public StudentDegreeStatus evaluateEligibility(Long studentId) {
         // 1. Get the assigned path
-        StudentDegreePath sdp = studentDegreePathRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new RuntimeException("Student has no assigned degree path."));
+        StudentDegreePath sdp = studentDegreePathRepository.findByStudentId(studentId).orElse(null);
+        if (sdp == null && degreePathEngine != null) {
+            try {
+                degreePathEngine.resolveAndAssignPath(studentId);
+                sdp = studentDegreePathRepository.findByStudentId(studentId).orElse(null);
+            } catch (Exception ignored) {
+                // Resolution error handled when sdp is null downstream
+            }
+        }
+        if (sdp == null) {
+            throw new RuntimeException("Student has no assigned degree path.");
+        }
 
         DegreePath degreePath = sdp.getDegreePath();
 
