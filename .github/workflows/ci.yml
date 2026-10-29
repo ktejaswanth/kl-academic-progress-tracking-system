@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend/Creditcore_backend
+        working-directory: backend
 
     steps:
       - name: "📥 Checkout Repository"
@@ -40,6 +40,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
           cache: "maven"
+          cache-dependency-path: backend/pom.xml
 
       - name: "🔧 Make Maven Wrapper Executable"
         run: chmod +x mvnw
@@ -59,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: backend-test-results
-          path: backend/Creditcore_backend/target/surefire-reports/
+          path: backend/target/surefire-reports/
           retention-days: 7
 
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

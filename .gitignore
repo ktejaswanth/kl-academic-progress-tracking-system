@@ -19,7 +19,7 @@ node_modules/
 # Java
 target/
 build/
-.mvn/
+.mvn/wrapper/maven-wrapper.jar
 /.metadata/
 
 # Python
