@@ -23,7 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional
 public class ExitRequirementPdfService {
 
     private static final Logger log = LoggerFactory.getLogger(ExitRequirementPdfService.class);
